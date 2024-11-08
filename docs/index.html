@@ -1,12 +1,260 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<meta charset='utf-8'>
-	<meta name='viewport' content='width=device-width, initial-scale=1'>
-	<meta http-equiv='X-UA-Compatible' content='IE=edge'>
-	<title>Placeholder</title>
-</head>
-<body>
-	<h1>Placeholder</h1>
-</body>
+<!doctype html>
+<html lang="es">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<title>Editor de PuréScript</title>
+
+		<link href="codemirror/lib/codemirror.css" rel="stylesheet" />
+
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+		<script src="scripts/loadFont.js"></script>
+		<link
+			rel="preload"
+			href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&amp;display=swap&family=Fira+Code:wght@300..700&display=swap"
+			as="style"
+			onload="loadFont(this)"
+		/>
+
+		<link rel="stylesheet" href="output.css" />
+
+		<script src="codemirror/lib/codemirror.js"></script>
+		<script src="codemirror/addon/mode/simple.js"></script>
+		<link rel="stylesheet" href="codemirror/addon/scroll/simplescrollbars.css" />
+		<script src="codemirror/addon/scroll/simplescrollbars.js"></script>
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+			crossorigin="anonymous"
+		/>
+	</head>
+	<body class="bg-background font-default-sans text-foreground">
+		<div class="md:py-auto">
+			<header class="sticky top-0 z-10 mb-1 sm:mb-2 bg-background px-4 pt-0.5 sm:pt-1">
+				<div class="border-b border-b-secondary-600 pb-0.5 sm:pb-1">
+					<div
+						class="flex-col md:mx-auto md:flex md:w-11/12 md:max-w-[1280px] md:flex-row md:items-center"
+					>
+						<h1
+							class="my-2 w-full flex-initial cursor-default select-none text-center text-4xl font-black sm:text-6xl md:w-max md:text-4xl"
+						>
+							PuréScript
+						</h1>
+						<h2
+							class="hidden sm:block my-2 w-full flex-grow cursor-default select-none text-center text-xs font-semibold text-secondary-100 sm:text-xl md:ml-2.5 md:w-max md:text-left md:text-sm md:font-normal md:text-secondary-300 lg:ml-4 lg:text-lg lg:font-semibold"
+						>
+							Editor interactivo
+						</h2>
+						<nav class="bg-red hidden flex-initial flex-row items-center md:block">
+							<button
+								onclick="gotoPSDocs()"
+								class="flex-initial overflow-clip rounded-md px-1 py-1 text-secondary-100 transition-all hover:bg-secondary-600 hover:text-white active:bg-secondary-500 lg:ml-2 lg:px-3"
+							>
+								<span class="pr-2 lg:inline">
+									<i class="fa fa-book"></i>
+								</span>
+								Aprender
+							</button>
+							<button
+								onclick="exportPS()"
+								class="ml-1.5 flex-initial overflow-clip rounded-md px-1 py-1 text-secondary-100 transition-all hover:bg-secondary-600 hover:text-white active:bg-secondary-500 lg:ml-2 lg:px-3"
+							>
+								<span class="pr-2 lg:inline">
+									<i class="fa fa-file-export"></i>
+								</span>
+								Exportar
+							</button>
+							<button
+								onclick="executePS()"
+								class="group relative ml-2 flex-initial overflow-clip rounded-md p-0 text-white transition-all [transition-duration:.6s] hover:scale-[1.02] hover:shadow-[#2c2f33_0px_0px_42pt] active:scale-[1.05] active:shadow-[#f04557_0px_0px_72pt] lg:ml-3"
+							>
+								<div
+									class="absolute left-0 top-0 -z-50 h-full w-full bg-primary-500"
+								></div>
+								<div
+									class="absolute left-0 top-0 -z-50 h-full w-full bg-gradient-to-br from-primary-500 to-accent-600 opacity-0 transition-opacity [transition-duration:1s] group-hover:opacity-100 group-active:opacity-0"
+								></div>
+								<div
+									class="absolute left-0 top-0 -z-50 h-full w-full bg-gradient-to-br from-primary-400 to-accent-500 opacity-0 transition-opacity [transition-duration:0.5s] group-active:opacity-100"
+								></div>
+								<div class="relative px-5 py-1.5 lg:px-6">
+									<span class="z-0 pr-2 lg:inline">
+										<i class="fa fa-play"></i>
+									</span>
+									Ejecutar
+								</div>
+							</button>
+						</nav>
+					</div>
+				</div>
+			</header>
+
+			<nav class="fixed bottom-0 right-2 z-30 h-max flex-col place-items-end md:hidden">
+				<button
+					onclick="gotoPSDocs()"
+					class="group my-2 block h-11 w-11 flex-initial overflow-clip text-nowrap rounded-md bg-secondary-400 drop-shadow-lg transition-all hover:w-max active:bg-accent-400 hover:px-4 sm:h-14 sm:w-14"
+				>
+					<span class="sm:hidden"><i class="fa fa-book"></i></span>
+					<span class="hidden sm:inline"><i class="fa fa-book fa-xl"></i></span>
+					<span class="hidden pl-2 sm:text-xl sm:font-light group-hover:inline-block">Aprender</span>
+				</button>
+				<button
+					onclick="exportPS()"
+					class="group my-2 block h-11 w-11 flex-initial overflow-clip text-nowrap rounded-md bg-secondary-400 drop-shadow-lg transition-all hover:w-max active:bg-accent-400 hover:px-4 sm:h-14 sm:w-14"
+				>
+					<span class="sm:hidden"><i class="fa fa-file-export"></i></span>
+					<span class="hidden sm:inline"><i class="fa fa-file-export fa-xl"></i></span>
+					<span class="hidden pl-2 sm:text-xl sm:font-light group-hover:inline-block">Exportar</span>
+				</button>
+				<button
+					onclick="executePS()"
+					class="group my-2 block h-11 w-11 flex-initial overflow-clip text-nowrap rounded-md bg-gradient-to-br from-primary-500 to-accent-500 drop-shadow-lg transition-all [transition-duration:.6s] hover:w-max hover:scale-[1.02] hover:px-4 hover:shadow-[#2c2f33_0px_0px_22pt] active:scale-[1.05] active:shadow-[#d04557_0px_0px_36pt] sm:h-14 sm:w-14"
+				>
+					<div class="absolute left-0 top-0 -z-50 h-full w-full bg-primary-500"></div>
+					<div
+						class="absolute left-0 top-0 -z-50 h-full w-full bg-gradient-to-br from-primary-500 to-accent-600 opacity-0 transition-opacity [transition-duration:0.6s] group-hover:opacity-100 group-active:opacity-0"
+					></div>
+					<div
+						class="absolute left-0 top-0 -z-50 h-full w-full bg-gradient-to-br from-primary-400 to-accent-500 opacity-0 transition-opacity [transition-duration:0.4s] group-active:opacity-100"
+					></div>
+					<span class="sm:hidden"><i class="fa fa-play"></i></span>
+					<span class="hidden sm:inline"><i class="fa fa-play fa-xl"></i></span>
+					<span class="hidden pl-2 sm:text-xl group-hover:inline-block">Ejecutar</span>
+				</button>
+			</nav>
+
+			<main class="w-full px-8 sm:px-12 md:px-4 md:mx-auto md:w-11/12 md:max-w-[1280px]">
+				<section
+					id="playground"
+					class="flex-col justify-between md:flex md:h-[32rem] md:flex-row lg:h-[40rem]"
+				>
+					<div
+						class="mb-3 mt-3 sm:mt-6 h-[34rem] flex-auto sm:h-[40rem] md:my-6 md:mr-2 md:h-auto md:w-2/3 md:flex-grow"
+					>
+						<textarea id="editor">
+cargar dibujar con Función()
+  crear Lista mt
+  repetir hh veces
+    crear Lista fila
+    repetir ww veces
+      extender fila con "⬛"
+    fin
+    extender mt con fila
+  fin
+
+  cargar pintar con Función(p, car)
+    cargar mt.(p.py).(p.px) con car
+  fin
+
+  usar jgs->paraCada(p => pintar(p, "🟢"))
+
+  si mt.(ch.py).(ch.px) es "🟢"
+    usar pintar(ch, "🔴")
+  sino
+    usar pintar(ch, "🍒")
+  fin
+
+  usar pintar(jg, "🟡")
+
+  devolver "**Puntos:** " + puntos + "\n" + mt.mapear(f => f.unir("")).unir("\n")
+fin
+
+cargar Cereza con Función()
+  cargar c con Registro px: dado(ww), py: dado(hh)
+  si jg.px es c.px y jg.py es c.py
+    cargar c.py con (jg.py es 0 y dado(1, hh)) o elegir(dado(0, jg.py), (jg.py es (hh - 1) y (hh - 1)) o dado(jg.py + 1, hh))
+  fin
+  devolver c
+fin
+
+cargar ww con 8
+cargar hh con 6
+cargar puntos con puntos o 0
+cargar jg con jg o Registro largo: 3, px: (ww / 2).redondear(), py: (hh / 2).redondear()
+cargar jgs con jgs o Lista
+cargar ch con ch o Cereza()
+
+leer texto opcional m en minúscula
+
+cargar pjx con jg.px
+cargar pjy con jg.py
+sumar jg.px con (m=='d') - (m=='a')
+sumar jg.py con (m=='s') - (m=='w')
+
+si pjx no es jg.px o pjy no es jg.py
+  si jgs.largo < jg.largo
+    extender jgs con Registro px: pjx, py: pjy
+  sino
+    para i con 0 mientras i < (jgs.largo - 1) sumar i
+      cargar jgs.(i).px con jgs.(i + 1).px
+      cargar jgs.(i).py con jgs.(i + 1).py
+    fin
+  fin
+  cargar jgs.(jgs.largo - 1).px con pjx
+  cargar jgs.(jgs.largo - 1).py con pjy
+fin
+
+si jgs->alguno(p => p.px es jg.px y p.py es jg.py) o jg.px < 0 o jg.px >= ww o jg.py < 0 o jg.py >= hh
+  enviar "**Perdiste con un largo de: ** " + jg.largo
+  borrar jg
+  borrar jgs
+  borrar puntos
+  terminar
+fin
+
+si jg.px es ch.px y jg.py es ch.py
+  sumar jg.largo
+  sumar puntos
+  borrar ch
+  enviar dibujar()
+sino
+  guardar ch
+  enviar dibujar()
+fin
+
+guardar jg
+guardar jgs
+guardar puntos
+</textarea
+						>
+					</div>
+					<div
+						class="mb-3 sm:mb-6 mt-3 h-64 w-full flex-initial rounded-md sm:h-72 md:my-6 md:ml-2 md:h-auto md:w-1/3 md:flex-initial"
+					>
+						<textarea
+							class="cm-s-psdocs CodeMirror h-full w-full resize-none"
+							id="output"
+						></textarea>
+						<script src="scripts/editor.js"></script>
+					</div>
+				</section>
+			</main>
+			<footer
+				class="mx-4 my-1 sm:my-2 border-t border-t-secondary-600 py-2 text-center text-[10pt] text-secondary-300"
+			>
+				<span>
+					<a
+						href="https://github.com/PapitaConPure/ps"
+						target="_blank"
+						aria-label="Visitar el repositorio de GitHub de esta página"
+					>
+						<i class="fa fa-brands fa-github fa-lg"></i>
+					</a>
+				</span>
+				•
+				<span>2024</span>
+				•
+				<a
+					href="https://github.com/PapitaConPure"
+					target="_blank"
+					class="hover:underline"
+					aria-label="Visitar el perfil de GitHub de Papita con Puré"
+				>
+					Papita con Puré
+				</a>
+			</footer>
+		</div>
+	</body>
 </html>

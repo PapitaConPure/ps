@@ -1,0 +1,26 @@
+{
+  "name": "ps",
+  "version": "1.1.0",
+  "description": "PuréScript (no confundir con PureScript) es un lenguaje de scripting de comandos personalizados de servidor para Bot de Puré",
+  "main": "index.js",
+  "scripts": {
+    "build": "npx tailwindcss -i ./docs/styles.css -o ./docs/output.css --minify",
+    "build-watch": "npx tailwindcss -i ./docs/styles.css -o ./docs/output.css --minify -w",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "prettier-plugin-tailwindcss": "^0.6.8",
+    "tailwindcss": "^3.4.14"
+  },
+  "prettier": {
+    "plugins": [
+      "prettier-plugin-tailwindcss"
+    ],
+    "trailingComma": "all",
+    "useTabs": true,
+    "tabWidth": 4,
+    "singleQuote": true,
+    "printWidth": 100
+  }
+}

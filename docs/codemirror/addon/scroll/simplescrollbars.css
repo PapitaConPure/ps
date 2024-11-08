@@ -1,0 +1,44 @@
+.CodeMirror-overlayscroll {
+  --scrollbar-size: 8px;
+}
+
+@media (min-width: 768px) {
+  .CodeMirror-overlayscroll {
+    --scrollbar-size: 16px;
+  }
+}
+
+.CodeMirror-overlayscroll .CodeMirror-scrollbar-filler, .CodeMirror-overlayscroll .CodeMirror-gutter-filler {
+  display: none;
+}
+
+.CodeMirror-overlayscroll-horizontal div, .CodeMirror-overlayscroll-vertical div {
+  position: absolute;
+  background: #abacad;
+  border-radius: calc(var(--scrollbar-size) / 2);
+}
+
+.CodeMirror-overlayscroll-horizontal, .CodeMirror-overlayscroll-vertical {
+  position: absolute;
+  z-index: 6;
+  background-color: #232629;
+  border-radius: calc(var(--scrollbar-size) / 2);
+}
+
+.CodeMirror-overlayscroll-horizontal {
+  bottom: 0; left: 0;
+  height: calc(var(--scrollbar-size) / 2);
+}
+.CodeMirror-overlayscroll-horizontal div {
+  bottom: 0;
+  height: 100%;
+}
+
+.CodeMirror-overlayscroll-vertical {
+  right: 0; top: 0;
+  width: calc(var(--scrollbar-size) / 2);
+}
+.CodeMirror-overlayscroll-vertical div {
+  right: 0;
+  width: 100%;
+}

@@ -1,0 +1,118 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.primary-shadow {
+	box-shadow: 0 0 64pt var(--tw-c-primary-500);
+}
+
+/**Zona de texto*/
+.cm-s-psdocs.CodeMirror {
+	@apply min-h-full rounded-md bg-secondary-500 font-code text-xs font-normal text-code-neutral sm:text-sm md:text-xs lg:text-sm;
+}
+
+#playground > * {
+	@apply md:shadow-2xl md:shadow-secondary-700;
+}
+
+.cm-s-psdocs div.CodeMirror-selected {
+	@apply bg-code-hl-select;
+}
+
+.cm-s-psdocs .CodeMirror-selectedtext,
+.cm-s-psdocs .CodeMirror-selected,
+.cm-s-psdocs .CodeMirror-line::selection,
+.cm-s-psdocs .CodeMirror-line > span::selection,
+.cm-s-psdocs .CodeMirror-line > span > span::selection,
+.cm-s-psdocs .CodeMirror-line::-moz-selection,
+.cm-s-psdocs .CodeMirror-line > span::-moz-selection,
+.cm-s-psdocs .CodeMirror-line > span > span::-moz-selection {
+	@apply bg-code-hl-select;
+}
+
+.cm-s-psdocs.CodeMirror pre {
+	@apply pl-1.5;
+}
+
+.cm-s-psdocs .CodeMirror-gutters {
+	@apply border-r-[#4c4d50] bg-[#202325] text-secondary-300;
+}
+
+.cm-s-psdocs .CodeMirror-linenumber {
+	@apply pl-1 pr-2.5 text-secondary-300;
+}
+
+.cm-s-psdocs .CodeMirror-activeline .CodeMirror-linenumber.CodeMirror-gutter-elt {
+	@apply bg-yellow-300 text-blue-900;
+}
+
+.cm-s-psdocs .CodeMirror-linenumber {
+	@apply text-secondary-400;
+}
+
+.cm-s-psdocs .CodeMirror-cursor {
+	@apply border-l-2 border-primary-300;
+}
+
+.cm-s-psdocs .cm-searching {
+	@apply bg-primary-400 outline-1 outline-accent-400;
+}
+
+.cm-s-psdocs .cm-searching.CodeMirror-selectedtext {
+	@apply bg-primary-300 outline-1 outline-accent-200;
+}
+
+.cm-s-psdocs .cm-stmt-general {
+	@apply font-semibold text-code-stmt;
+}
+
+.cm-s-psdocs .cm-stmt-control,
+.cm-s-psdocs .cm-stmt-control2 {
+	@apply font-semibold text-code-ctrl;
+}
+
+.cm-s-psdocs .cm-expr {
+	@apply font-light text-code-expr;
+}
+
+.cm-s-psdocs .cm-keyword,
+.cm-s-psdocs .cm-operator {
+	@apply text-code-neutral;
+}
+
+.cm-s-psdocs .cm-atom,
+.cm-s-psdocs .cm-number {
+	@apply text-code-value;
+}
+
+.cm-s-psdocs span.cm-type {
+	@apply text-code-type;
+}
+
+.cm-s-psdocs .cm-symbol {
+	@apply text-code-symbol;
+}
+
+.cm-s-psdocs .cm-function {
+	@apply text-code-function;
+}
+
+.cm-s-psdocs .cm-comment {
+	@apply font-normal italic text-code-comment;
+}
+
+.cm-s-psdocs .cm-string {
+	@apply text-code-text;
+}
+
+.cm-s-psdocs .cm-string2 {
+	@apply text-code-value;
+}
+
+.cm-s-psdocs .cm-link {
+	@apply underline;
+}
+
+.cm-s-psdocs .cm-error {
+	@apply border-b border-dotted border-code-error bg-[var(--tw-col-code-hl-error)] text-white;
+}
