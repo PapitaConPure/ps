@@ -84,7 +84,7 @@ const TokenKinds = /**@type {const}*/({
 });
 /**
  * Representa un tipo de token de lexer
- * @typedef {import('types').ValuesOf<typeof TokenKinds>} TokenKind
+ * @typedef {import('../util/types').ValuesOf<typeof TokenKinds>} TokenKind
  */
 
 /**@type {Map<TokenKind, String>}*/
@@ -224,7 +224,7 @@ const DataKindValues = /**@type {const}*/({
 });
 /**
  * Representa un tipo de Token Léxico de PuréScript
- * @typedef {import('types').ValuesOf<DataKindValues>} DataKindValue
+ * @typedef {import('../util/types').ValuesOf<DataKindValues>} DataKindValue
  */
 
 /**Representa un Token Léxico de PuréScript*/

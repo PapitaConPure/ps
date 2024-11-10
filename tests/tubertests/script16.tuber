@@ -1,0 +1,6 @@
+CREAR Marco m
+
+USAR m->asignarAutor("Papita")
+USAR m->agregar("Hola", "Mundo")
+
+ENVIAR m

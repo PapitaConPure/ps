@@ -5,6 +5,7 @@ const { NativeFunctions } = require('./functions/functions');
 const { NativeMethodsLookup } = require('./methods/methods');
 const { makeDiscordMember, makeDiscordChannel, makeDiscordGuild } = require('./registryPrefabs');
 const { makeKindFromValue } = require('./nativeUtils');
+const { EnvironmentProvider } = require('./environmentProvider');
 
 /**
  * @param {Scope} scope
@@ -24,19 +25,16 @@ function declareNatives(scope) {
 
 /**
  * @param {Scope} scope
- * @param {import('../../../../commands/Commons/typings').ComplexCommandRequest} request
- * @param {Map<String, import('../values').RuntimeValue>} savedData
+ * @param {EnvironmentProvider} dataProvider
+ * @param {Map<String, import('../values').RuntimeValue>?} savedData
  */
-async function declareContext(scope, request, savedData = null) {
-	if(request != null) {
-		scope.assignVariable('usuario', await makeDiscordMember(request.member));
-		scope.assignVariable('canal', makeDiscordChannel(request.channel));
-		scope.assignVariable('servidor', await makeDiscordGuild(request.guild));
-	} else {
-		scope.assignVariable('usuario', makeRegistry(new Map()));
-		scope.assignVariable('canal', makeRegistry(new Map()));
-		scope.assignVariable('servidor', makeRegistry(new Map()));
-	}
+async function declareContext(scope, dataProvider, savedData = null) {
+	const member = dataProvider.getMember();
+	const channel = dataProvider.getChannel();
+	const guild = dataProvider.getGuild();
+	member && scope.assignVariable('usuario', await makeDiscordMember(member));
+	channel && scope.assignVariable('canal', makeDiscordChannel(channel));
+	guild && scope.assignVariable('servidor', await makeDiscordGuild(guild));
 	
 	if(savedData != null) {
 		savedData.forEach((node, key) => {

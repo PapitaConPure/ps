@@ -1,5 +1,5 @@
-const { shortenText } = require('../../func');
-const { EmbedBuilder } = require('discord.js');
+const { shortenText } = require('./utils');
+const { EmbedData } = require('../embedData');
 const chalk = require('chalk');
 
 const exChalk = {
@@ -9,8 +9,11 @@ const exChalk = {
 	peach: chalk.rgb(237, 130, 157),
 };
 
+/**
+ * @param {*} obj
+ */
 function isInstance(obj) {
-	return obj?.constructor?.name && ![ 'Object', 'Array', 'Map', 'EmbedBuilder' ].includes(obj.constructor.name);
+	return obj?.constructor?.name && ![ 'Object', 'Array', 'Map', 'EmbedData' ].includes(obj.constructor.name);
 }
 
 /**
@@ -153,7 +156,7 @@ function stringifyPSAST(obj, indentSize = 2, indent = indentSize) {
 	if(obj instanceof Map)
 		return stringifyPSASTMap(obj, indentSize, indent);
 
-	if(obj instanceof EmbedBuilder)
+	if(obj instanceof EmbedData)
 		return stringifyPSAST(obj.data, indentSize, indent);
 
 	if(isInstance(obj))

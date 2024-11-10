@@ -1,9 +1,6 @@
-const { ValueKinds, makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeNada, isNada, isOperable, isInternalOperable, coerceValue } = require('../../values');
+const { ValueKinds, makeNada } = require('../../values');
 const { expectParam } = require('../nativeUtils');
 const { makeDiscordChannel, makeDiscordMember, makeDiscordRole } = require('../registryPrefabs');
-const { Scope } = require('../../scope');
-const { fetchChannel, fetchMember, fetchRole } = require('../../../../../func');
-const { EmbedBuilder } = require('discord.js');
 
 /**
  * @typedef {import('../../values').NumberValue} NumberValue
@@ -18,59 +15,41 @@ const { EmbedBuilder } = require('discord.js');
  */
 
 /**
- * 
- * @param {null} self
- * @param {[ TextValue ]} args 
- * @param {Scope} scope 
- * @returns {RegistryValue | NadaValue}
+ * @template {Array<RuntimeValue>} [TArg=Array<RuntimeValue>]
+ * @template {RuntimeValue} [TResult=RuntimeValue]
+ * @typedef {import('../../values').NativeFunction<*, TArg, TResult>} NativeFunction
  */
+
+/**@type {NativeFunction<[ TextValue ], RegistryValue | NadaValue>}*/
 function buscarCanal(self, [ búsqueda ], scope) {
 	const búsquedaResult = expectParam('búsqueda', búsqueda, ValueKinds.TEXT, scope);
-	
-	if(scope.interpreter.request == null)
-		return makeNada();
 
-    const channel = fetchChannel(búsquedaResult.value, scope.interpreter.request.guild);
+    const channel = scope.interpreter.provider.fetchChannel(búsquedaResult.value);
+
     if(!channel)
         return makeNada();
 
     return makeDiscordChannel(channel);
 }
 
-/**
- * 
- * @param {null} self
- * @param {[ TextValue ]} args 
- * @param {Scope} scope 
- * @returns {RegistryValue | NadaValue}
- */
+/**@type {NativeFunction<[ TextValue ], RegistryValue | NadaValue>}*/
 function buscarMiembro(self, [ búsqueda ], scope) {
 	const búsquedaResult = expectParam('búsqueda', búsqueda, ValueKinds.TEXT, scope);
 	
-	if(scope.interpreter.request == null)
-		return makeNada();
+    const member = scope.interpreter.provider.fetchMember(búsquedaResult.value);
 
-    const member = fetchMember(búsquedaResult.value, scope.interpreter.request);
     if(!member)
         return makeNada();
 
 	return makeDiscordMember(member);
 }
 
-/**
- * 
- * @param {null} self
- * @param {[ TextValue ]} args 
- * @param {Scope} scope 
- * @returns {RegistryValue | NadaValue}
- */
+/**@type {NativeFunction<[ TextValue ], RegistryValue | NadaValue>}*/
 function buscarRol(self, [ búsqueda ], scope) {
 	const búsquedaResult = expectParam('búsqueda', búsqueda, ValueKinds.TEXT, scope);
 	
-	if(scope.interpreter.request == null)
-		return makeNada();
+    const role = scope.interpreter.provider.fetchRole(búsquedaResult.value);
 
-    const role = fetchRole(búsquedaResult.value, scope.interpreter.request.guild);
     if(!role)
         return makeNada();
 	
@@ -79,9 +58,9 @@ function buscarRol(self, [ búsqueda ], scope) {
 
 /**@type {Array<{ id: String, fn: import('../../values').NativeFunction }>}*/
 const discordFunctions = [
-	{ id: 'buscarCanal', fn: buscarCanal },
-	{ id: 'buscarMiembro', fn: buscarMiembro },
-	{ id: 'buscarRol', fn: buscarRol },
+	{ id: 'buscarCanal',   fn: /**@type {NativeFunction}*/(buscarCanal) },
+	{ id: 'buscarMiembro', fn: /**@type {NativeFunction}*/(buscarMiembro) },
+	{ id: 'buscarRol',     fn: /**@type {NativeFunction}*/(buscarRol) },
 ];
 
 module.exports = {

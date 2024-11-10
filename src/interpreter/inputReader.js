@@ -42,7 +42,7 @@ class Input {
 	#optional;
 	/**@type {Boolean}*/
 	#spread;
-	/**@type {String}*/
+	/**@type {String?}*/
 	#desc;
 
 	/**
@@ -177,7 +177,7 @@ class InputReader {
 	}
 
 	get spreadInputName() {
-		return this.#spreadInput.name;
+		return this.#spreadInput?.name;
 	}
 
 	/**@type {(node: import('../ast/statements').ReadStatement, scope: Scope) => import('./values').RuntimeValue}}*/
@@ -230,7 +230,7 @@ class InputReader {
 
 	/**
 	 * Marca la Entrada bajo en identificador especificado como Extensiva
-	 * @param {String} name
+	 * @param {string} name
 	 */
 	setInputAsSpread(name) {
 		if(this.#spreadInput != null) {
@@ -241,6 +241,9 @@ class InputReader {
 		}
 
 		const input = this.#inputLookup.get(name);
+		if(!input)
+			throw 'Entrada inexistente';
+
 		this.#spreadInput = input.setSpread(true);
 	}
 }
@@ -248,7 +251,7 @@ class InputReader {
 class TestDriveInputReader extends InputReader {
 	/**
 	 * @param {import('./interpreter').Interpreter} interpreter
-	 * @param {Array<String>} args
+	 * @param {Array<string>?} [args]
 	 */
 	constructor(interpreter, args) {
 		super(interpreter, args ?? []);
@@ -287,10 +290,10 @@ class TestDriveInputReader extends InputReader {
 class ProductionInputReader extends InputReader {
 	/**
 	 * @param {import('./interpreter').Interpreter} interpreter
-	 * @param {Array<String>} args
+	 * @param {Array<string>?} [args]
 	 */
 	constructor(interpreter, args) {
-		super(interpreter, args);
+		super(interpreter, args ?? []);
 	}
 
 	/**
@@ -331,8 +334,8 @@ class ProductionInputReader extends InputReader {
 
 	/**
 	 * 
-	 * @param {String} name 
-	 * @param {String} arg 
+	 * @param {string} name 
+	 * @param {string} arg 
 	 * @param {import('./values').ValueKind} valueKind
 	 * @returns {import('./values').RuntimeValue}
 	 */
@@ -370,7 +373,7 @@ class ProductionInputReader extends InputReader {
 
 /**
  * Error de Entrada. Para cuando un problema con el Tubérculo se ocasiona por una Entrada inválida u omisa de parte del Usuario
- * @param {String} message
+ * @param {string} message
  */
 function TuberInputError(message) {
 	const err = new Error(message);

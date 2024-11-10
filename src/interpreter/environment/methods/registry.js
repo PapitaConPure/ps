@@ -1,6 +1,5 @@
 const { ValueKinds, makeText, makeBoolean, makeList, makeRegistry, coerceValue, makeNada } = require('../../values');
 const { expectParam, makePredicateFn } = require('../nativeUtils');
-const { Scope } = require('../../scope');
 
 /**
  * @typedef {import('../../values').NumberValue} NumberValue
@@ -15,46 +14,32 @@ const { Scope } = require('../../scope');
  */
 
 /**
- * @param {RegistryValue} self
- * @param {[]} args
- * @param {Scope} scope
- * @returns {ListValue}
+ * @template {Array<RuntimeValue>} [TArg=Array<RuntimeValue>]
+ * @template {RuntimeValue} [TResult=RuntimeValue]
+ * @typedef {import('../../values').NativeFunction<RegistryValue, TArg, TResult>} RegistryMethod
  */
+
+/**@type {RegistryMethod<[], ListValue>}*/
 function registroClaves(self, [], scope) {
 	const keysArray = [ ...self.entries.keys() ];
 	const keyRVals = keysArray.map(key => makeText(key));
 	return makeList(keyRVals);
 }
 
-/**
- * @param {RegistryValue} self
- * @param {[ TextValue ]} args
- * @param {Scope} scope
- * @returns {BooleanValue}
- */
+/**@type {RegistryMethod<[ TextValue ], BooleanValue>}*/
 function registroContiene(self, [ clave ], scope) {
 	const claveResult = expectParam('clave', clave, ValueKinds.TEXT, scope)
 	return makeBoolean(self.entries.has(claveResult.value));
 }
 
-/**
- * @param {RegistryValue} self
- * @param {[]} args
- * @param {Scope} scope
- * @returns {ListValue}
- */
+/**@type {RegistryMethod<[], ListValue>}*/
 function registroEntradas(self, [], scope) {
 	const entriesArray = [ ...self.entries.entries() ];
 	const entriesRVal = entriesArray.map(([ k, v ]) => makeList([ makeText(k), v ]));
 	return makeList(entriesRVal);
 }
 
-/**
- * @param {RegistryValue} self
- * @param {[ FunctionValue ]} args
- * @param {Scope} scope
- * @returns {RegistryValue}
- */
+/**@type {RegistryMethod<[ FunctionValue ], RegistryValue>}*/
 function registroFiltrar(self, [ predicado ], scope) {
 	const fn = makePredicateFn('filtro', predicado, scope);
 
@@ -69,12 +54,7 @@ function registroFiltrar(self, [ predicado ], scope) {
 	return makeRegistry(filtered);
 }
 
-/**
- * @param {RegistryValue} self
- * @param {[ FunctionValue ]} args
- * @param {Scope} scope
- * @returns {NadaValue}
- */
+/**@type {RegistryMethod<[ FunctionValue ], NadaValue>}*/
 function registroParaCada(self, [ predicado ], scope) {
 	const fn = makePredicateFn('procedimiento', predicado, scope);
 
@@ -85,40 +65,25 @@ function registroParaCada(self, [ predicado ], scope) {
 	return makeNada();
 }
 
-/**
- * @param {RegistryValue} self
- * @param {[ TextValue ]} args
- * @param {Scope} scope
- * @returns {BooleanValue}
- */
+/**@type {RegistryMethod<[ TextValue ], BooleanValue>}*/
 function registroQuitar(self, [ clave ], scope) {
 	const claveResult = expectParam('clave', clave, ValueKinds.TEXT, scope);
 	const deleted = self.entries.delete(claveResult.value);
 	return makeBoolean(deleted);
 }
 
-/**
- * @param {RegistryValue} self
- * @param {[]} args
- * @param {Scope} scope
- * @returns {BooleanValue}
- */
+/**@type {RegistryMethod<[], BooleanValue>}*/
 function registroVacío(self, [], scope) {
 	return makeBoolean(self.entries.size === 0);
 }
 
-/**
- * @param {RegistryValue} self
- * @param {[]} args
- * @param {Scope} scope
- * @returns {ListValue}
- */
+/**@type {RegistryMethod<[], ListValue>}*/
 function registroValores(self, [], scope) {
 	const valuesArray = [ ...self.entries.values() ];
 	return makeList(valuesArray);
 }
 
-/**@type Map<String, import('../../values').NativeFunction<RegistryValue>>*/
+/**@type {Map<String, RegistryMethod>}*/
 const registryMethods = new Map();
 registryMethods
 	.set('claves', registroClaves)

@@ -3,24 +3,22 @@ const { Scope } = require('./scope');
 const { TokenKinds } = require('../lexer/tokens');
 const { ExpressionKinds } = require('../ast/expressions');
 const { StatementKinds } = require('../ast/statements');
-const { ValueKinds, makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeEmbed, makeNada, coerceValue, isInternalOperable, makeNativeFunction, makeFunction, makeLambda, ValueKindTranslationLookups, defaultValueOf } = require('./values');
+const { ValueKinds, makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeNada, coerceValue, isInternalOperable, makeNativeFunction, makeFunction, makeLambda, ValueKindTranslationLookups } = require('./values');
 const { UnaryOperationLookups, BinaryOperationLookups, ValueKindLookups } = require('./lookups');
 const { NativeMethodsLookup } = require('./environment/environment');
-const { shortenText } = require('../../../func');
-const Ut = require('../../../utils');
+const { iota, shortenText } = require('../util/utils.js');
+const { EnvironmentProvider } = require('./environment/environmentProvider.js');
 
 const Stops = /**@type {const}*/({
-	NONE: Ut.Iota(0),
-	BREAK: Ut.iota,
-	RETURN: Ut.iota,
-	ABORT: Ut.iota,
+	NONE: iota(0),
+	BREAK: iota(),
+	RETURN: iota(),
+	ABORT: iota(),
 });
-/**@typedef {import('types').ValuesOf<Stops>} StopKind*/
+/**@typedef {import('../util/types.js').ValuesOf<Stops>} StopKind*/
 
 //#region Atajos de Tipado
 /**
- * @typedef {import('../../../commands/Commons/typings').ComplexCommandRequest} ComplexCommandRequest
- * 
  * @typedef {import('../lexer/tokens').Token} Token
  * @typedef {import('../ast/statements').Statement} Statement
  * @typedef {import('../ast/expressions').Expression} Expression
@@ -69,8 +67,8 @@ class Interpreter {
 	#saveTable;
 	/**@type {String}*/
 	#source;
-	/**@type {ComplexCommandRequest?}*/
-	#request;
+	/**@type {EnvironmentProvider}*/
+	#provider;
 	/**@type {StopKind}*/
 	#stop;
 	/**@type {Number}*/
@@ -83,14 +81,13 @@ class Interpreter {
 		this.#sendStack = [];
 		this.#saveTable = new Map();
 		this.#source = '';
-		this.#request = null;
 		this.#stop = Stops.NONE;
 		this.#quota = 0;
 		this.#lastNodes = [];
 	}
 
-	get request() {
-		return this.#request;
+	get provider() {
+		return this.#provider;
 	}
 
 	get hasArgs() {
@@ -98,8 +95,8 @@ class Interpreter {
 	}
 
 	/**
-	 * @param {String} message
-	 * @param {Expression | Statement | Token} node
+	 * @param {string} message
+	 * @param {Expression | Statement | Token | null} [node]
 	 */
 	TuberInterpreterError(message, node = null) {
 		node ??= this.#lastNodes[0];
@@ -115,8 +112,8 @@ class Interpreter {
 	}
 
 	/**
-	 * @param {String} message
-	 * @param {Expression | Statement | Token} node
+	 * @param {string} message
+	 * @param {Expression | Statement | Token | null} [node]
 	 */
 	TuberSendError(message, node = null) {
 		node ??= this.#lastNodes[0];
@@ -132,7 +129,7 @@ class Interpreter {
 	/**
 	 * 
 	 * @param {Expression | Statement | Token} node
-	 * @returns {{ lineString: String, offset: Number, markLength: Number }}
+	 * @returns {{ lineString: string?, offset: number, markLength: number }}
 	 */
 	#setupInterpreterErrorDisplay(node) {
 		if(node == null) {
@@ -186,16 +183,16 @@ class Interpreter {
 	/**
 	 * 
 	 * @param {Expression | Statement | Token} node
-	 * @param {String} lineString 
-	 * @param {Number} offset 
-	 * @param {Number} markLength 
+	 * @param {string?} lineString 
+	 * @param {number} offset 
+	 * @param {number} markLength 
 	 */
 	#formatInterpreterErrorDisplay(node, lineString, offset, markLength) {
 		if(node == null)
 			return '```arm\n//No hay información adicional para mostrar...\n```';
 
-		const col = Math.max(0, Math.min(node.column - offset - 1, lineString.length));
-		const rest = Math.max(1, Math.min(col + markLength, lineString.length) - col);
+		const col = Math.max(0, Math.min(node.column - offset - 1, lineString?.length || 0));
+		const rest = Math.max(1, Math.min(col + markLength, lineString?.length || 1) - col);
 
 		return [
 			'```arm',
@@ -211,7 +208,7 @@ class Interpreter {
 
 		while(this.#lastNodes.length > 0 && stackTrace.length < 6) {
 			const node = this.forgetLastNode();
-			if(node.kind === ExpressionKinds.CALL)
+			if(node?.kind === ExpressionKinds.CALL)
 				stackTrace.push(`- En \`${this.astString(node.fn)}\``);
 		}
 
@@ -222,12 +219,12 @@ class Interpreter {
 
 	/**
 	 * @template {import('./values').ValueKind} T
-	 * @param {RuntimeValue} value
+	 * @param {RuntimeValue | null | undefined} value
 	 * @param {T} valueKind
 	 * @returns {value is AssertedRuntimeValue<T>}
 	 */
 	is(value, valueKind) {
-		return value.kind === valueKind;
+		return value?.kind === valueKind;
 	}
 
 	/**
@@ -289,13 +286,13 @@ class Interpreter {
 	 * Evalúa un nodo programa
 	 * @param {ProgramStatement} ast
 	 * @param {Scope} scope
-	 * @param {String} source
-	 * @param {ComplexCommandRequest} request
-	 * @param {Array<String>} args
-	 * @param {Boolean} [isTestDrive]
+	 * @param {string} source
+	 * @param {EnvironmentProvider} provider
+	 * @param {Array<string>?} [args]
+	 * @param {boolean} [isTestDrive]
 	 * @returns {EvaluationResult}
 	 */
-	evaluateProgram(ast, scope, source, request, args, isTestDrive = false) {
+	evaluateProgram(ast, scope, source, provider, args = undefined, isTestDrive = false) {
 		if(ast == null || ast.kind !== StatementKinds.PROGRAM || ast.body == null)
 			throw `Se esperaba AST válido para interpretar`;
 
@@ -306,7 +303,7 @@ class Interpreter {
 		this.#errorStack = [];
 		this.#sendStack = [];
 		this.#source = source.replace(/(^\s+)|(\s+$)/g, '');
-		this.#request = request;
+		this.#provider = provider;
 		this.#stop = Stops.NONE;
 		this.#quota = 1000;
 
@@ -433,7 +430,7 @@ class Interpreter {
 	 * Evalúa una sentencia o expresión y devuelve un valor extraído de las mismas
 	 * @param {Expression} node
 	 * @param {Scope} scope
-	 * @param {Boolean} [mustBeDeclared]
+	 * @param {boolean} [mustBeDeclared]
 	 * @returns {RuntimeValue}
 	 */
 	evaluate(node, scope, mustBeDeclared = true) {
@@ -487,7 +484,7 @@ class Interpreter {
 			break;
 			
 		case ExpressionKinds.CAST:
-			returnValue = this.#evaluateCast(node, scope, mustBeDeclared);
+			returnValue = this.#evaluateCast(node, scope);
 			break;
 
 		case ExpressionKinds.SEQUENCE:
@@ -623,7 +620,7 @@ class Interpreter {
 		const forEachScope = new Scope(this, scope);
 		const getFn = this.is(containerValue, ValueKinds.LIST)
 			? (idx => containerValue.elements[idx])
-			: (name => makeList([ makeText(name), containerValue.entries.get(name) ]));
+			: (name => makeList([ makeText(name), /**@type {RuntimeValue}*/(containerValue.entries.get(name)) ]));
 
 		for(const entryName of entryNames) {
 			forEachScope.assignVariable(identifier, getFn(entryName));
@@ -706,7 +703,6 @@ class Interpreter {
 	 * 
 	 * @param {import('../ast/statements').ExpressionStatement} node 
 	 * @param {Scope} scope 
-	 * @returns 
 	 */
 	#evaluateExpressionStatement(node, scope) {
 		this.evaluate(node.expression, scope);
@@ -745,7 +741,7 @@ class Interpreter {
 	#evaluateDeclarationStatement(node, scope) {
 		const { dataKind, declarations } = node;
 
-		const valueKind = dataKind != null ? ValueKindLookups.get(dataKind.kind) : ValueKinds.NADA;
+		const valueKind = dataKind != null ? (ValueKindLookups.get(dataKind.kind) ?? ValueKinds.NADA) : ValueKinds.NADA;
 		for(const declaration of declarations)
 			scope.declareVariable(declaration, valueKind);
 
@@ -854,9 +850,8 @@ class Interpreter {
 			}
 
 			const operation = BinaryOperationLookups.get(operator.kind);
-
-
-			receptionValue = operation(this, receptorValue, receptionValue, receptor, reception);
+			if(!operation) throw 'Operación binaria desconocida';
+			receptionValue = operation(this, receptorValue, receptionValue, receptor, /**@type {Expression}*/(reception));
 		}
 
 		this.#assignValueToExpression(receptor, receptionValue, scope);
@@ -923,7 +918,7 @@ class Interpreter {
 	#evaluateStopStatement(node, scope) {
 		const { condition, stopMessage } = node;
 
-		const conditionValue = coerceValue(this, this.evaluate(condition, scope, false), ValueKinds.BOOLEAN);
+		const conditionValue = condition ? coerceValue(this, this.evaluate(condition, scope, false), ValueKinds.BOOLEAN) : makeBoolean(true);
 		const stopMessageValue = coerceValue(this, this.evaluate(stopMessage, scope), ValueKinds.TEXT);
 
 		if(conditionValue.value) {
@@ -1073,10 +1068,11 @@ class Interpreter {
 	 * @param {import('../ast/expressions').CastExpression} node 
 	 * @param {Scope} scope
 	 */
-	#evaluateCast(node, scope, mustBeDeclared = true) {
+	#evaluateCast(node, scope) {
 		const { argument, as } = node;
 		const value = this.evaluate(argument, scope, false);
 		const valueKind = ValueKindLookups.get(as.kind);
+		if(!valueKind) throw 'Tipo de valor inválido al castear';
 		return /**@type {RuntimeValue}*/(coerceValue(this, value, valueKind));
 	}
 
@@ -1146,13 +1142,12 @@ class Interpreter {
 			const method = this.#tryFindNativeMethod(holderValue, keyString);
 			if(method) return method;
 
-			if(holderValue.entries.has(keyString)) {
-				const value = holderValue.entries.get(keyString);
-				
-				if(this.is(value, ValueKinds.NATIVE_FN))
-					return value.with(holderValue);
+			const entryValue = holderValue.entries.get(keyString);
+			if(entryValue) {
+				if(this.is(entryValue, ValueKinds.NATIVE_FN))
+					return entryValue.with(holderValue);
 	
-				return value;
+				return entryValue;
 			}
 			
 			if(keyString === 'largo' || keyString === 'tamaño')
@@ -1163,7 +1158,7 @@ class Interpreter {
 
 		case ValueKinds.EMBED: {
 			if(keyString === 'largo')
-				return makeNumber(holderValue.value.data.fields.length);
+				return makeNumber(holderValue.value.data.fields?.length || 0);
 
 			const method = this.#tryFindNativeMethod(holderValue, keyString);
 			if(method) return method;
@@ -1229,7 +1224,7 @@ class Interpreter {
 
 		if(this.is(fnValue, ValueKinds.NATIVE_FN)) {
 			const fnScope = new Scope(this, scope);
-			returnedValue = fnValue.call(fnValue.self, argValues, fnScope);
+			returnedValue = fnValue.call(fnValue.self ?? makeNada(), argValues, fnScope);
 		} else {
 			let fnScope;
 
@@ -1272,10 +1267,11 @@ class Interpreter {
 	 */
 	#tryFindNativeMethod(value, key) {
 		const lookup = NativeMethodsLookup.get(value.kind);
-		if(lookup.has(key)) {
-			const method = lookup.get(key);
+		if(!lookup) throw 'Tipo de valor inválido al intentar encontrar método nativo para el mismo';
+
+		const method = lookup.get(key);
+		if(method)
 			return makeNativeFunction(value, method);
-		}
 
 		return null;
 	}

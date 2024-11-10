@@ -101,8 +101,252 @@ async function exportPS() {
 	}
 }
 
-function executePS() {
+const {
+	lexer,
+	parser,
+	interpreter,
+	Scope,
+	EnvironmentProvider,
+	declareNatives,
+	declareContext,
+	PSGuild,
+	PSUser,
+	stringifyPSAST,
+	coerceValue,
+} = PuréScript;
+
+/**@implements {EnvironmentProvider}*/
+class BrowserEnvironmentProvider {
+	constructor() {
+		this.guild = new PSGuild({
+			id: '123456789012345678',
+			name: 'Servidor de Prueba',
+			ownerId: '123456789012345684',
+			description: 'Este ser un servidor que realmente no existe',
+			systemChannelId: '123456789012345680',
+			iconUrlHandler: this.#testUrlHandler,
+			bannerUrlHandler: this.#testUrlHandler,
+			splashUrlHandler: this.#testUrlHandler,
+			premiumTier: 0,
+			channels:  [
+				{
+					id: '123456789012345680',
+					name: 'canal-de-prueba-2',
+					nsfw: false,
+				},
+			],
+			roles: [
+				{
+					id: '123456789012345681',
+					name: 'Rol de Prueba 1',
+					iconUrlHandler: (data) => 'https://i.imgur.com/ALNMRS6.png',
+					color: 0x608cf3,
+				},
+				{
+					id: '123456789012345682',
+					name: 'Rol de Prueba 2',
+					iconUrlHandler: (data) => null,
+				},
+			],
+			members: [
+				{
+					user: new PSUser({
+						id: '123456789012345683',
+						username: 'usuario.de.prueba',
+						displayName: 'Usuario de Prueba',
+					}),
+					displayAvatarUrlHandler: (data) => 'https://i.imgur.com/P9eeVWC.png',
+					roleIds: [ '123456789012345682' ],
+				},
+				{
+					user: new PSUser({
+						id: '123456789012345684',
+						username: 'otro.usuario',
+						displayName: 'Otro Usuario',
+					}),
+					nickname: 'Otro Usuario',
+					displayAvatarUrlHandler: (data) => 'https://i.imgur.com/P9eeVWC.png',
+					roleIds: [],
+				},
+			]
+		});
+
+		this.channel = this.guild.registerChannel({
+			id: '123456789012345679',
+			name: 'canal-de-prueba-1',
+			nsfw: false,
+		});
+
+		this.user = new PSUser({
+			id: '651250669390528561',
+			username: 'botdepure',
+		});
+
+		this.member = this.guild.registerMember({
+			user: this.user,
+			nickname: 'Bot de Puré',
+			displayAvatarUrlHandler: (data) => 'https://i.imgur.com/P9eeVWC.png',
+			roleIds: [ '123456789012345681', '123456789012345682' ],
+		});
+	}
+	
+	getGuild() {
+		return this.guild;
+	}
+
+	getChannel() {
+		return this.channel;
+	}
+
+	getUser() {
+		return this.user;
+	}
+
+	getMember() {
+		return this.member;
+	}
+
+	/**@param {string} query*/
+	fetchChannel(query) {
+		if(!isNaN(+query)) {
+			const channel = this.guild.channels.get(query);
+			if(channel) return channel;
+		}
+
+		let bestScore = 0;
+		let bestMatch = null;
+
+		for(const channel of this.guild.channels.values()) {
+			if(channel.name.includes(query) && channel.name.length > bestScore) {
+				bestScore = channel.name.length;
+				bestMatch = channel;
+			}
+		}
+
+		return bestMatch;
+	}
+
+	/**@param {string} query*/
+	fetchRole(query) {
+		if(!isNaN(+query)) {
+			const role = this.guild.roles.get(query);
+			if(role) return role;
+		}
+
+		let bestScore = 0;
+		let bestMatch = null;
+
+		for(const roles of this.guild.roles.values()) {
+			if(roles.name.includes(query) && roles.name.length > bestScore) {
+				bestScore = roles.name.length;
+				bestMatch = roles;
+			}
+		}
+
+		return bestMatch;
+	}
+
+	/**@param {string} query*/
+	fetchMember(query) {
+		if(!isNaN(+query)) {
+			const member = this.guild.members.get(query);
+			if(member) return member;
+		}
+
+		let bestScore = 0;
+		let bestMatch = null;
+
+		for(const member of this.guild.members.values()) {
+			const tryName = (/**@type {string?}*/ name) => {
+				if(name && name.includes(query) && name.length > bestScore) {
+					bestScore = name.length;
+					bestMatch = member;
+					return true;
+				}
+				return false;
+			}
+
+			if(tryName(member.nickname)) continue;
+			if(tryName(member.user.displayName)) continue;
+			if(tryName(member.user.username)) continue;
+		}
+
+		return bestMatch;
+	}
+
+	/**
+	 * @param {import('../src/interpreter/environment/environmentProvider').ImageUrlOptions} data 
+	 */
+	#testUrlHandler(data) {
+		return '';
+	}
+}
+
+function stringifyValue(value) {
+	if(value.kind === 'Nada') return 'Nada';
+	return coerceValue(interpreter, value, 'Text').value;
+}
+
+/**
+ * 
+ * @param {{ content?: string, embeds?: string }} options 
+ */
+function createMessage(options) {
+	const { content = null, embeds = null } = options;
+
+	embeds && message.classList.add('embed-message');
+	outputCont.appendChild(message);
+}
+
+async function executePS() {
 	const puréscript = editor.getDoc().getValue().trim();
-	const outputArea = document.getElementById('output');
-	outputArea.value = `PuréScript:\n\n${puréscript}`;
+	const outputCont = document.getElementById('output');
+	const resultArea = document.getElementById('result');
+
+	outputCont.innerHTML = '';
+
+	try {
+		const tokens = lexer.tokenize(puréscript);
+		const tree = parser.parse(tokens);
+		const scope = new Scope(interpreter);
+		const provider = new BrowserEnvironmentProvider();
+		declareNatives(scope);
+		await declareContext(scope, provider);
+
+		const isTestDrive = true; //PENDIENTE?
+		const args = []; //PENDIENTE
+
+		const result = interpreter.evaluateProgram(tree, scope, puréscript, provider, args, isTestDrive);
+
+		if(!result.sendStack.length) {
+			const notice = document.createElement('div');
+			notice.classList.add('text-message', 'message-error');
+			notice.textContent = 'No se envió ningún mensaje';
+			outputCont.appendChild(notice);
+			return;
+		}
+
+		const contentLines = [];
+		result.sendStack.forEach(value => {
+			if(value.kind === 'Embed') return;
+			contentLines.push(stringifyValue(value));
+		});
+		console.log(contentLines);
+		
+		if(contentLines) {
+			const message = document.createElement('div');
+			message.classList.add('text-message');
+			message.textContent = contentLines.join('\n');
+			outputCont.appendChild(message)
+		};
+
+		resultArea.value = (result.returned.kind === 'Nada') ? '' : `${stringifyValue(result.returned)}`;
+	} catch(e) {
+		console.error(e);
+		resultArea.value = `ERROR — ${e.name}
+
+LO QUÉ OCURRIÓ:
+${e.message.slice('```arm\n'.length).replace('\n```\n', '\n\n')}
+`;
+	}
 }

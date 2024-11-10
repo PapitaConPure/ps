@@ -1,0 +1,31 @@
+cargar a con Registro b: 42, c: 69, d: (Registro a: 3, b: 2, c: 1)
+enviar a->b //0: 42
+enviar a->c //1: 69
+enviar a->d //2: { a: 3, b: 2, c: 1 }
+
+enviar a->d->a //3: 3
+enviar a->d->b //4: 2
+enviar a->d->c //5: 1
+
+cargar l con Lista 30, (Registro a: 3, b: 2, c: 1), (Lista 3, 6, 9)
+enviar l->largo //6: 3
+enviar l->0 //7: 30
+enviar l->1 //8: { a: 3, b: 2, c: 1 }
+enviar l->2 //9: [ 3, 6, 9 ]
+enviar l->3 //10: Nada
+
+enviar l->1->a //11: 3
+enviar l->1->b //12: 2
+enviar l->1->c //13: 1
+
+enviar l->2->0 //14: 3
+enviar l->2->1 //15: 6
+enviar l->2->2 //16: 9
+
+enviar l->(2 - 2) //17: 30
+
+cargar a->e con Registro
+enviar a->e //18: {}
+
+cargar a->e->a con 42
+enviar a->e->a //19: 42

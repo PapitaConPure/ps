@@ -1,9 +1,10 @@
-const { makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeEmbed, makeNada, ValueKinds, defaultValueOf } = require('./values');
+const { makeNada, defaultValueOf } = require('./values');
 
+/**Representa un ámbito de variables en un contexto de ejecución de PuréScript*/
 class Scope {
 	/**@type {import('./interpreter').Interpreter}*/
 	#interpreter;
-	/**@type {Scope}*/
+	/**@type {Scope?}*/
 	#parent;
     /**@type {Scope}*/
     #mirror;
@@ -13,9 +14,9 @@ class Scope {
     global;
 
 	/**
-	 * 
-	 * @param {import('./interpreter').Interpreter} interpreter
-	 * @param {Scope} [parent=null]
+	 * Crea un ámbito de variables para este intérprete
+	 * @param {import('./interpreter').Interpreter} interpreter El intérprete al que pertenece el ámbito
+	 * @param {Scope?} [parent=null] El superámbito del que este ámbito es subconjunto
 	 */
 	constructor(interpreter, parent = null) {
 		this.#interpreter = interpreter;
@@ -33,7 +34,10 @@ class Scope {
 		return this.#parent;
 	}
 
-	get hasParent() {
+    /**
+     * @returns {this is Scope & { #parent: Scope, parent: Scope }}
+     */
+	hasParent() {
 		return this.#parent != null;
 	}
 
@@ -92,7 +96,7 @@ class Scope {
      * Resuelve un ámbito que contenga la variable o función mencionada
      * @param {String} identifier
      * @param {Boolean} [mustBeDeclared]
-     * @returns {Scope}
+     * @returns {Scope?}
      */
     resolve(identifier, mustBeDeclared = true) {
         const variable = this.variables.get(identifier);
@@ -100,7 +104,7 @@ class Scope {
         if(variable)
             return this;
 
-        if(this.#parent == null) {
+        if(!this.hasParent()) {
             if(this.#mirror)
                 return this.#mirror.resolve(identifier, mustBeDeclared);
 
@@ -118,7 +122,7 @@ class Scope {
      * @param {Scope} scope 
      */
     include(scope) {
-        if(scope.hasParent && scope.parent !== this && !scope.parent.global)
+        if(scope.hasParent() && scope.parent !== this && !scope.parent.global)
             this.include(scope.parent);
 
         scope.variables.forEach((variable, key) => {
@@ -138,7 +142,7 @@ class Scope {
         if(this.#mirror != null)
             return this.#mirror;
 
-        if(!this.hasParent)
+        if(!this.hasParent())
             return null;
 
         if(this.#parent.global)

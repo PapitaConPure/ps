@@ -1,6 +1,5 @@
 const { ValueKinds, makeNumber, makeText, makeBoolean, makeList, makeNada, isInternalOperable } = require('../../values');
 const { calculatePositionOffset, expectParam, getParamOrDefault } = require('../nativeUtils');
-const { Scope } = require('../../scope');
 
 /**
  * @typedef {import('../../values').NumberValue} NumberValue
@@ -15,44 +14,27 @@ const { Scope } = require('../../scope');
  */
 
 /**
- * 
- * @param {TextValue} self
- * @param {[]} args 
- * @param {Scope} scope 
- * @returns {ListValue}
+ * @template {Array<RuntimeValue>} [TArg=Array<RuntimeValue>]
+ * @template {RuntimeValue} [TResult=RuntimeValue]
+ * @typedef {import('../../values').NativeFunction<TextValue, TArg, TResult>} TextMethod
  */
+
+/**@type {TextMethod<[], ListValue>}*/
 function textoALista(self, [], scope) {
 	return makeList([...self.value].map(v => makeText(v)));
 }
 
-/**
- * 
- * @param {TextValue} self
- * @param {[]} args 
- * @param {Scope} scope 
- * @returns {TextValue}
- */
+/**@type {TextMethod<[], TextValue>}*/
 function textoAMayúsculas(self, [], scope) {
 	return makeText(self.value.toUpperCase());
 }
 
-/**
- * 
- * @param {TextValue} self
- * @param {[]} args 
- * @param {Scope} scope 
- * @returns {TextValue}
- */
+/**@type {TextMethod<[], TextValue>}*/
 function textoAMinúsculas(self, [], scope) {
 	return makeText(self.value.toLowerCase());
 }
 
-/**
- * @param {TextValue} self
- * @param {[ NumberValue ]} args
- * @param {Scope} scope 
- * @returns {TextValue | NadaValue}
- */
+/**@type {TextMethod<[ NumberValue ], TextValue | NadaValue>}*/
 function textoCaracterEn(self, [ posición ], scope) {
 	if(posición == null || posición.kind !== ValueKinds.NUMBER || !isInternalOperable(posición.value))
 		throw scope.interpreter.TuberInterpreterError('Se esperaba un Número válido como argumento de posición de caracter');
@@ -65,34 +47,19 @@ function textoCaracterEn(self, [ posición ], scope) {
 	return makeNada();
 }
 
-/**
- * @param {TextValue} self
- * @param {[ TextValue ]} args
- * @param {Scope} scope 
- * @returns {BooleanValue}
- */
+/**@type {TextMethod<[ TextValue ], BooleanValue>}*/
 function textoComienzaCon(self, [ subCadena ], scope) {
 	const subCadenaResult = expectParam('subCadena', subCadena, ValueKinds.TEXT, scope);
 	return makeBoolean(self.value.startsWith(subCadenaResult.value));
 }
 
-/**
- * @param {TextValue} self
- * @param {[ TextValue ]} args
- * @param {Scope} scope 
- * @returns {BooleanValue}
- */
+/**@type {TextMethod<[ TextValue ], BooleanValue>}*/
 function textoContiene(self, [ subCadena ], scope) {
 	const subCadenaResult = expectParam('subCadena', subCadena, ValueKinds.TEXT, scope);
 	return makeBoolean(self.value.includes(subCadenaResult.value));
 }
 
-/**
- * @param {TextValue} self
- * @param {[ NumberValue, NumberValue ]} args
- * @param {Scope} scope 
- * @returns {TextValue}
- */
+/**@type {TextMethod<[ NumberValue, NumberValue ], TextValue>}*/
 function textoCortar(self, [ inicio, fin ], scope) {
 	const inicioResult = getParamOrDefault('inicio', inicio, ValueKinds.NUMBER, scope, 0);
 	const finResult = getParamOrDefault('fin', fin, ValueKinds.NUMBER, scope, self.value.length);
@@ -100,22 +67,12 @@ function textoCortar(self, [ inicio, fin ], scope) {
 	return makeText(self.value.slice(inicioResult.value, finResult.value));
 }
 
-/**
- * @param {TextValue} self
- * @param {[]} args
- * @param {Scope} scope 
- * @returns {TextValue}
- */
+/**@type {TextMethod<[], TextValue>}*/
 function textoNormalizar(self, [], scope) {
 	return makeText(self.value.trim());
 }
 
-/**
- * @param {TextValue} self
- * @param {[ TextValue ]} args
- * @param {Scope} scope 
- * @returns {ListValue}
- */
+/**@type {TextMethod<[ TextValue ], ListValue>}*/
 function textoPartir(self, [separador], scope) {
 	if(separador.kind !== ValueKinds.TEXT)
 		throw scope.interpreter.TuberInterpreterError('Se esperaba un Texto válido como argumento separador de Texto');
@@ -123,23 +80,13 @@ function textoPartir(self, [separador], scope) {
 	return makeList(self.value.split(separador.value).map(split => makeText(split)));
 }
 
-/**
- * @param {TextValue} self
- * @param {[ TextValue ]} args
- * @param {Scope} scope 
- * @returns {NumberValue}
- */
+/**@type {TextMethod<[ TextValue ], NumberValue>}*/
 function textoPosiciónDe(self, [ búsqueda ], scope) {
 	const búsquedaValue = expectParam('búsqueda', búsqueda, ValueKinds.TEXT, scope).value;
 	return makeNumber(self.value.indexOf(búsquedaValue));
 }
 
-/**
- * @param {TextValue} self
- * @param {[ TextValue, TextValue ]} args
- * @param {Scope} scope 
- * @returns {TextValue}
- */
+/**@type {TextMethod<[ TextValue, TextValue ], TextValue>}*/
 function textoReemplazar(self, [ocurrencia, reemplazo], scope) {
 	const ocurrenciaValue = expectParam('ocurrencia', ocurrencia, ValueKinds.TEXT, scope).value;
 
@@ -150,12 +97,7 @@ function textoReemplazar(self, [ocurrencia, reemplazo], scope) {
 	return makeText(self.value.replace(ocurrenciaValue, reemplazoValue));
 }
 
-/**
- * @param {TextValue} self
- * @param {[ NumberValue ]} args
- * @param {Scope} scope 
- * @returns {TextValue}
- */
+/**@type {TextMethod<[ NumberValue ], TextValue>}*/
 function textoRepetido(self, [ veces ], scope) {
 	const vecesResult = expectParam('veces', veces, ValueKinds.NUMBER, scope);
 
@@ -166,12 +108,7 @@ function textoRepetido(self, [ veces ], scope) {
 	return makeText(self.value.repeat(times));
 }
 
-/**
- * @param {TextValue} self
- * @param {[ TextValue ]} args
- * @param {Scope} scope 
- * @returns {BooleanValue}
- */
+/**@type {TextMethod<[ TextValue ], BooleanValue>}*/
 function textoTerminaCon(self, [ texto ], scope) {
 	if(texto?.kind !== ValueKinds.TEXT)
 		throw scope.interpreter.TuberInterpreterError('Se esperaba un Texto válido como argumento de comprobación de sub-texto');
@@ -179,12 +116,7 @@ function textoTerminaCon(self, [ texto ], scope) {
 	return makeBoolean(self.value.endsWith(texto.value));
 }
 
-/**
- * @param {TextValue} self
- * @param {[ TextValue ]} args
- * @param {Scope} scope 
- * @returns {NumberValue}
- */
+/**@type {TextMethod<[ TextValue ], NumberValue>}*/
 function textoÚltimaPosiciónDe(self, [ texto ], scope) {
 	if(texto.kind !== ValueKinds.TEXT)
 		throw scope.interpreter.TuberInterpreterError('Se esperaba un Texto válido como argumento de búsqueda de sub-texto');
@@ -192,7 +124,7 @@ function textoÚltimaPosiciónDe(self, [ texto ], scope) {
 	return makeNumber(self.value.lastIndexOf(texto.value));
 }
 
-/**@type Map<String, import('../../values').NativeFunction<TextValue>>>*/
+/**@type {Map<String, TextMethod>}*/
 const textMethods = new Map();
 textMethods
 	.set('aLista', textoALista)

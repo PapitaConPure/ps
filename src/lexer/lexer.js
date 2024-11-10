@@ -1,5 +1,5 @@
 const { TokenKinds, Token } = require('./tokens.js');
-const { shortenText, toLowerCaseNormalized } = require('../../../func.js');
+const { shortenText, toLowerCaseNormalized } = require('../util/utils.js');
 
 /**Representa un Analizador Léxico de PuréScript*/
 class Lexer {

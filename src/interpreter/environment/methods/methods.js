@@ -16,7 +16,7 @@ nativeFunctionMethods
 		return self.call(enlazado, valores, scope);
 	});
 
-/**@type {Map<String, import('../../values').NativeFunction<import('../../values').FunctionValue>>}*/
+/**@type {Map<string, import('../../values').NativeFunction<import('../../values').FunctionValue>>}*/
 const functionMethods = new Map();
 functionMethods.set('llamar', function(self, [ valor ], scope) {
 	let evaluated;
@@ -29,7 +29,7 @@ functionMethods.set('llamar', function(self, [ valor ], scope) {
 	return evaluated;
 });
 
-/**@type {Map<import('../../values').ValueKind, Map<String, import('../../values').NativeFunction>>}*/
+/**@type {Map<import('../../values').ValueKind, Map<string, import('../../values').NativeFunction<import('../../values').RuntimeValue>>>}*/
 const NativeMethodsLookup = new Map()
 	.set(ValueKinds.NUMBER, numberMethods)
 	.set(ValueKinds.TEXT, textMethods)

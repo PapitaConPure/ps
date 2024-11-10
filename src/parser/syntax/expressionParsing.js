@@ -1,4 +1,4 @@
-const { toLowerCaseNormalized } = require('../../../../func');
+const { toLowerCaseNormalized } = require('../../util/utils.js');
 const { TokenKinds } = require('../../lexer/tokens');
 const { BindingPowers } = require('../../ast/ast');
 const { StatementKinds } = require('../../ast/statements');

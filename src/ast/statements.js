@@ -25,7 +25,7 @@ const StatementKinds = /**@type {const}*/({
     STOP: 'StopStatement',
     SEND: 'SendStatement',
 });
-/**@typedef {import('types').ValuesOf<typeof StatementKinds>} StatementKind*/
+/**@typedef {import('../util/types.js').ValuesOf<typeof StatementKinds>} StatementKind*/
 
 /**@type {Array<StatementKind>}*/
 const ScopeAbortKinds = [

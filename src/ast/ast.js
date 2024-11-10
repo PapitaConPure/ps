@@ -1,46 +1,46 @@
-const Ut = require('../../../utils');
+const { iota }= require('../util/utils');
 
 /**Contiene niveles de vínculo de operadores*/
 const BindingPowers = /**@type {const}*/({
     /**Vínculo más débil. Usado por defecto, para sentencias y agrupamiento*/
-    DEFAULT: Ut.Iota(),
+    DEFAULT: iota(0),
     /**Segundo vínculo más débil. A veces usado para el operador de coma*/
-    COMMA: Ut.iota,
+    COMMA: iota(),
     /**Tercer vínculo más débil. Usado para operadores a nivel de asignación y misceláneos*/
-    ASSIGNMENT: Ut.iota,
+    ASSIGNMENT: iota(),
     /**Usado para operadores a nivel lógico. Se encarga de el orden disyuntivo (o), que es el más débil en el nivel*/
-    LOGICAL_DISJUNCTION: Ut.iota,
+    LOGICAL_DISJUNCTION: iota(),
     /**Usado para operadores a nivel lógico. Se encarga de el orden conjuntivo (y), que es de más fuerte en el nivel*/
-    LOGICAL_CONJUNCTION: Ut.iota,
+    LOGICAL_CONJUNCTION: iota(),
     /**Usado para operadores a nivel equitativo*/
-    EQUALITY: Ut.iota,
+    EQUALITY: iota(),
     /**Usado para operadores a nivel relacional*/
-    RELATIONAL: Ut.iota,
+    RELATIONAL: iota(),
     /**Usado para operadores a nivel aritmético. Se encarga de el orden aditivo*/
-    ADDITIVE: Ut.iota,
+    ADDITIVE: iota(),
     /**Usado para operadores a nivel aritmético. Se encarga de el orden multiplicativo*/
-    MULTIPLICATIVE: Ut.iota,
+    MULTIPLICATIVE: iota(),
     /**Usado para operadores a nivel aritmético. Se encarga de el orden exponencial*/
-    EXPONENTIAL: Ut.iota,
+    EXPONENTIAL: iota(),
     /**Cuarto vínculo más fuerte. Usado para operadores unarios*/
-    UNARY: Ut.iota,
+    UNARY: iota(),
     /**Tercer vínculo más fuerte. Usado para expresiones de llamado*/
-    CALL: Ut.iota,
+    CALL: iota(),
     /**Segundo vínculo más fuerte. Usado para operadores de miembro*/
-    MEMBER: Ut.iota,
+    MEMBER: iota(),
     /**Vínculo más fuerte. Usado para expresiones primarias y símbolos*/
-    PRIMARY: Ut.iota,
+    PRIMARY: iota(),
 });
-/**@typedef {import('types').ValuesOf<BindingPowers>} BindingPower*/
+/**@typedef {import('../util/types').ValuesOf<BindingPowers>} BindingPower*/
 
 /**Contiene tipos de asociatividad de operadores*/
 const Associativities = /**@type {const}*/({
     /**Asociatividad a la izquierda. Por defecto. Usado para la mayoría de expresiones si es que se usa*/
     LEFT: 0,
-    /**Asociatividad a la derecha. No se suele usar*/
+    /**Asociatividad a la derecha. No es usado con frecuencia*/
     RIGHT: -0.5,
 });
-/**@typedef {import('types').ValuesOf<Associativities>} Associativity*/
+/**@typedef {import('../util/types').ValuesOf<Associativities>} Associativity*/
 
 /**
  * @typedef {Object} NodeMetadata

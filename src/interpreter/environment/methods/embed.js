@@ -1,8 +1,6 @@
-const { ValueKinds, makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeNada, isNada, isOperable, isInternalOperable, coerceValue, isValidText } = require('../../values');
+const { ValueKinds } = require('../../values');
 const { fileRegex, expectParam, getParamOrNada, calculatePositionOffset, getParamOrDefault, linkRegex } = require('../nativeUtils');
-const { stringHexToNumber } = require('../../../../../func');
-const { Scope } = require('../../scope');
-const { EmbedBuilder, GuildPremiumTier } = require('discord.js');
+const { stringHexToNumber } = require('../../../util/utils');
 
 /**
  * @typedef {import('../../values').NumberValue} NumberValue
@@ -18,11 +16,12 @@ const { EmbedBuilder, GuildPremiumTier } = require('discord.js');
  */
 
 /**
- * @param {EmbedValue} self
- * @param {[ TextValue, TextValue, BooleanValue ]} args 
- * @param {Scope} scope
- * @returns {EmbedValue}
+ * @template {Array<RuntimeValue>} [TArg=Array<RuntimeValue>]
+ * @template {RuntimeValue} [TResult=RuntimeValue]
+ * @typedef {import('../../values').NativeFunction<EmbedValue, TArg, TResult>} EmbedMethod
  */
+
+/**@type {EmbedMethod<[ TextValue, TextValue, BooleanValue ], EmbedValue>}*/
 function marcoAgregarCampo(self, [ nombre, valor, alineado ], scope) {
 	const nombreResult = expectParam('nombre', nombre, ValueKinds.TEXT, scope);
 	const valorResult = expectParam('valor', valor, ValueKinds.TEXT, scope);
@@ -43,21 +42,12 @@ function marcoAgregarCampo(self, [ nombre, valor, alineado ], scope) {
     return self;
 }
 
-/**
- * @param {EmbedValue} self
- * @param {[]} args 
- * @param {Scope} scope
- * @returns {RegistryValue}
- */
+/**@type {EmbedMethod<[], RegistryValue>}*/
 function marcoARegistro(self, [], scope) {
     return require('../registryPrefabs').makeEmbedRegistry(self.value);
 }
 
-/**
- * @param {EmbedValue} self
- * @param {[ TextValue, TextValue ]} args 
- * @param {Scope} scope
- */
+/**@type {EmbedMethod<[ TextValue, TextValue ], EmbedValue>}*/
 function marcoAsignarAutor(self, [ nombre, imagen ], scope) {
 	const nombreResult = expectParam('nombre', nombre, ValueKinds.TEXT, scope);
 	const [ imagenExists, imagenResult ] = getParamOrNada('imagen', imagen, ValueKinds.TEXT, scope);
@@ -75,17 +65,13 @@ function marcoAsignarAutor(self, [ nombre, imagen ], scope) {
 
     self.value.setAuthor({
 		name: nombreResult.value,
-		iconURL: imagenResult.value,
+		iconUrl: imagenResult.value,
 	});
 
     return self;
 }
 
-/**
- * @param {EmbedValue} self
- * @param {[ TextValue ]} args 
- * @param {Scope} scope
- */
+/**@type {EmbedMethod<[ TextValue ], EmbedValue>}*/
 function marcoAsignarColor(self, [ color ], scope) {
 	const colorResult = expectParam('color', color, ValueKinds.TEXT, scope);
 
@@ -102,11 +88,7 @@ function marcoAsignarColor(self, [ color ], scope) {
     return self;
 }
 
-/**
- * @param {EmbedValue} self
- * @param {[ TextValue ]} args
- * @param {Scope} scope
- */
+/**@type {EmbedMethod<[ TextValue ], EmbedValue>}*/
 function marcoAsignarDescripción(self, [ descripción ], scope) {
 	const descripciónResult = expectParam('descripción', descripción, ValueKinds.TEXT, scope);
 
@@ -117,26 +99,18 @@ function marcoAsignarDescripción(self, [ descripción ], scope) {
     return self;
 }
 
-/**
- * @param {EmbedValue} self
- * @param {[ TextValue ]} args
- * @param {Scope} scope
- */
+/**@type {EmbedMethod<[ TextValue ], EmbedValue>}*/
 function marcoAsignarEnlace(self, [ enlace ], scope) {
 	const enlaceResult = expectParam('enlace', enlace, ValueKinds.TEXT, scope);
     
     if(!linkRegex.test(enlaceResult.value))
         throw scope.interpreter.TuberInterpreterError('Se esperaba un enlace válido para el Marco');
 
-    self.value.setURL(enlaceResult.value);
+    self.value.setUrl(enlaceResult.value);
     return self;
 }
 
-/**
- * @param {EmbedValue} self
- * @param {[ TextValue ]} args 
- * @param {Scope} scope
- */
+/**@type {EmbedMethod<[ TextValue ], EmbedValue>}*/
 function marcoAsignarImagen(self, [ imagen ], scope) {
 	const imagenResult = expectParam('imagen', imagen, ValueKinds.TEXT, scope);
 
@@ -147,11 +121,7 @@ function marcoAsignarImagen(self, [ imagen ], scope) {
     return self;
 }
 
-/**
- * @param {EmbedValue} self
- * @param {[ TextValue ]} args 
- * @param {Scope} scope
- */
+/**@type {EmbedMethod<[ TextValue ], EmbedValue>}*/
 function marcoAsignarMiniatura(self, [ imagen ], scope) {
 	const imagenResult = expectParam('imagen', imagen, ValueKinds.TEXT, scope);
 
@@ -162,11 +132,7 @@ function marcoAsignarMiniatura(self, [ imagen ], scope) {
     return self;
 }
 
-/**
- * @param {EmbedValue} self
- * @param {[ TextValue, TextValue ]} args 
- * @param {Scope} scope
- */
+/**@type {EmbedMethod<[ TextValue, TextValue ], EmbedValue>}*/
 function marcoAsignarPie(self, [ pie, ícono ], scope) {
 	const pieResult = expectParam('pie', pie, ValueKinds.TEXT, scope);
 	const [ íconoExists, íconoResult ] = getParamOrNada('ícono', ícono, ValueKinds.TEXT, scope);
@@ -184,17 +150,13 @@ function marcoAsignarPie(self, [ pie, ícono ], scope) {
 
     self.value.setFooter({
 		text: pieResult.value,
-		iconURL: íconoResult.value,
+		iconUrl: íconoResult.value,
 	});
 
     return self;
 }
 
-/**
- * @param {EmbedValue} self
- * @param {[ TextValue ]} args 
- * @param {Scope} scope
- */
+/**@type {EmbedMethod<[ TextValue ], EmbedValue>}*/
 function marcoAsignarTítulo(self, [ título ], scope) {
 	const títuloResult = expectParam('título', título, ValueKinds.TEXT, scope);
 
@@ -205,7 +167,7 @@ function marcoAsignarTítulo(self, [ título ], scope) {
     return self;
 }
 
-/**@type Map<String, import('../../values').NativeFunction<EmbedValue>>*/
+/**@type {Map<String, EmbedMethod>}*/
 const embedMethods = new Map();
 embedMethods
     .set('agregar', marcoAgregarCampo)

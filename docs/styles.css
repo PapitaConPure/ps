@@ -7,8 +7,20 @@
 }
 
 /**Zona de texto*/
+.code-area {
+	@apply bg-secondary-500 font-code text-xs font-normal text-code-neutral sm:text-sm md:text-xs lg:text-sm
+}
+
+.text-message {
+	@apply min-h-8 rounded-sm font-extralight whitespace-pre-line text-wrap break-words px-2.5 pt-1.5 pb-2 m-2 bg-secondary-600;
+}
+
+.text-message.message-error {
+	@apply bg-red-800;
+}
+
 .cm-s-psdocs.CodeMirror {
-	@apply min-h-full rounded-md bg-secondary-500 font-code text-xs font-normal text-code-neutral sm:text-sm md:text-xs lg:text-sm;
+	@apply rounded-md min-h-full code-area;
 }
 
 #playground > * {

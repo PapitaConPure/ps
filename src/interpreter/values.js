@@ -1,4 +1,4 @@
-const { EmbedBuilder } = require('discord.js');
+const { EmbedData } = require('../embedData');
 
 /**Contiene tipos de valores*/
 const ValueKinds = /**@type {const}*/({
@@ -12,7 +12,7 @@ const ValueKinds = /**@type {const}*/({
 	FUNCTION: 'Function',
 	NADA: 'Nada',
 });
-/**@typedef {import("types").ValuesOf<typeof ValueKinds>} ValueKind*/
+/**@typedef {import('../util/types').ValuesOf<typeof ValueKinds>} ValueKind*/
 
 /**
  * @template {ValueKind} [T=ValueKind]
@@ -54,7 +54,7 @@ const ValueKinds = /**@type {const}*/({
  */
 
 /**
- * @typedef {PrimitiveValueData<'Embed', EmbedBuilder>} EmbedValue
+ * @typedef {PrimitiveValueData<'Embed', EmbedData>} EmbedValue
  */
 
 /**
@@ -63,7 +63,7 @@ const ValueKinds = /**@type {const}*/({
  */
 
 /**
- * @template {RuntimeValue} [TSelf=RuntimeValue]
+ * @template {RuntimeValue?} [TSelf=RuntimeValue]
  * @template {Array<RuntimeValue>} [TArg=Array<RuntimeValue>]
  * @template {RuntimeValue} [TReturn=RuntimeValue]
  * @typedef {(self: TSelf, args: TArg, scope: import('./scope').Scope) => TReturn} NativeFunction
@@ -73,7 +73,7 @@ const ValueKinds = /**@type {const}*/({
  * @typedef {Object} NativeFunctionValueData
  * @property {RuntimeValue?} self
  * @property {NativeFunction} call
- * @property {(self: RuntimeValue) => NativeFunctionValue} with
+ * @property {(self: RuntimeValue?) => NativeFunctionValue} with
  * @typedef {BaseValueData<'NativeFunction'> & NativeFunctionValueData} NativeFunctionValue
  */
 
@@ -321,8 +321,8 @@ function makeNumber(value) {
 	return {
 		kind,
 		value: +value,
-		equals: EqualsMethodLookups.get(kind),
-		compareTo: CompareToMethodLookups.get(kind),
+		equals: /**@type {RuntimeValue['equals']}*/(EqualsMethodLookups.get(kind)),
+		compareTo: /**@type {RuntimeValue['compareTo']}*/(CompareToMethodLookups.get(kind)),
 	};
 }
 
@@ -335,8 +335,8 @@ function makeText(value) {
 	return {
 		kind,
 		value: `${value}`,
-		equals: EqualsMethodLookups.get(kind),
-		compareTo: CompareToMethodLookups.get(kind),
+		equals: /**@type {RuntimeValue['equals']}*/(EqualsMethodLookups.get(kind)),
+		compareTo: /**@type {RuntimeValue['compareTo']}*/(CompareToMethodLookups.get(kind)),
 	};
 }
 
@@ -349,8 +349,8 @@ function makeBoolean(value) {
 	return {
 		kind,
 		value: !!value,
-		equals: EqualsMethodLookups.get(kind),
-		compareTo: CompareToMethodLookups.get(kind),
+		equals: /**@type {RuntimeValue['equals']}*/(EqualsMethodLookups.get(kind)),
+		compareTo: /**@type {RuntimeValue['compareTo']}*/(CompareToMethodLookups.get(kind)),
 	};
 }
 
@@ -372,8 +372,8 @@ function makeList(elements) {
 	return {
 		kind,
 		elements,
-		equals: EqualsMethodLookups.get(kind),
-		compareTo: CompareToMethodLookups.get(kind),
+		equals: /**@type {RuntimeValue['equals']}*/(EqualsMethodLookups.get(kind)),
+		compareTo: /**@type {RuntimeValue['compareTo']}*/(CompareToMethodLookups.get(kind)),
 	};
 }
 
@@ -386,8 +386,8 @@ function makeRegistry(entries) {
 	return {
 		kind,
 		entries,
-		equals: EqualsMethodLookups.get(kind),
-		compareTo: CompareToMethodLookups.get(kind),
+		equals: /**@type {RuntimeValue['equals']}*/(EqualsMethodLookups.get(kind)),
+		compareTo: /**@type {RuntimeValue['compareTo']}*/(CompareToMethodLookups.get(kind)),
 	};
 }
 
@@ -398,14 +398,14 @@ function makeEmbed() {
 	const kind = ValueKinds.EMBED;
 	return {
 		kind,
-		value: new EmbedBuilder(),
-		equals: EqualsMethodLookups.get(kind),
-		compareTo: CompareToMethodLookups.get(kind),
+		value: new EmbedData(),
+		equals: /**@type {RuntimeValue['equals']}*/(EqualsMethodLookups.get(kind)),
+		compareTo: /**@type {RuntimeValue['compareTo']}*/(CompareToMethodLookups.get(kind)),
 	};
 }
 
 /**
- * @param {RuntimeValue} self
+ * @param {RuntimeValue?} self
  * @param {NativeFunction} fn
  * @returns {NativeFunctionValue}
  */
@@ -415,8 +415,8 @@ function makeNativeFunction(self, fn) {
 		kind,
 		self,
 		call: fn,
-		compareTo: CompareToMethodLookups.get(kind),
-		equals: EqualsMethodLookups.get(kind),
+		equals: /**@type {RuntimeValue['equals']}*/(EqualsMethodLookups.get(kind)),
+		compareTo: /**@type {RuntimeValue['compareTo']}*/(CompareToMethodLookups.get(kind)),
 		with: function(self) {
 			return makeNativeFunction(self, this.call);
 		},
@@ -438,8 +438,8 @@ function makeFunction(body, args, scope) {
 		body,
 		args,
 		scope,
-		compareTo: CompareToMethodLookups.get(kind),
-		equals: EqualsMethodLookups.get(kind),
+		equals: /**@type {RuntimeValue['equals']}*/(EqualsMethodLookups.get(kind)),
+		compareTo: /**@type {RuntimeValue['compareTo']}*/(CompareToMethodLookups.get(kind)),
 	};
 }
 
@@ -456,8 +456,8 @@ function makeLambda(expression, args) {
 		name: '[Lambda]',
 		expression,
 		args,
-		compareTo: CompareToMethodLookups.get(kind),
-		equals: EqualsMethodLookups.get(kind),
+		equals: /**@type {RuntimeValue['equals']}*/(EqualsMethodLookups.get(kind)),
+		compareTo: /**@type {RuntimeValue['compareTo']}*/(CompareToMethodLookups.get(kind)),
 	};
 }
 
@@ -467,8 +467,8 @@ function makeNada() {
 	return {
 		kind,
 		value: null,
-		equals: EqualsMethodLookups.get(kind),
-		compareTo: CompareToMethodLookups.get(kind),
+		equals: /**@type {RuntimeValue['equals']}*/(EqualsMethodLookups.get(kind)),
+		compareTo: /**@type {RuntimeValue['compareTo']}*/(CompareToMethodLookups.get(kind)),
 	};
 }
 
@@ -493,6 +493,7 @@ valueMakers
  */
 function makeValue(kind, value) {
 	const makerFunction = valueMakers.get(kind);
+	if(!makerFunction) throw `No Maker Function for ${kind}::${value}`;
 	return /**@type {AssertedRuntimeValue<T>}*/(makerFunction(value));
 }
 
@@ -510,20 +511,20 @@ coercions
 	.set(ValueKinds.NADA,      new Map());
 
 coercions.get(ValueKinds.NUMBER)
-	.set(ValueKinds.TEXT,     (x) => makeText(`${x ?? 'Nada'}`))
+	?.set(ValueKinds.TEXT,    (x) => makeText(`${x ?? 'Nada'}`))
 	.set(ValueKinds.BOOLEAN,  (x) => makeBoolean(x ? true : false));
 
 coercions.get(ValueKinds.TEXT)
-	.set(ValueKinds.NUMBER,   (x) => makeNumber(!isInternalOperable(+x) ? 0 : +x))
+	?.set(ValueKinds.NUMBER,  (x) => makeNumber(!isInternalOperable(+x) ? 0 : +x))
 	.set(ValueKinds.BOOLEAN,  (x) => makeBoolean(x ? true : false))
 	.set(ValueKinds.LIST,     (x) => makeList([ ...x ]));
 
 coercions.get(ValueKinds.BOOLEAN)
-	.set(ValueKinds.NUMBER,   (x) => makeNumber(x ? 1 : 0))
+	?.set(ValueKinds.NUMBER,  (x) => makeNumber(x ? 1 : 0))
 	.set(ValueKinds.TEXT,     (x) => makeText(x ? 'Verdadero' : 'Falso'));
 
 coercions.get(ValueKinds.LIST)
-	.set(ValueKinds.TEXT,     (/**@type Array<RuntimeValue>*/ x, interpreter) => {
+	?.set(ValueKinds.TEXT,    (/**@type Array<RuntimeValue>*/ x, interpreter) => {
 		return makeText(`(${x?.map(y => coerceValue(interpreter, y, 'Text').value).join('')})`)
 	})
 	.set(ValueKinds.BOOLEAN,  (x) => makeBoolean(x?.length ? true : false))
@@ -535,7 +536,7 @@ coercions.get(ValueKinds.LIST)
 	});
 
 coercions.get(ValueKinds.REGISTRY)
-	.set(ValueKinds.TEXT,     (/**@type Map<string, RuntimeValue>*/ x, interpreter) => {
+	?.set(ValueKinds.TEXT,    (/**@type Map<string, RuntimeValue>*/ x, interpreter) => {
 		if(!x.size)
 			return makeText('{Rg}');
 
@@ -549,9 +550,9 @@ coercions.get(ValueKinds.REGISTRY)
 	.set(ValueKinds.BOOLEAN,  (x) => makeBoolean(x?.size ? true : false));
 
 coercions.get(ValueKinds.EMBED)
-	.set(ValueKinds.TEXT,     (_) => makeText('[Marco]'))
+	?.set(ValueKinds.TEXT,    (_) => makeText('[Marco]'))
 	.set(ValueKinds.BOOLEAN,  (x) => makeBoolean(true))
-	.set(ValueKinds.REGISTRY, (/**@type {EmbedBuilder}*/x) => {
+	.set(ValueKinds.REGISTRY, (/**@type {EmbedData}*/x) => {
 		if(x == null || x.data == null)
 			return makeNada();
 
@@ -559,15 +560,15 @@ coercions.get(ValueKinds.EMBED)
 	});
 
 coercions.get(ValueKinds.FUNCTION)
-	.set(ValueKinds.TEXT,     (_) => makeText('[Función]'))
+	?.set(ValueKinds.TEXT,    (_) => makeText('[Función]'))
 	.set(ValueKinds.BOOLEAN,  (_) => makeBoolean(true));
 
 coercions.get(ValueKinds.NATIVE_FN)
-	.set(ValueKinds.TEXT,     (_) => makeText('[Función nativa]'))
+	?.set(ValueKinds.TEXT,    (_) => makeText('[Función nativa]'))
 	.set(ValueKinds.BOOLEAN,  (_) => makeBoolean(true));
 
 coercions.get(ValueKinds.NADA)
-	.set(ValueKinds.TEXT,     (_) => makeText('Nada'))
+	?.set(ValueKinds.TEXT,    (_) => makeText('Nada'))
 	.set(ValueKinds.BOOLEAN,  (_) => makeBoolean(false));
 
 /**
