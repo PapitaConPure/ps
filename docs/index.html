@@ -135,89 +135,12 @@
 						class="mb-3 mt-3 h-[34rem] flex-auto sm:mt-6 sm:h-[40rem] md:my-6 md:mr-2 md:h-auto md:w-2/3 md:flex-grow"
 					>
 						<textarea id="editor">
-cargar dibujar con Función()
-	crear Lista lienzo
-	repetir hh veces
-		crear Lista fila
-		repetir ww veces
-			extender fila con "⬛"
-		fin
-		extender lienzo con fila
-	fin
+ENVIAR "¡Hola mundo!"
+ENVIAR ""
 
-	cargar pintar con Función(p, car)
-		cargar lienzo->(p.py)->(p.px) con car
-	fin
-
-	usar jgs->paraCada(p => pintar(p, "🟢"))
-
-	si lienzo->(ch.py)->(ch.px) es "🟢"
-		usar pintar(ch, "🔴")
-	sino
-		usar pintar(ch, "🍒")
-	fin
-
-	usar pintar(jg, "🟡")
-
-	devolver "**Puntos:** " + puntos + "\n" + lienzo.mapear(fila => fila.unir("")).unir("\n")
-fin
-
-cargar Cereza con Función()
-	cargar c con Registro px: dado(ww), py: dado(hh)
-	si jg.px es c.px y jg.py es c.py
-		cargar c.py con (jg.py es 0 y dado(1, hh)) o elegir(dado(0, jg.py), (jg.py es (hh - 1) y (hh - 1)) o dado(jg.py + 1, hh))
-	fin
-	devolver c
-fin
-
-cargar ww con 8
-cargar hh con 6
-cargar puntos con puntos o 0
-cargar jg con jg o Registro largo: 3, px: (ww / 2).redondear(), py: (hh / 2).redondear()
-cargar jgs con jgs o Lista
-cargar ch con ch o Cereza()
-
-leer texto opcional m en minúscula
-
-cargar pjx con jg.px
-cargar pjy con jg.py
-sumar jg.px con (m=='d') - (m=='a')
-sumar jg.py con (m=='s') - (m=='w')
-
-si pjx no es jg.px o pjy no es jg.py
-	si jgs.largo < jg.largo
-		extender jgs con Registro px: pjx, py: pjy
-	sino
-		para i con 0 mientras i < (jgs.largo - 1) sumar i
-			cargar jgs.(i).px con jgs.(i + 1).px
-			cargar jgs.(i).py con jgs.(i + 1).py
-		fin
-	fin
-	cargar jgs.(jgs.largo - 1).px con pjx
-	cargar jgs.(jgs.largo - 1).py con pjy
-fin
-
-si jgs->alguno(p => p.px es jg.px y p.py es jg.py) o jg.px < 0 o jg.px >= ww o jg.py < 0 o jg.py >= hh
-	enviar "**Perdiste con un largo de: ** " + jg.largo
-	borrar jg
-	borrar jgs
-	borrar puntos
-	terminar
-fin
-
-si jg.px es ch.px y jg.py es ch.py
-	sumar jg.largo
-	sumar puntos
-	borrar ch
-	enviar dibujar()
-sino
-	guardar ch
-	enviar dibujar()
-fin
-
-guardar jg
-guardar jgs
-guardar puntos
+REPETIR 10 veces
+	ENVIAR "Esto a PuréScript"
+FIN
 </textarea
 						>
 					</div>
@@ -228,7 +151,6 @@ guardar puntos
 							class="h-[75%] w-full rounded-t-md border-2 border-b-0 border-secondary-500 overflow-x-hidden overflow-y-auto"
 							id="output"
 						>
-							<div class="text-message">sdj nfgasdf asdkjfsadfjkasdnf jasdnkasdjkfnaskdjnfkasdjnfnssafasdfasdfsdafdrfgsdfgjd</div>
 						</div>
 						<textarea
 							class="code-area h-[25%] w-full resize-none rounded-b-md px-2"
