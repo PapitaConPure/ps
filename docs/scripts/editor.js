@@ -21,7 +21,7 @@ CodeMirror.defineSimpleMode('pureescript', {
 		{ token: [ 'function', 'operator', 'type' ], regex: /\b([a-zÀ-ÖØ-öø-ÿ_][0-9a-zÀ-ÖØ-öø-ÿ_]*)(\s+con\s+)(Función|Funcion)/i, indent: true },
 		{ token: 'type',          regex: /\b(Función|Funcion)\b/, indent: true },
 		{ token: 'atom',          regex: /\b(Verdadero|Falso|Nada)\b/i },
-		{ token: 'operator',      regex: /(es|no|precede|excede|y|o)/i },
+		{ token: 'operator',      regex: /\b(es|no|precede|excede|y|o)\b/i },
 		{ token: [ null, 'function', null, 'operator'], regex: /(\b)([a-zÀ-ÖØ-öø-ÿ_][0-9a-zÀ-ÖØ-öø-ÿ_]*)(\s*)(\()/i },
 		{ token: 'symbol',        regex: /\b[a-zÀ-ÖØ-öø-ÿ_][0-9a-zÀ-ÖØ-öø-ÿ_]*\b/i },
 		{ token: 'number',        regex: /^(?!_)(([0-9_]+([.][0-9]*)?)|([.][0-9]+))/ },
@@ -296,8 +296,42 @@ const MessageKinds = /**@const*/({
 });
 /**@typedef {keyof MessageKinds} MessageKind*/
 
+/**
+ * @param {string} content 
+ */
+function markup(content) {
+	return content
+		.replace(/```([a-z0-9]{0,4}\n)?((?:.|\n)+?)```/gi, '<code class="block w-full">$2</code>')
+		.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+		.replace(/\*([^*]+)\*/g, '<i>$1</i>')
+		.replace(/__([^_]+)__/g, '<span class="underline">$1</span>')
+		.replace(/_([^_]+)_/g, '<i>$1</i>')
+		.replace(/~~([^_]+)~~/g, '<span class="line-through">$1</span>')
+		.replace(/\`([^`]+)\`/g, '<code>$1</code>')
+		.replace(/\|\|([^\|]+)\|\|/g, '<span class="spoiler">$1</span>')
+		.replace(/^### (.+)\n?/gm, '<h3>$1</h3>')
+		.replace(/^## (.+)\n?/gm, '<h2>$1</h2>')
+		.replace(/^# (.+)\n?/gm, '<h1>$1</h1>')
+		.replace(/^-# (.+)\n?/gm, '<div class="disclaimer">$1</div>')
+		.replace(/\[(.+?)\]\((.+?)\)/, '<a href="$2">$1</a>')
+		.replace(/\n/g, '<br>');
+}
+
+let messagesToAppend = [];
+let busyOutput = false;
+setInterval(function() {
+	if(!busyOutput) return;
+	const appendMessage = messagesToAppend.shift();
+	if(!appendMessage) {
+		busyOutput = false;
+		return;
+	}
+	appendMessage();
+}, 80);
 
 function initOutput() {
+	messagesToAppend = [];
+
 	const outputCont = document.getElementById('output');
 	outputCont.innerHTML = '';
 
@@ -360,8 +394,21 @@ function initOutput() {
 				if(author) {
 					const element = document.createElement(author.url ? 'a' : 'div');
 					element.classList.add('message-embed-author');
-					element.textContent = author.name;
+
+					if(author.iconUrl) {;
+						const icon = document.createElement('img');
+						icon.src = author.iconUrl;
+						element.appendChild(icon);
+
+						const name = document.createElement('span')
+						name.textContent = author.name;
+						element.appendChild(name);
+					} else {
+						element.textContent = author.name;
+					}
+
 					if(author.url) element.href = author.url;
+
 					hgroup.appendChild(element);
 				}
 	
@@ -375,7 +422,7 @@ function initOutput() {
 	
 				if(description) {
 					const element = document.createElement('p');
-					element.textContent = description;
+					element.innerHTML = markup(description);
 					hgroup.appendChild(element);
 				}
 
@@ -409,8 +456,8 @@ function initOutput() {
 						rows.push(row.names, row.values);
 					}
 
-					row.names.push(field.name);
-					row.values.push(field.value);
+					row.names.push(markup(field.name));
+					row.values.push(markup(field.value));
 					
 					if(!field.inline || row.names.length === 3) {
 						row = { names: [], values: [] };
@@ -423,7 +470,7 @@ function initOutput() {
 
 					for(const data of rows[i]) {
 						const cell = document.createElement((i % 2 === 0) ? 'th' : 'td');
-						cell.textContent = data;
+						cell.innerHTML = data;
 						rowElement.appendChild(cell);
 					}
 
@@ -448,7 +495,7 @@ function initOutput() {
 			}
 		} else {
 			const icon = document.createElement('i');
-			icon.classList.add('fa', MessageKinds[kind].icon);
+			icon.classList.add('message-icon', 'fa', MessageKinds[kind].icon);
 			message.appendChild(icon);
 			
 			const content = document.createElement(kind === 'input' ? 'textarea' : 'div');
@@ -459,18 +506,28 @@ function initOutput() {
 				const errorDescription = document.createElement('p');
 				errorDescription.classList.add('message-content');
 				errorDescription.style.width = '96%';
-				errorDescription.textContent = data.message ?? 'Error desconocido';
+				errorDescription.innerHTML = data.message ? markup(data.message.replace(/\t/g, ' ')) : 'Error desconocido';
 
 				content.appendChild(errorHeader);
 				content.appendChild(errorDescription);
 			} else {
 				content.classList.add('message-text');
-				content.textContent = data;
+				content.innerHTML = markup(data);
 			}
+			
 			message.appendChild(content);
+			
+			if(kind === 'input') {
+				const sendBtn = document.createElement('button');
+				const sendIcon = document.createElement('i');
+				sendIcon.classList.add('fa', 'fa-paper-plane');
+				sendBtn.appendChild(sendIcon);
+				message.appendChild(sendBtn);
+			}
 		}
 
-		outputCont.appendChild(message);
+		messagesToAppend.push(() => outputCont.appendChild(message));
+		busyOutput = true;
 	}
 
 	return {
@@ -539,10 +596,21 @@ async function executePS() {
 		};
 
 		for(const embed of embeds) {
-			sendMessage({
-				kind: 'embed',
-				data: embed.data,
-			});
+			const { author, title, description, fields, imageUrl, thumbUrl, footer } = embed.data;
+
+			if(author || title || description || fields?.length || imageUrl || thumbUrl || footer) {
+				sendMessage({
+					kind: 'embed',
+					data: embed.data,
+				});
+			} else {
+				const err = new Error('Se envió un Marco vacío que fallará en Discord');
+				err.name = 'TuberSendError';
+				sendMessage({
+					kind: 'error',
+					data: err,
+				});
+			}
 		}
 
 		sendMessage({
@@ -563,8 +631,35 @@ async function executePS() {
 			kind: 'error',
 			data: {
 				name: typeof err === 'string' ? err : err.name,
-				message: err.message?.startsWith('```') ? err.message?.slice('```arm\n'.length).replace('\n```\n', '\n\n') : (err.message?.trim() ?? 'Este error no ofrece información adicional'),
+				message: (err.message ?? 'Este error no ofrece información adicional'),
 			},
 		});
 	}
 }
+
+document.body.addEventListener('keydown', function(e) {
+	if(!e.ctrlKey) return true;
+
+	switch(e.key) {
+	case 'Enter':
+	case ' ':
+		executePS();
+		return false;
+
+	case 'E':
+	case 'e':
+		if(!e.shiftKey) return true;
+		exportPS();
+		return false;
+
+	case 'H':
+	case 'h':
+		if(!e.shiftKey) return true;
+		gotoPSDocs();
+		return false;
+	}
+	
+	return true;
+});
+
+executePS();
