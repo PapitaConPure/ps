@@ -302,6 +302,7 @@ class Interpreter {
 		this.#saveTable = new Map();
 		this.#errorStack = [];
 		this.#sendStack = [];
+		this.#lastNodes = []
 		this.#source = source.replace(/(^\s+)|(\s+$)/g, '');
 		this.#provider = provider;
 		this.#stop = Stops.NONE;
