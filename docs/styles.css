@@ -2,25 +2,131 @@
 @tailwind components;
 @tailwind utilities;
 
-.primary-shadow {
-	box-shadow: 0 0 64pt var(--tw-c-primary-500);
+@layer base {
+	.message a:hover {
+		text-decoration: underline;
+	}
+
+	b {
+		font-weight: bold;
+	}
 }
 
-/**Zona de texto*/
+@layer utilities {
+	.primary-shadow {
+		box-shadow: 0 0 64pt var(--tw-c-primary-500);
+	}
+
+	.message-content {
+		@apply whitespace-pre-line text-wrap break-words;
+	}
+}
+
+/*Zona de texto*/
 .code-area {
-	@apply bg-secondary-500 font-code text-xs font-normal text-code-neutral sm:text-sm md:text-xs lg:text-sm
+	@apply bg-secondary-500 font-code text-xs font-normal text-code-neutral sm:text-sm md:text-xs lg:text-sm;
 }
 
-.text-message {
-	@apply min-h-8 rounded-sm font-extralight whitespace-pre-line text-wrap break-words px-2.5 pt-1.5 pb-2 m-2 bg-secondary-600;
+/*Webkit*/
+.no-scrollbar::-webkit-scrollbar {
+	display: none;
 }
 
-.text-message.message-error {
+/*IE, Edge, Firefox*/
+.no-scrollbar {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+
+.message {
+	@apply m-2 min-h-8 rounded-md bg-secondary-600 px-2.5 pb-2 pt-1.5 font-extralight;
+}
+
+.message.message-embed {
+	@apply border-l-4 border-[#1e1f22] pb-3.5 pl-3 pt-4;
+}
+
+.message.message-embed .message-embed-hgroup {
+	@apply flex flex-row justify-between;
+}
+
+.message.message-embed .message-embed-hgroup .message-embed-author {
+	@apply mb-2 font-medium;
+}
+
+.message.message-embed .message-embed-hgroup .message-embed-title {
+	@apply message-content mb-1.5 block text-lg font-bold;
+}
+
+.message.message-embed a {
+	@apply text-[#48b5fd];
+}
+
+.message.message-embed .message-embed-hgroup p {
+	@apply message-content mb-1.5 text-secondary-100;
+}
+
+.message.message-embed table {
+	@apply -mt-1.5;
+}
+
+.message.message-embed tr > * {
+	@apply px-1 py-0 first:pl-0 last:pr-0;
+}
+
+.message.message-embed th {
+	@apply message-content pb-0.5 pt-2 text-left align-text-top font-medium leading-tight;
+}
+
+.message.message-embed td {
+	@apply message-content pb-0.5 align-text-top leading-tight text-secondary-100;
+}
+
+.message.message-embed .message-embed-footer {
+	@apply message-content mb-1 mt-1.5 text-sm text-secondary-200;
+}
+
+.message.message-embed img {
+	@apply mt-4 rounded-sm;
+}
+
+.message i {
+	@apply block pr-2 pt-1;
+}
+
+.message.message-error i {
+	@apply block pr-2 pt-[0.3125rem];
+}
+
+.message.message-error {
 	@apply bg-red-800;
 }
 
+.message.message-error h2 {
+	@apply text-foreground text-lg font-semibold;
+}
+
+.message.message-return {
+	@apply bg-accent-600;
+}
+
+.message.message-input {
+	@apply bg-primary-500;
+}
+
+.message.message-input textarea {
+	@apply my-1 w-full resize-none overflow-x-hidden rounded-md border-2 border-b-primary-300 border-l-primary-600 border-r-primary-300 border-t-primary-600 bg-primary-500 px-1;
+}
+
+.message.message-text,
+.message.message-error,
+.message.message-return,
+.message.message-input {
+	@apply flex flex-row;
+}
+
 .cm-s-psdocs.CodeMirror {
-	@apply rounded-md min-h-full code-area;
+	@apply code-area min-h-full rounded-md;
 }
 
 #playground > * {

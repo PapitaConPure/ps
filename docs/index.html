@@ -29,10 +29,12 @@
 	</head>
 	<body class="bg-background font-default-sans text-foreground">
 		<div class="md:py-auto">
-			<header class="sticky top-0 z-10 mb-1 bg-background px-4 pt-0.5 sm:mb-2 sm:pt-1">
+			<header
+				class="sticky top-0 z-10 mb-1 bg-background px-4 pt-0.5 sm:mb-2 sm:pt-1 md:px-1"
+			>
 				<div class="border-b border-b-secondary-600 pb-0.5 sm:pb-1">
 					<div
-						class="flex-col md:mx-auto md:flex md:w-11/12 md:max-w-[1280px] md:flex-row md:items-center"
+						class="lg:11/12 flex-col md:mx-auto md:flex md:w-[95%] md:max-w-[1280px] md:flex-row md:items-center"
 					>
 						<h1
 							class="my-2 w-full flex-initial cursor-default select-none text-center text-4xl font-black sm:text-6xl md:w-max md:text-4xl"
@@ -126,10 +128,12 @@
 				</button>
 			</nav>
 
-			<main class="w-full px-8 sm:px-12 md:mx-auto md:w-11/12 md:max-w-[1280px] md:px-4">
+			<main
+				class="lg:11/12 w-full px-8 sm:px-12 md:mx-auto md:w-[95%] md:max-w-[1280px] md:px-1"
+			>
 				<section
 					id="playground"
-					class="flex-col justify-between md:flex md:h-[32rem] md:flex-row lg:h-[40rem]"
+					class="flex-col justify-between md:flex md:h-[32rem] md:flex-row lg:h-[42rem]"
 				>
 					<div
 						class="mb-3 mt-3 h-[34rem] flex-auto sm:mt-6 sm:h-[40rem] md:my-6 md:mr-2 md:h-auto md:w-2/3 md:flex-grow"
@@ -138,25 +142,32 @@
 ENVIAR "¡Hola mundo!"
 ENVIAR ""
 
-REPETIR 10 veces
-	ENVIAR "Esto a PuréScript"
-FIN
+CREAR Marco m
+
+EJECUTAR m
+	->asignarColor("#fe4c72")
+	->asignarAutor("Prueba")
+	->asignarTítulo("Esto es PuréScript")
+	->asignarDescripción("No, de verdad. Esto es PuréScript")
+	->asignarMiniatura("https://i.imgur.com/zoW5w3i.png")
+	->asignarImagen("https://i.imgur.com/2zFjYVE.jpeg")
+	->asignarPie("Esto es el pie del marco")
+	->agregarCampo("Este es un campo", "Y este es su valor", Verdadero)
+	->agregarCampo("Este es un campo", "Y este es su valor", Verdadero)
+	->agregarCampo("Este es un campo", "Y este es su valor", Verdadero)
+	->agregarCampo("Este es un campo", "Y este es su valor")
+	->agregarCampo("Este es un campo", "Y este es su valor", Verdadero)
+	->agregarCampo("Este es un campo", "Y este es su valor", Verdadero)
+	->agregarCampo("Este es un campo", "Y este es su valor")
+
+ENVIAR m
 </textarea
 						>
 					</div>
 					<div
-						class="mb-3 mt-3 h-96 w-full flex-initial rounded-md sm:mb-6 sm:h-[32rem] md:my-6 md:ml-2 md:h-auto md:w-1/3"
-					>
-						<div
-							class="h-[75%] w-full rounded-t-md border-2 border-b-0 border-secondary-500 overflow-x-hidden overflow-y-auto"
-							id="output"
-						>
-						</div>
-						<textarea
-							class="code-area h-[25%] w-full resize-none rounded-b-md px-2"
-							id="result"
-						></textarea>
-					</div>
+						id="output"
+						class="no-scrollbar mb-3 mt-3 h-96 w-full flex-initial overflow-y-auto overflow-x-hidden rounded-md border-2 border-secondary-500 sm:mb-6 sm:h-[32rem] md:my-6 md:ml-2 md:h-auto md:w-1/3 md:min-w-[380px]"
+					></div>
 				</section>
 			</main>
 			<footer

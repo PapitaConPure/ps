@@ -287,27 +287,212 @@ function stringifyValue(value) {
 	return coerceValue(interpreter, value, 'Text').value;
 }
 
-/**
- * 
- * @param {{ content?: string, embeds?: string }} options 
- */
-function createMessage(options) {
-	const { content = null, embeds = null } = options;
+const MessageKinds = /**@const*/({
+	text: { className: 'message-text', icon: 'fa-comment' },
+	embed: { className: 'message-embed', icon: null },
+	error: { className: 'message-error', icon: 'fa-circle-exclamation' },
+	return: { className: 'message-return', icon: 'fa-share-from-square' },
+	input: { className: 'message-input', icon: 'fa-keyboard' },
+});
+/**@typedef {keyof MessageKinds} MessageKind*/
 
-	embeds && message.classList.add('embed-message');
-	outputCont.appendChild(message);
+
+function initOutput() {
+	const outputCont = document.getElementById('output');
+	outputCont.innerHTML = '';
+
+	if(!outputCont) {
+		console.warn('No output container was found (#output)');
+		return {
+			success: /**@const @type {false}*/(false),
+			outputCont: null,
+			sendMessage: () => {},
+		};
+	}
+
+	/**
+	 * @param {{ kind: MessageKind, data: * }} options 
+	 */
+	function sendMessage(options) {
+		const { kind, data } = options;
+
+		const message = document.createElement('div');
+		message.classList.add('message', MessageKinds[kind].className);
+
+		if(kind === 'embed') {
+			const { author, color, url, title, description, fields, imageUrl, thumbUrl, footer } = data;
+
+			if(color) {
+				if(!isNaN(color))
+					message.style.borderLeftColor = `#${color.toString(16)}`;
+				else if(Array.isArray(color))
+					message.style.borderLeftColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+				else if(color === 'Random')
+					message.style.borderLeftColor = `rgb(${
+						Math.floor(Math.random() * 0x100)
+					}, ${
+						Math.floor(Math.random() * 0x100)
+					}, ${
+						Math.floor(Math.random() * 0x100)
+					})`;
+				else if(typeof color === 'string' && color.startsWith('#') && color.length >= 3)
+					message.style.borderLeftColor = color;
+			}
+
+			if(!author && !title && !description) {
+				if(thumbUrl) {
+					const thumb = document.createElement('img');
+					if(thumb.style.width > thumb.style.height)
+						thumb.style.width = '96px';
+					else
+						thumb.style.height = '96px';
+					thumb.style.margin = '0 0 0.25rem auto';
+					thumb.src = thumbUrl;
+					thumb.alt = 'Miniatura';
+					message.appendChild(thumb);
+				}
+			} else {
+				const embedTop = document.createElement('div');
+				embedTop.classList.add('message-embed-hgroup');
+				
+				const hgroup = document.createElement('div');
+	
+				if(author) {
+					const element = document.createElement(author.url ? 'a' : 'div');
+					element.classList.add('message-embed-author');
+					element.textContent = author.name;
+					if(author.url) element.href = author.url;
+					hgroup.appendChild(element);
+				}
+	
+				if(title) {
+					const element = document.createElement(url ? 'a' : 'h2');
+					element.classList.add('message-embed-title');
+					element.textContent = title;
+					if(url) element.href = url;
+					hgroup.appendChild(element);
+				}
+	
+				if(description) {
+					const element = document.createElement('p');
+					element.textContent = description;
+					hgroup.appendChild(element);
+				}
+
+				embedTop.appendChild(hgroup);
+
+				if(thumbUrl) {
+					const thumb = document.createElement('img');
+					if(thumb.style.width > thumb.style.height)
+						thumb.style.width = '96px';
+					else
+						thumb.style.height = '96px';
+					thumb.style.margin = '0 0 0.25rem 0.25rem';
+					thumb.src = thumbUrl;
+					thumb.alt = 'Miniatura';
+					embedTop.appendChild(thumb);
+				}
+
+				message.appendChild(embedTop);
+			}
+
+			if(fields) {
+				const table = document.createElement('table');
+
+				const rows = [];
+				let row = { names: [], values: [] };
+				rows.push(row.names, row.values);
+
+				for(const field of fields) {
+					if(!field.inline && row.names.length !== 0) {
+						row = { names: [], values: [] };
+						rows.push(row.names, row.values);
+					}
+
+					row.names.push(field.name);
+					row.values.push(field.value);
+					
+					if(!field.inline || row.names.length === 3) {
+						row = { names: [], values: [] };
+						rows.push(row.names, row.values);
+					}
+				}
+
+				for(let i = 0; i < rows.length; i++) {
+					const rowElement = document.createElement('tr');
+
+					for(const data of rows[i]) {
+						const cell = document.createElement((i % 2 === 0) ? 'th' : 'td');
+						cell.textContent = data;
+						rowElement.appendChild(cell);
+					}
+
+					table.appendChild(rowElement);
+				}
+
+				message.appendChild(table);
+			}
+
+			if(imageUrl) {
+				const element = document.createElement('img');
+				element.src = imageUrl;
+				element.alt = 'Imagen';
+				message.appendChild(element);
+			}
+
+			if(footer) {
+				const element = document.createElement('div');
+				element.classList.add('message-embed-footer');
+				element.textContent = footer.text;
+				message.appendChild(element);
+			}
+		} else {
+			const icon = document.createElement('i');
+			icon.classList.add('fa', MessageKinds[kind].icon);
+			message.appendChild(icon);
+			
+			const content = document.createElement(kind === 'input' ? 'textarea' : 'div');
+			if(kind === 'error') {
+				const errorHeader = document.createElement('h2');
+				errorHeader.textContent = data.name ?? 'Error';
+				
+				const errorDescription = document.createElement('p');
+				errorDescription.classList.add('message-content');
+				errorDescription.style.width = '96%';
+				errorDescription.textContent = data.message ?? 'Error desconocido';
+
+				content.appendChild(errorHeader);
+				content.appendChild(errorDescription);
+			} else {
+				content.classList.add('message-text');
+				content.textContent = data;
+			}
+			message.appendChild(content);
+		}
+
+		outputCont.appendChild(message);
+	}
+
+	return {
+		success: /**@const @type {true}*/(true),
+		outputCont,
+		sendMessage,
+	};
 }
 
 async function executePS() {
 	const puréscript = editor.getDoc().getValue().trim();
-	const outputCont = document.getElementById('output');
-	const resultArea = document.getElementById('result');
+	const { success, sendMessage } = initOutput();
 
-	outputCont.innerHTML = '';
+	if(!success) {
+		console.error('Output container was not properly initialized');
+		return;
+	}
 
 	try {
 		const tokens = lexer.tokenize(puréscript);
 		const tree = parser.parse(tokens);
+		
 		const scope = new Scope(interpreter);
 		const provider = new BrowserEnvironmentProvider();
 		declareNatives(scope);
@@ -319,34 +504,67 @@ async function executePS() {
 		const result = interpreter.evaluateProgram(tree, scope, puréscript, provider, args, isTestDrive);
 
 		if(!result.sendStack.length) {
-			const notice = document.createElement('div');
-			notice.classList.add('text-message', 'message-error');
-			notice.textContent = 'No se envió ningún mensaje';
-			outputCont.appendChild(notice);
-			return;
+			const error = new Error('No se envió ningún mensaje');
+			error.name = 'TuberSendError';
+			throw error;
+		}
+
+		if(!result.sendStack.length) {
+			const error = new Error('Demasiados embeds');
+			error.name = 'TuberSendError';
+			throw error;
 		}
 
 		const contentLines = [];
-		result.sendStack.forEach(value => {
-			if(value.kind === 'Embed') return;
-			contentLines.push(stringifyValue(value));
-		});
-		console.log(contentLines);
+		const embeds = [];
+		for(const value of result.sendStack) {
+			if(value.kind === 'Embed')
+				embeds.push(value.value);
+			else
+				contentLines.push(stringifyValue(value));
+		}
+
+		const content = contentLines.join('\n').trim('');
+		if(!content.length && !embeds.length) {
+			const error = new Error('No se envió ningún mensaje');
+			error.name = 'TuberSendError';
+			throw error;
+		}
 		
 		if(contentLines) {
-			const message = document.createElement('div');
-			message.classList.add('text-message');
-			message.textContent = contentLines.join('\n');
-			outputCont.appendChild(message)
+			sendMessage({
+				kind: 'text',
+				data: content,
+			});
 		};
 
-		resultArea.value = (result.returned.kind === 'Nada') ? '' : `${stringifyValue(result.returned)}`;
-	} catch(e) {
-		console.error(e);
-		resultArea.value = `ERROR — ${e.name}
+		for(const embed of embeds) {
+			sendMessage({
+				kind: 'embed',
+				data: embed.data,
+			});
+		}
 
-LO QUÉ OCURRIÓ:
-${e.message.slice('```arm\n'.length).replace('\n```\n', '\n\n')}
-`;
+		sendMessage({
+			kind: 'return',
+			data: stringifyValue(result.returned),
+		});
+
+		if(result.inputStack.length) {
+			sendMessage({
+				kind: 'input',
+				data: result.inputStack.map((input, i) => input.spread ? `${input.name}_0 ${input.name}_1 ... ${input.name}_N` : input.name).join(' '),
+			});
+		}
+	} catch(err) {
+		console.error(err);
+
+		sendMessage({
+			kind: 'error',
+			data: {
+				name: typeof err === 'string' ? err : err.name,
+				message: err.message?.startsWith('```') ? err.message?.slice('```arm\n'.length).replace('\n```\n', '\n\n') : (err.message?.trim() ?? 'Este error no ofrece información adicional'),
+			},
+		});
 	}
 }
