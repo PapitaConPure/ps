@@ -30,11 +30,11 @@
 	<body class="bg-background font-default-sans text-foreground">
 		<div class="md:py-auto">
 			<header
-				class="sticky top-0 z-10 mb-1 bg-background px-4 pt-0.5 sm:mb-2 sm:pt-1 md:px-1"
+				class="sticky top-0 z-10 mb-1 bg-background px-4 pt-0.5 sm:mb-2 sm:pt-1 md:px-0.5"
 			>
 				<div class="border-b border-b-secondary-600 pb-0.5 sm:pb-1">
 					<div
-						class="lg:11/12 flex-col md:mx-auto md:flex md:w-[95%] md:max-w-[1280px] md:flex-row md:items-center"
+						class="lg:11/12 flex-col md:mx-auto md:flex md:w-[98%] md:max-w-[1280px] md:flex-row md:items-center"
 					>
 						<h1
 							class="my-2 w-full flex-initial cursor-default select-none text-center text-4xl font-black sm:text-6xl md:w-max md:text-4xl"
@@ -129,44 +129,83 @@
 			</nav>
 
 			<main
-				class="lg:11/12 w-full px-8 sm:px-12 md:mx-auto md:w-[95%] md:max-w-[1280px] md:px-1"
+				class="lg:11/12 w-full px-8 sm:px-12 md:mx-auto md:w-[98%] md:max-w-[1280px] md:px-0.5"
 			>
 				<section
 					id="playground"
 					class="flex-col justify-between md:flex md:h-[32rem] md:flex-row lg:h-[42rem]"
 				>
 					<div
-						class="mb-3 mt-3 h-[34rem] flex-auto sm:mt-6 sm:h-[40rem] md:my-6 md:mr-2 md:h-auto md:w-2/3 md:flex-grow"
+						class="mb-3 mt-3 h-[34rem] flex-auto sm:mt-6 sm:h-[40rem] md:my-6 md:mr-2 md:h-auto md:w-7/12 lg:w-2/3 md:flex-grow"
 					>
-						<textarea id="editor">
-ENVIAR "¡Hola mundo!"
-ENVIAR ""
+						<textarea class="bg-secondary-600 w-full h-full" id="editor">
+COMENTAR "
+	Los comentarios no afectan el funcionamiento del código.
+	Estos comentarios pueden ser de múltiples líneas
+"
+//También, esta es la forma recomendada de escribir un comentario de una sola línea
 
-CREAR Marco m
 
-EJECUTAR m
-	->asignarColor("#fe4c72")
-	->asignarAutor("Prueba")
-	->asignarTítulo("Esto es PuréScript")
-	->asignarDescripción("No, de verdad. Esto es PuréScript")
-	->asignarMiniatura("https://i.imgur.com/zoW5w3i.png")
-	->asignarImagen("https://i.imgur.com/2zFjYVE.jpeg")
-	->asignarPie("Esto es el pie del marco")
-	->agregarCampo("Este es un campo", "Y este es su valor", Verdadero)
-	->agregarCampo("Este es un campo", "Y este es su valor", Verdadero)
-	->agregarCampo("Este es un campo", "Y este es su valor", Verdadero)
-	->agregarCampo("Este es un campo", "Y este es su valor")
-	->agregarCampo("Este es un campo", "Y este es su valor", Verdadero)
-	->agregarCampo("Este es un campo", "Y este es su valor", Verdadero)
-	->agregarCampo("Este es un campo", "Y este es su valor")
+//---------------[ ENVÍO DE MENSAJES ]---------------//
+ENVIAR "# ¡Hola!"
+ENVIAR "Puedes escribir **código PuréScript** en el *editor* a la izquierda y los resultados se mostrarán aquí."
+ENVIAR "Cualquier código que funcione aquí debería funcionar en Discord y vice-versa ||~~tal vez~~||."
 
-ENVIAR m
+
+ENVIAR "## Entradas"
+ENVIAR "Desplázate hasta el fondo de esta caja de mensaje para ingresar __Entradas de Usuario__."
+ENVIAR "Vuelve a ejecutar el código con entradas usando el botón que ofrece la caja de mensaje."
+
+LEER Número unaEntrada con 42
+ENVIAR "Valor de `unaEntrada`: " + unaEntrada
+
+ENVIAR "-# Las entradas se separan por espacios y se unen con comillas dobles (\")"
+
+ENVIAR "## ¿No sabes por dónde empezar?"
+ENVIAR "¡Consulta la [documentación](https://papitaconpure.github.io/ps-docs/)!"
+
+
+//---------------[ ENVÍO DE MARCOS ]---------------//
+CREAR Marco unMarco
+
+//Para asignar propiedades a un Marco, se utilizan "métodos de Marco"
+EJECUTAR unMarco->asignarColor("#f8b7cb")
+EJECUTAR unMarco->asignarAutor("Bot de Puré", "https://i.imgur.com/Ah7G6iV.jpeg")
+EJECUTAR unMarco->asignarTítulo("Esto es un Marco")
+EJECUTAR unMarco->asignarDescripción("No, de verdad. Esto es un **Marco**.")
+EJECUTAR unMarco->agregarCampo("Este es un **campo**", "Y este es su **valor**", Verdadero)
+
+//También, puedes encadenar métodos de Marco de la siguiente manera:
+USAR unMarco->asignarMiniatura("https://i.imgur.com/3Dp8zFa.jpeg")
+	->asignarImagen("https://i.imgur.com/T6kxYxq.png")
+	->asignarPie("Esto es el pie del marco.")
+	->agregarCampo("Este es otro campo", "Y este su valor también", Verdadero)
+	->agregarCampo("Un campo más", "Y este está en su línea")
+
+//Nota: La sentencia "EJECUTAR" es la misma que "USAR"
+
+ENVIAR unMarco
+
+
+CREAR Marco otroMarco
+
+USAR otroMarco
+	->asignarColor("#bbe1f2")
+	->asignarTítulo("Información importante")
+	->asignarPie("Te sorprendería lo mucho que Discord permite que escribas aquí."
+	+ " Aprovecho para decir que el arte de la miniatura del Marco anterior está ilustrado por Rakkidei."
+	+ " De paso, la caja inmediatamente debajo de esta es el \"valor de retorno\" del Tubérculo.")
+	->agregar("Exportar", "Cuando tu código este listo, puedes exportarlo a un archivo \".tuber\"")
+	->agregar("Importar", "De momento, no se permite importar código a esta página")
+	->agregar("Enlazar", "Cuando hayas exportado tu código, puedes usar `p!tubérculo` y adjuntar el archivo \".tuber\" al mensaje")
+
+ENVIAR otroMarco
 </textarea
 						>
 					</div>
 					<div
 						id="output"
-						class="no-scrollbar mb-3 mt-3 h-96 w-full flex-initial overflow-y-auto overflow-x-hidden rounded-md border-2 border-secondary-500 sm:mb-6 sm:h-[32rem] md:my-6 md:ml-2 md:h-auto md:w-1/3 md:min-w-[380px]"
+						class="no-scrollbar mb-3 mt-3 h-96 w-full flex-initial overflow-y-auto overflow-x-hidden rounded-md border-2 border-secondary-500 sm:mb-6 sm:h-[32rem] md:my-6 md:ml-2 md:h-auto md:w-1/3"
 					></div>
 				</section>
 			</main>
