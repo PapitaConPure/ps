@@ -317,23 +317,24 @@ function markup(content) {
 		.replace(/\n/g, '<br>');
 }
 
+let savedData = new Map();
 let messagesToAppend = [];
 let busyOutput = false;
+let lastInput = null;
 setInterval(function() {
 	if(!busyOutput) return;
+
 	const appendMessage = messagesToAppend.shift();
 	if(!appendMessage) {
 		busyOutput = false;
 		return;
 	}
+
 	appendMessage();
 }, 80);
 
-function initOutput() {
-	messagesToAppend = [];
-
+function initOutput(isTestDrive) {
 	const outputCont = document.getElementById('output');
-	outputCont.innerHTML = '';
 
 	if(!outputCont) {
 		console.warn('No output container was found (#output)');
@@ -342,6 +343,13 @@ function initOutput() {
 			outputCont: null,
 			sendMessage: () => {},
 		};
+	}
+	
+	if(isTestDrive) {
+		messagesToAppend = [];
+		outputCont.innerHTML = '';
+		savedData =  new Map();
+		lastInput = null;
 	}
 
 	/**
@@ -512,7 +520,11 @@ function initOutput() {
 				content.appendChild(errorDescription);
 			} else {
 				content.classList.add('message-text');
-				content.innerHTML = markup(data);
+				if(kind === 'input') {
+					content.innerHTML = (lastInput == null) ? data : '';
+					lastInput = content;
+				} else
+					content.innerHTML = markup(data);
 			}
 			
 			message.appendChild(content);
@@ -523,10 +535,57 @@ function initOutput() {
 				sendIcon.classList.add('fa', 'fa-paper-plane');
 				sendBtn.appendChild(sendIcon);
 				message.appendChild(sendBtn);
+
+				/**
+				 * @param {HTMLButtonElement} button 
+				 * @param {HTMLTextAreaElement} argsHolder 
+				 */
+				async function reexecutePS(button, argsHolder) {
+					const args = argsHolder.value.length ? argsHolder?.value.split(/\s+/) : [];
+					const success = await executePS(args);
+					argsHolder.disabled = true;
+					button.disabled = true;
+					button.classList.add('sent');
+
+					if(!success) {
+						const newMessage = document.createElement('div');
+						newMessage.classList.add('message', MessageKinds[kind].className);
+	
+						const newIcon = document.createElement('i');
+						newIcon.classList.add('message-icon', 'fa', MessageKinds[kind].icon);
+						newMessage.appendChild(newIcon);
+						const newContent = document.createElement('textarea');
+						newMessage.appendChild(newContent);
+	
+						const newSendBtn = document.createElement('button');
+						const newSendIcon = document.createElement('i');
+						newSendIcon.classList.add('fa', 'fa-paper-plane');
+						newSendBtn.appendChild(newSendIcon);
+						newMessage.appendChild(newSendBtn);
+						messagesToAppend.push(() => {
+							outputCont.appendChild(newMessage);
+							if(messagesToAppend.length === 0)
+								outputCont.scrollTo({ top: outputCont.scrollHeight, behavior: 'smooth' });
+						});
+						busyOutput = true;
+						newSendBtn.addEventListener('click', _ => reexecutePS(newSendBtn, newContent), { once: true });
+					}
+				}
+
+				sendBtn.addEventListener('click', _ => reexecutePS(sendBtn, content), { once: true });
 			}
 		}
 
-		messagesToAppend.push(() => outputCont.appendChild(message));
+		const messagesBeforeInput = messagesToAppend.length;
+		messagesToAppend.push(() => {
+			outputCont.appendChild(message);
+			if(messagesToAppend.length === 0)
+				outputCont.scrollTo({ top: outputCont.scrollHeight, behavior: 'smooth' });
+
+			if(kind === 'input' && !isTestDrive) {
+				setTimeout(_ => lastInput.focus(), 320 + 80 * messagesBeforeInput);
+			}
+		});
 		busyOutput = true;
 	}
 
@@ -537,13 +596,18 @@ function initOutput() {
 	};
 }
 
-async function executePS() {
+/**
+ * @param {Array<String>} [args] 
+ */
+async function executePS(args = undefined) {
 	const puréscript = editor.getDoc().getValue().trim();
-	const { success, sendMessage } = initOutput();
+	const isTestDrive = (args == null);
+
+	const { success, sendMessage } = initOutput(isTestDrive);
 
 	if(!success) {
 		console.error('Output container was not properly initialized');
-		return;
+		return false;
 	}
 
 	try {
@@ -553,13 +617,10 @@ async function executePS() {
 		const scope = new Scope(interpreter);
 		const provider = new BrowserEnvironmentProvider();
 		declareNatives(scope);
-		await declareContext(scope, provider);
-
-		const isTestDrive = true; //PENDIENTE?
-		const args = []; //PENDIENTE
+		console.log(savedData);
+		await declareContext(scope, provider, savedData);
 
 		const result = interpreter.evaluateProgram(tree, scope, puréscript, provider, args, isTestDrive);
-
 		if(!result.sendStack.length) {
 			const error = new Error('No se envió ningún mensaje');
 			error.name = 'TuberSendError';
@@ -586,6 +647,34 @@ async function executePS() {
 			const error = new Error('No se envió ningún mensaje');
 			error.name = 'TuberSendError';
 			throw error;
+		}
+
+		for(const [ id, value ] of result.saveTable) {
+			if(value.kind === 'Nada')
+				savedData.delete(id);
+			else {
+				function objectify(value) {
+					const toSave = {
+						kind: value.kind,
+					};
+
+					if(value.value != null)
+						toSave.value = value.value;
+
+					if(value.elements != null) {
+						toSave.elements = value.elements.map(v => objectify(v));
+					}
+					
+					if(value.entries != null) {
+						toSave.entries = {};
+						for(const [ id, v ] of value.entries)
+							toSave.entries[id] = objectify(v);
+					}
+
+					return toSave;
+				}
+				savedData.set(id, objectify(value));
+			}
 		}
 		
 		if(contentLines) {
@@ -624,6 +713,8 @@ async function executePS() {
 				data: result.inputStack.map((input, i) => input.spread ? `${input.name}_0 ${input.name}_1 ... ${input.name}_N` : input.name).join(' '),
 			});
 		}
+
+		return true;
 	} catch(err) {
 		console.error(err);
 
@@ -634,6 +725,8 @@ async function executePS() {
 				message: (err.message ?? 'Este error no ofrece información adicional'),
 			},
 		});
+
+		return false;
 	}
 }
 

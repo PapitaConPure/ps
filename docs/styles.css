@@ -168,8 +168,16 @@
 	@apply my-1 w-full resize-none overflow-x-hidden rounded-md border-2 border-b-primary-300 border-l-primary-600 border-r-primary-300 border-t-primary-600 bg-primary-500 px-1;
 }
 
+.message.message-input textarea:disabled {
+	@apply border-0 my-0;
+}
+
 .message.message-input button {
 	@apply transition-colors duration-100 my-1 ml-2 block flex-auto rounded-md bg-primary-100 p-0 py-[7px] pl-2.5 pr-3 text-primary-500 hover:bg-white active:bg-primary-200;
+}
+
+.message.message-input button.sent {
+	@apply h-max my-auto text-primary-100 bg-primary-500;
 }
 
 .message.message-input button i {
