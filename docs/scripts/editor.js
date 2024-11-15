@@ -85,6 +85,8 @@ async function exportPS() {
 	} else {
 		//Compatibilidad
 		let filename = prompt('Ingresa el nombre del archivo');
+		if(filename == null) return;
+
 		if(!filename) filename = defaultFilename;
 		if(!filename.endsWith('.tuber'))
 			filename += '.tuber';
