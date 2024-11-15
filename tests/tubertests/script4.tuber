@@ -1,0 +1,28 @@
+CARGAR wawa con Lista 
+CARGAR wawa con Lista 42
+CARGAR wawa con Lista ,,42, 69
+CARGAR wawa con Lista 42, 69,
+CARGAR wawa con Lista 42,,,
+CARGAR wawa con (Lista ,,,420,,,)
+CARGAR wawa con (Lista 911)
+ENVIAR wawa
+
+CARGAR wiwi con Registro
+CARGAR wiwi con Registro a: 3, b: 2, c: 1
+CARGAR wiwi con (Registro a: 3, b: 2, c: 1,)
+ENVIAR wiwi
+
+CARGAR wowo con 3
+ENVIAR wowo
+
+SUMAR wowo
+ENVIAR wowo
+
+RESTAR wowo con 5 + 2
+ENVIAR wowo
+
+MULTIPLICAR wowo con 3
+ENVIAR wowo
+
+DIVIDIR wowo con 2
+ENVIAR wowo

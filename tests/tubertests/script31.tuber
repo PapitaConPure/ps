@@ -1,0 +1,7 @@
+cargar a con falso
+
+mientras no a
+	cargar a con verdadero
+fin
+
+enviar a
