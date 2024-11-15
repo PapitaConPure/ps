@@ -38,7 +38,7 @@ function parsePrimaryExpression(parser) {
 	case TokenKinds.LIT_BOOLEAN:
 		return {
 			kind: ExpressionKinds.BOOLEAN_LITERAL,
-			value: toLowerCaseNormalized(literal.value) === 'verdadero' ? true : false,
+			value: (toLowerCaseNormalized(literal.value) === 'verdadero' ? true : false),
 			...metadata,
 		};
 

@@ -359,8 +359,10 @@ function makeBoolean(value) {
  * @returns {BooleanValue}
  */
 function toggleBoolean(value) {
-	value.value = !value.value;
-	return value;
+	return {
+		...value,
+		value: !value.value,
+	};
 }
 
 /**

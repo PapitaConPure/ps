@@ -42,6 +42,13 @@ class Scope {
 	}
 
     /**
+     * @returns {this is Scope & { #parent: null, parent: null }}
+     */
+	hasNoParent() {
+		return this.#parent == null;
+	}
+
+    /**
      * Declara una variable con el valor por defecto del tipo especificado y devuelve el valor
      * @param {String} identifier El nombre bajo el cual se declarará la variable
      * @param {import('./values').ValueKind} kind
@@ -65,7 +72,7 @@ class Scope {
     assignVariable(identifier, value) {
         let scope = this.resolve(identifier, false);
 
-        if(!value)
+        if(value == null)
             throw this.#interpreter.TuberInterpreterError('Se esperaba una asignación');
 
 		scope ??= this;
@@ -101,10 +108,10 @@ class Scope {
     resolve(identifier, mustBeDeclared = true) {
         const variable = this.variables.get(identifier);
 
-        if(variable)
+        if(variable != null)
             return this;
 
-        if(!this.hasParent()) {
+        if(this.hasNoParent()) {
             if(this.#mirror)
                 return this.#mirror.resolve(identifier, mustBeDeclared);
 
