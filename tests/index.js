@@ -416,6 +416,15 @@ const tests = [
 		expect: Results.SUCCESS,
 		test: untested,
 	},
+	{
+		file: 31,
+		label: 'Asignación en mientras',
+		expect: Results.SUCCESS,
+		test: function({ sendStack }) {
+			expect(sendStack.length).toBe(1);
+			expect(sendStack[0]).toBe(makeBoolean(true));
+		},
+	},
 ];
 
 const pass = [];
