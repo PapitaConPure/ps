@@ -3,8 +3,8 @@
   "version": "1.1.0",
   "description": "PuréScript (no confundir con PureScript) es un lenguaje de scripting de comandos personalizados de servidor para Bot de Puré",
   "scripts": {
-    "ps-test": "node ./tests",
-    "ps-build": "esbuild src/index.js --bundle --outfile=dist/puréscript.bundle.js --global-name=PuréScript --minify & esbuild src/index.js --bundle --outfile=dist/puréscript.bundle.node.js --platform=node --target=node20.12.2"
+    "test": "node ./tests",
+    "build": "esbuild src/index.js --bundle --outfile=dist/puréscript.bundle.js --global-name=PuréScript --minify & esbuild src/index.js --bundle --outfile=dist/puréscript.bundle.node.js --platform=node --target=node20.12.2"
   },
   "devDependencies": {
     "@types/node": "^22.9.0",
