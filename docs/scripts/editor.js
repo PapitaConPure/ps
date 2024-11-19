@@ -284,39 +284,89 @@ class BrowserEnvironmentProvider {
 	}
 }
 
-function stringifyValue(value) {
-	if(value.kind === 'Nada') return 'Nada';
-	return coerceValue(interpreter, value, 'Text').value;
+/**
+ * @param {string} str 
+ */
+function sanitizeHtml(str) {
+	return str
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&#39;');
 }
-
-const MessageKinds = /**@const*/({
-	text: { className: 'message-text', icon: 'fa-comment' },
-	embed: { className: 'message-embed', icon: null },
-	error: { className: 'message-error', icon: 'fa-circle-exclamation' },
-	return: { className: 'message-return', icon: 'fa-share-from-square' },
-	input: { className: 'message-input', icon: 'fa-keyboard' },
-});
-/**@typedef {keyof MessageKinds} MessageKind*/
 
 /**
  * @param {string} content 
  */
 function markup(content) {
-	return content
-		.replace(/```([a-z0-9]{0,4}\n)?((?:.|\n)+?)```/gi, '<code class="block w-full">$2</code>')
+	const PART_CODE_BLOCK = '<<<PART/CODE/BLOCK>>>';
+	const PART_CODE_INLINE = '<<<PART/CODE/INLINE>>>';
+
+	const parts = [];
+
+	return sanitizeHtml(content)
+		//Pre-procesado a formatos sin formato interno
+		.replace(/```([a-z0-9]{0,4})?\n((?:.|\n)+?)```/gi, (_, lang, code) => {
+			code = code.replace(/\n/g, '<br>');
+			parts.push({ lang, code });
+			return PART_CODE_BLOCK;
+		})
+		.replace(/\`([^`]+)\`/g, (_, code) => {
+			code = code.replace(/\n/g, '<br>');
+			parts.push({ code });
+			return PART_CODE_INLINE;
+		})
+		//Formatos de línea
+        .replace(/^([\t ]*?)([-*]|(?:[0-9]+\.)) (.+)$/gm, (_, tabsOrSpaces, mark, item) => {
+			const tag = (mark === '*' || mark === '-') ? 'ul' : 'ol';
+			const order = tag === 'ul' ? '•' : mark;
+			const prefix = tabsOrSpaces.replace(/  /g, '\t');
+			const level = prefix.length;
+			return (level ? `<span class="list-indent" style="width:${0.5 * level}rem"></span>` : '')
+				 + `<span class="list-order" style="width:${tag === 'ul' ? 0.5 : 1}rem">${order}</span>`
+				 + `<${tag}">${item}</${tag}>`;
+		})
+        .replace(/^( +?)\* (.+)/gm, '<li>$1</li>')
+		.replace(/^### (.+)/gm, '<h3>$1</h3>')
+		.replace(/^## (.+)/gm, '<h2>$1</h2>')
+		.replace(/^# (.+)/gm, '<h1>$1</h1>')
+		.replace(/^-# (.+)/gm, '<div class="disclaimer">$1</div>')
+		.replace(/^&gt; (.+)/gm, '<div class="quote">$1</div>')
+		//Eliminar breaks sobrantes
+		.replace(/\n ?<([a-z0-9])/gi, '<$1')
+		.replace(/([a-z0-9])> ?\n/gi, '$1>')
+		//Formatos comunes
 		.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
 		.replace(/\*([^*]+)\*/g, '<i>$1</i>')
 		.replace(/__([^_]+)__/g, '<span class="underline">$1</span>')
 		.replace(/_([^_]+)_/g, '<i>$1</i>')
-		.replace(/~~([^_]+)~~/g, '<span class="line-through">$1</span>')
-		.replace(/\`([^`]+)\`/g, '<code>$1</code>')
+		.replace(/~~([^~]+)~~/g, '<span class="line-through">$1</span>')
 		.replace(/\|\|([^\|]+)\|\|/g, '<span class="spoiler">$1</span>')
-		.replace(/^### (.+)\n?/gm, '<h3>$1</h3>')
-		.replace(/^## (.+)\n?/gm, '<h2>$1</h2>')
-		.replace(/^# (.+)\n?/gm, '<h1>$1</h1>')
-		.replace(/^-# (.+)\n?/gm, '<div class="disclaimer">$1</div>')
-		.replace(/\[(.+?)\]\((.+?)\)/, '<a href="$2">$1</a>')
+		//Otros
+		.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>')
+		.replaceAll(PART_CODE_BLOCK, () => `<code class="block w-full">${parts.shift().code}</code>`)
+		.replaceAll(PART_CODE_INLINE, () => `<code>${parts.shift().code}</code>`)
 		.replace(/\n/g, '<br>');
+}
+
+/**
+ * @param {MessageKind} kind
+ */
+function createSendButton(kind) {
+	const sendBtn = document.createElement('button');
+	const sendIcon = document.createElement('i');
+	sendIcon.classList.add('fa', 'fa-paper-plane');
+	sendBtn.appendChild(sendIcon);
+
+	if(kind === 'redo') {
+		const sendLabel = document.createElement('span');
+		sendLabel.classList.add('font-semibold', 'pl-2');
+		sendLabel.textContent = 'Repetir orden';
+		sendBtn.appendChild(sendLabel);
+	}
+
+	return sendBtn;
 }
 
 let savedData = new Map();
@@ -334,6 +384,16 @@ setInterval(function() {
 
 	appendMessage();
 }, 80);
+
+const MessageKinds = /**@const*/({
+	text: { className: 'message-text', icon: 'fa-comment' },
+	embed: { className: 'message-embed', icon: null },
+	error: { className: 'message-error', icon: 'fa-circle-exclamation' },
+	return: { className: 'message-return', icon: 'fa-share-from-square' },
+	input: { className: 'message-input', icon: 'fa-keyboard' },
+	redo: { className: 'message-input', icon: 'fa-rotate-right' },
+});
+/**@typedef {keyof MessageKinds} MessageKind*/
 
 function initOutput(isTestDrive) {
 	const outputCont = document.getElementById('output');
@@ -466,8 +526,8 @@ function initOutput(isTestDrive) {
 						rows.push(row.names, row.values);
 					}
 
-					row.names.push(markup(field.name));
-					row.values.push(markup(field.value));
+					row.names.push(field.name);
+					row.values.push(field.value);
 					
 					if(!field.inline || row.names.length === 3) {
 						row = { names: [], values: [] };
@@ -480,7 +540,7 @@ function initOutput(isTestDrive) {
 
 					for(const data of rows[i]) {
 						const cell = document.createElement((i % 2 === 0) ? 'th' : 'td');
-						cell.innerHTML = data;
+						cell.innerHTML = markup(data);
 						rowElement.appendChild(cell);
 					}
 
@@ -520,10 +580,10 @@ function initOutput(isTestDrive) {
 
 				content.appendChild(errorHeader);
 				content.appendChild(errorDescription);
-			} else {
+			} else if(data) {
 				content.classList.add('message-text');
 				if(kind === 'input') {
-					content.innerHTML = (lastInput == null) ? data : '';
+					content.innerHTML = (lastInput == null) ? sanitizeHtml(data) : '';
 					lastInput = content;
 				} else
 					content.innerHTML = markup(data);
@@ -531,11 +591,8 @@ function initOutput(isTestDrive) {
 			
 			message.appendChild(content);
 			
-			if(kind === 'input') {
-				const sendBtn = document.createElement('button');
-				const sendIcon = document.createElement('i');
-				sendIcon.classList.add('fa', 'fa-paper-plane');
-				sendBtn.appendChild(sendIcon);
+			if(kind === 'input' || kind === 'redo') {
+				const sendBtn = createSendButton(kind);
 				message.appendChild(sendBtn);
 
 				/**
@@ -543,7 +600,7 @@ function initOutput(isTestDrive) {
 				 * @param {HTMLTextAreaElement} argsHolder 
 				 */
 				async function reexecutePS(button, argsHolder) {
-					const args = argsHolder.value.length ? argsHolder?.value.split(/\s+/) : [];
+					const args = argsHolder?.value?.length ? argsHolder.value.split(/\s+/) : [];
 					const success = await executePS(args);
 					argsHolder.disabled = true;
 					button.disabled = true;
@@ -559,10 +616,7 @@ function initOutput(isTestDrive) {
 						const newContent = document.createElement('textarea');
 						newMessage.appendChild(newContent);
 	
-						const newSendBtn = document.createElement('button');
-						const newSendIcon = document.createElement('i');
-						newSendIcon.classList.add('fa', 'fa-paper-plane');
-						newSendBtn.appendChild(newSendIcon);
+						const newSendBtn = createSendButton(kind);
 						newMessage.appendChild(newSendBtn);
 						messagesToAppend.push(() => {
 							outputCont.appendChild(newMessage);
@@ -598,6 +652,11 @@ function initOutput(isTestDrive) {
 	};
 }
 
+function stringifyValue(value) {
+	if(value.kind === 'Nada') return 'Nada';
+	return coerceValue(interpreter, value, 'Text').value;
+}
+
 /**
  * @param {Array<String>} [args] 
  */
@@ -619,7 +678,6 @@ async function executePS(args = undefined) {
 		const scope = new Scope(interpreter);
 		const provider = new BrowserEnvironmentProvider();
 		declareNatives(scope);
-		console.log(savedData);
 		await declareContext(scope, provider, savedData);
 
 		const result = interpreter.evaluateProgram(tree, scope, puréscript, provider, args, isTestDrive);
@@ -713,6 +771,11 @@ async function executePS(args = undefined) {
 			sendMessage({
 				kind: 'input',
 				data: result.inputStack.map((input, i) => input.spread ? `${input.name}_0 ${input.name}_1 ... ${input.name}_N` : input.name).join(' '),
+			});
+		} else {
+			sendMessage({
+				kind: 'redo',
+				data: null,
 			});
 		}
 

@@ -66,12 +66,25 @@
 	@apply text-[#48b5fd];
 }
 
+.message .list-order,
+		 .list-indent {
+	@apply inline-block;
+}
+
+.message .list-order {
+	@apply text-right pr-3 my-0.5;
+}
+
 .message .disclaimer {
 	@apply mb-2 mt-0.5 text-sm leading-tight text-secondary-200;
 }
 
 .message .spoiler {
 	@apply px-1 rounded-md text-secondary-700 bg-secondary-700 hover:text-secondary-200 hover:cursor-help;
+}
+
+.message .quote {
+	@apply border-l-secondary-400 border-l-4 my-0 py-1 pl-2;
 }
 
 .message h1,
