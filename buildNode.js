@@ -6,6 +6,7 @@ console.time('Done in');
 esbuild.build({
 	entryPoints: [ 'src/index.js' ],
 	outfile: 'dist/puréscript.bundle.node.js',
+	tsconfig: 'tsconfig.json',
 	bundle: true,
 	ignoreAnnotations: false,
 	plugins: [
