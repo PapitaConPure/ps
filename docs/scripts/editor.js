@@ -351,6 +351,37 @@ function markup(content) {
 }
 
 /**
+ * @param {Array<String>} args 
+ * @returns {Array<String>}
+ */
+function groupQuoted(args) {
+	const result = [];
+
+	let isInsideQuotes = false;
+	let groupedTemp = [];
+
+	for(let arg of args) {
+		if(arg.startsWith('"') && !isInsideQuotes) {
+			isInsideQuotes = true;
+			groupedTemp.push(arg.slice(1));
+		} else if(arg.endsWith('"') && isInsideQuotes && !arg.endsWith('\\"')) {
+			groupedTemp.push(arg.slice(0, -1));
+			result.push(groupedTemp.join(' ').trim());
+			groupedTemp = [];
+			isInsideQuotes = false;
+		} else if(isInsideQuotes)
+			groupedTemp.push(arg);
+		else
+			result.push(arg);
+	}
+
+	if(isInsideQuotes)
+		result.push(groupedTemp.join(' '));
+
+	return result;
+}
+
+/**
  * @param {MessageKind} kind
  */
 function createSendButton(kind) {
@@ -591,7 +622,8 @@ function initOutput(isTestDrive) {
 				 * @param {HTMLTextAreaElement} argsHolder 
 				 */
 				async function reexecutePS(button, argsHolder) {
-					const args = argsHolder?.value?.length ? argsHolder.value.split(/\s+/) : [];
+					const trimmedContent = argsHolder.value.replace(/^\s+|\s+$/, '');
+					const args = trimmedContent.length ? groupQuoted(trimmedContent.split(/\s+/)) : [];
 					const success = await executePS(args);
 					argsHolder.disabled = true;
 					button.disabled = true;
@@ -605,6 +637,9 @@ function initOutput(isTestDrive) {
 						newIcon.classList.add('message-icon', 'fa', MessageKinds[kind].icon);
 						newMessage.appendChild(newIcon);
 						const newContent = document.createElement('textarea');
+						newContent.innerHTML = '';
+						newContent.classList.add('message-text');
+						lastInput = newContent;
 						newMessage.appendChild(newContent);
 	
 						const newSendBtn = createSendButton(kind);
@@ -613,13 +648,31 @@ function initOutput(isTestDrive) {
 							outputCont.appendChild(newMessage);
 							if(messagesToAppend.length === 0)
 								outputCont.scrollTo({ top: outputCont.scrollHeight, behavior: 'smooth' });
+
+							if(kind === 'input')
+								setTimeout(_ => lastInput && !lastInput.disabled && lastInput.focus(), 320 + 80 * messagesBeforeInput);
 						});
 						busyOutput = true;
+
 						newSendBtn.addEventListener('click', _ => reexecutePS(newSendBtn, newContent), { once: true });
+						newContent.addEventListener('keydown', function(e) {
+							if(e.key !== 'Enter' || e.shiftKey)
+								return true;
+							
+							reexecutePS(newSendBtn, newContent);
+							return false;
+						});
 					}
 				}
 
 				sendBtn.addEventListener('click', _ => reexecutePS(sendBtn, content), { once: true });
+				content.addEventListener('keydown', function(e) {
+					if(e.key !== 'Enter' || e.shiftKey)
+						return true;
+					
+					reexecutePS(sendBtn, content);
+					return false;
+				});
 			}
 		}
 
@@ -629,9 +682,8 @@ function initOutput(isTestDrive) {
 			if(messagesToAppend.length === 0)
 				outputCont.scrollTo({ top: outputCont.scrollHeight, behavior: 'smooth' });
 
-			if(kind === 'input' && !isTestDrive) {
-				setTimeout(_ => lastInput.focus(), 320 + 80 * messagesBeforeInput);
-			}
+			if(kind === 'input')
+				setTimeout(_ => lastInput && !lastInput.disabled && lastInput.focus(), 320 + 80 * messagesBeforeInput);
 		});
 		busyOutput = true;
 	}
@@ -780,7 +832,8 @@ async function executePS(args = undefined) {
 }
 
 document.body.addEventListener('keydown', function(e) {
-	if(!e.ctrlKey) return true;
+	if(!e.ctrlKey || e.shiftKey || e.altKey)
+		return true;
 
 	switch(e.key) {
 	case 'Enter':
