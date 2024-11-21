@@ -9,7 +9,7 @@ const { Input } = require('./interpreter/inputReader.js');
 const { declareNatives, declareContext } = require('./interpreter/environment/environment.js');
 const { EnvironmentProvider, PSGuild, PSChannel, PSRole, PSUser, PSMember } = require('./interpreter/environment/environmentProvider.js');
 
-const CURRENT_PS_VERSION = 1.1;
+const PS_VERSION = /**@type {const}*/(1.1);
 
 /**
  * @typedef {Object} BaseTubercle
@@ -48,7 +48,7 @@ const parser = new Parser();
 const interpreter = new Interpreter();
 
 module.exports = {
-    CURRENT_PS_VERSION,
+    PS_VERSION,
     Token,
     Lexer,
     Parser,
