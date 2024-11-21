@@ -358,14 +358,6 @@ function createSendButton(kind) {
 	const sendIcon = document.createElement('i');
 	sendIcon.classList.add('fa', 'fa-paper-plane');
 	sendBtn.appendChild(sendIcon);
-
-	if(kind === 'redo') {
-		const sendLabel = document.createElement('span');
-		sendLabel.classList.add('font-semibold', 'pl-2');
-		sendLabel.textContent = 'Repetir orden';
-		sendBtn.appendChild(sendLabel);
-	}
-
 	return sendBtn;
 }
 
@@ -391,7 +383,6 @@ const MessageKinds = /**@const*/({
 	error: { className: 'message-error', icon: 'fa-circle-exclamation' },
 	return: { className: 'message-return', icon: 'fa-share-from-square' },
 	input: { className: 'message-input', icon: 'fa-keyboard' },
-	redo: { className: 'message-input', icon: 'fa-rotate-right' },
 });
 /**@typedef {keyof MessageKinds} MessageKind*/
 
@@ -591,7 +582,7 @@ function initOutput(isTestDrive) {
 			
 			message.appendChild(content);
 			
-			if(kind === 'input' || kind === 'redo') {
+			if(kind === 'input') {
 				const sendBtn = createSendButton(kind);
 				message.appendChild(sendBtn);
 
@@ -767,17 +758,10 @@ async function executePS(args = undefined) {
 			data: stringifyValue(result.returned),
 		});
 
-		if(result.inputStack.length) {
-			sendMessage({
-				kind: 'input',
-				data: result.inputStack.map((input, i) => input.spread ? `${input.name}_0 ${input.name}_1 ... ${input.name}_N` : input.name).join(' '),
-			});
-		} else {
-			sendMessage({
-				kind: 'redo',
-				data: null,
-			});
-		}
+		sendMessage({
+			kind: 'input',
+			data: result.inputStack.map((input, i) => input.spread ? `${input.name}_0 ${input.name}_1 ... ${input.name}_N` : input.name).join(' '),
+		});
 
 		return true;
 	} catch(err) {
