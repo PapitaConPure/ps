@@ -1,6 +1,0 @@
-ENVIAR dado()
-ENVIAR dado(1000)
-ENVIAR dado(-10, -5)
-ENVIAR aleatorio()
-ENVIAR aleatorio(1000)
-ENVIAR aleatorio(-5, -100)

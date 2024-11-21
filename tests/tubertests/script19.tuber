@@ -1,9 +1,0 @@
-CARGAR factorial con Función(núm)
-	SI núm excede 1
-		DEVOLVER núm * factorial(núm - 1)
-	SINO
-		DEVOLVER núm
-	FIN
-FIN
-
-DEVOLVER factorial(6) //720

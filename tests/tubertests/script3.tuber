@@ -1,9 +1,0 @@
-CREAR Número wa
-
-CARGAR a con -25.4
-CARGAR b con 3 * 2 + 2
-CARGAR c con a > b
-
-ENVIAR a + " " + b + ' ' + c
-
-//hola

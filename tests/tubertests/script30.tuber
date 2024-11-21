@@ -1,8 +1,0 @@
-CARGAR var con "caramelo"
-CARGAR fn con Función(var)
-    ENVIAR var
-FIN
-
-EJECUTAR fn("chocolate") //Esto envía "chocolate"
-
-ENVIAR var //Esto envía "caramelo"

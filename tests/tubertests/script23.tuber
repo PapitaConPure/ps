@@ -1,7 +1,0 @@
-LEER Número a
-
-REPETIR 3 veces
-	LEER Número b
-FIN
-
-LEER Número c
