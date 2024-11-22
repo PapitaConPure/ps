@@ -41,10 +41,113 @@ CodeMirror.defineSimpleMode('pureescript', {
 		{ token: 'string', regex: /[^"\\]+/ },
 	],
 	meta: {
-		dontIndentStates: ["comment"],
+		dontIndentStates: ['comment'],
 		lineComment: "//",
 		electricInput: /\b(SINO|HASTA|FIN)\b/i,
 	},
+});
+
+const keywords = [
+	//Sentencias
+	'BORRAR', 'CARGAR', 'COMENTAR', 'CREAR', 'DEVOLVER', 'DIVIDIR', 'EJECUTAR', 'ENVIAR', 'EXTENDER', 'GUARDAR', 'LEER', 'MULTIPLICAR', 'PARAR', 'RESTAR', 'SUMAR', 'TERMINAR',
+	'BLOQUE', 'FIN', 'HACER', 'HASTA', 'MIENTRAS', 'PARA', 'PARA CADA', 'REPETIR', 'SI', 'SINO',
+
+	//Indicadores de Tipo
+	'Número', 'Texto', 'Lógico', 'Lista', 'Registro', 'Marco', 'Función',
+
+	//Keywords
+	'Verdadero', 'Falso', 'Nada',
+].map(keyword => ({
+	bias: (/**@type {number}*/start) => /**@type {number}*/(start === 0 ? -4 : +2),
+	value: keyword,
+}));
+
+const nativeVariableNames = (() => {
+	/**@param {Function} fn*/
+	const getFunctionArgs = (fn) => {
+		const fnStr = fn.toString();
+		let result = fnStr.slice(fnStr.indexOf('(')+1, fnStr.indexOf(')')).match(/\[(.*?)\]/);
+
+		if(result == null || result[1] == null)
+			return '';
+
+		result = result[1];
+
+		return result.split(/\s*?,\s*?/g).join(', ');
+	};
+	
+	const scope = new PuréScript.Scope();
+	PuréScript.declareNatives(scope);
+
+    const variableNames = /**@type {Set<{ bias: (start: number) => number, value: string }>}*/(new Set());
+	for(const [ name, variable ] of scope.variables) {
+		let finalName;
+		if(variable.kind === 'NativeFunction' || variable.kind === 'Function')
+			finalName = `${name}(${getFunctionArgs(variable.call)})`;
+		else
+			finalName = name;
+
+		variableNames.add({ bias: _ => 0, value: finalName });
+	}
+
+	return variableNames;
+})();
+
+function getDeclaredVariables(editor) {
+    const cursor = editor.getCursor();
+    const token = editor.getTokenAt(cursor);
+    const lines = /**@type {string}*/(editor.getValue()).split('\n').slice(0, cursor.line + 1);
+	lines[lines.length - 1] = lines[lines.length - 1].slice(0, token.start);
+	const content = lines.join('\n');
+    const variables = /**@type {Set<{ bias: (start: number) => number, value: string }>}*/(new Set());
+
+	const matches = content.matchAll(/\b(?:(?:CREAR\s+?[a-zÀ-ÖØ-öø-ÿ_]+?\s+?)|(?:CARGAR\s+?)|(?:LEER\s+?[a-zÀ-ÖØ-öø-ÿ_]+?\s+?(?:opcional\s+?)?))([a-zÀ-ÖØ-öø-ÿ_]+)/gi);
+	for(const match of matches) {
+		variables.add({ bias: _ => -1, value: match[1] });
+	}
+
+    return variables;
+}
+
+CodeMirror.registerHelper('hint', 'pureescript', function (editor) {
+    const cursor = editor.getCursor();
+    const token = editor.getTokenAt(cursor);
+    const start = token.start;
+    const end = token.end;
+    const currentWord = /**@type {string}*/(token.string).trim();
+
+	if(!currentWord.length) return {
+		list: (start === 0 ? keywords : [ ...nativeVariableNames, ...getDeclaredVariables(editor) ]).map(h => h.value),
+		from: CodeMirror.Pos(cursor.line, cursor.ch),
+		to: CodeMirror.Pos(cursor.line, cursor.ch),
+	};
+
+	const hints = [ ...new Set([
+		...keywords,
+		...nativeVariableNames,
+		...getDeclaredVariables(editor),
+	])];
+
+    const list = hints
+		.map(hint => {
+			const pos = hint.value.toLowerCase().indexOf(currentWord.toLowerCase());
+			const lengthDiffBias = (hint.value.length - currentWord.length) * 0.25;
+			const result = {
+				distance: pos >= 0 ? (pos + lengthDiffBias + hint.bias(start)) : 9999,
+				hint: hint.value,
+			};
+			
+			return result;
+		})
+		.filter(hint => hint.distance < 8)
+		.sort((a, b) => a.distance - b.distance)
+		.map(hint => hint.hint);
+
+    return {
+        list,
+        from: CodeMirror.Pos(cursor.line, start),
+        to: CodeMirror.Pos(cursor.line, end),
+    };
 });
 
 const editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
@@ -58,6 +161,18 @@ const editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
 	styleActiveLine: {
 		nonEmpty: true,
 	},
+	extraKeys: {
+		'Ctrl-Space': 'autocomplete',
+	},
+	hintOptions: {
+		hint: CodeMirror.hint.pureescript,
+	}
+});
+
+editor.on('inputRead', function (cm, change) {
+    if(change.text[0] && /\w/.test(change.text[0])) {
+        cm.showHint({ completeSingle: false });
+    }
 });
 
 function gotoPSDocs() {
@@ -854,7 +969,6 @@ document.body.addEventListener('keydown', function(e) {
 
 	switch(e.key) {
 	case 'Enter':
-	case ' ':
 		executePS();
 		return false;
 
