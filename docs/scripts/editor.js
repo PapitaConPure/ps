@@ -55,6 +55,9 @@ const editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
 	electricChars: true,
 	scrollbarStyle: 'overlay',
 	tabSize: 2,
+	styleActiveLine: {
+		nonEmpty: true,
+	},
 });
 
 function gotoPSDocs() {
@@ -388,6 +391,7 @@ function createSendButton(kind) {
 	const sendBtn = document.createElement('button');
 	const sendIcon = document.createElement('i');
 	sendIcon.classList.add('fa', 'fa-paper-plane');
+	sendBtn.ariaLabel = 'Volver a ejecutar orden';
 	sendBtn.appendChild(sendIcon);
 	return sendBtn;
 }
@@ -490,6 +494,7 @@ function initOutput(isTestDrive) {
 					if(author.iconUrl) {;
 						const icon = document.createElement('img');
 						icon.src = author.iconUrl;
+						icon.alt = 'Ícono de autor';
 						element.appendChild(icon);
 
 						const name = document.createElement('span')
@@ -595,20 +600,19 @@ function initOutput(isTestDrive) {
 				element.appendChild(text);
 				message.appendChild(element);
 			}
-
 		} else {
 			const icon = document.createElement('i');
 			icon.classList.add('message-icon', 'fa', MessageKinds[kind].icon);
 			message.appendChild(icon);
 			
 			const content = document.createElement(kind === 'input' ? 'textarea' : 'div');
+			content.style.overflowX = 'hidden';
 			if(kind === 'error') {
 				const errorHeader = document.createElement('h2');
 				errorHeader.textContent = data.name ?? 'Error';
 				
 				const errorDescription = document.createElement('p');
 				errorDescription.classList.add('message-content');
-				errorDescription.style.width = '96%';
 				errorDescription.innerHTML = data.message ? markup(data.message.replace(/\t/g, ' ')) : 'Error desconocido';
 
 				content.appendChild(errorHeader);
@@ -617,6 +621,7 @@ function initOutput(isTestDrive) {
 				content.classList.add('message-text');
 				if(kind === 'input') {
 					content.innerHTML = (lastInput == null) ? sanitizeHtml(data) : '';
+					content.ariaLabel = 'Ingresa entradas de re-ejecución separadas por espacios aquí';
 					lastInput = content;
 				} else
 					content.innerHTML = markup(data);
@@ -649,6 +654,7 @@ function initOutput(isTestDrive) {
 						newMessage.appendChild(newIcon);
 						const newContent = document.createElement('textarea');
 						newContent.innerHTML = '';
+						newContent.ariaLabel = 'Ingresa entradas de re-ejecución separadas por espacios aquí';
 						newContent.classList.add('message-text');
 						lastInput = newContent;
 						newMessage.appendChild(newContent);
@@ -665,25 +671,25 @@ function initOutput(isTestDrive) {
 						});
 						busyOutput = true;
 
-						newSendBtn.addEventListener('click', _ => reexecutePS(newSendBtn, newContent), { once: true });
+						newSendBtn.addEventListener('click', _ => reexecutePS(newSendBtn, newContent), { once: true, passive: true });
 						newContent.addEventListener('keydown', function(e) {
 							if(e.key !== 'Enter' || e.shiftKey)
 								return true;
 							
 							reexecutePS(newSendBtn, newContent);
 							return false;
-						});
+						}, { passive: true });
 					}
 				}
 
-				sendBtn.addEventListener('click', _ => reexecutePS(sendBtn, content), { once: true });
+				sendBtn.addEventListener('click', _ => reexecutePS(sendBtn, content), { once: true, passive: true });
 				content.addEventListener('keydown', function(e) {
 					if(e.key !== 'Enter' || e.shiftKey)
 						return true;
 					
 					reexecutePS(sendBtn, content);
 					return false;
-				});
+				}, { passive: true });
 			}
 		}
 
@@ -843,7 +849,7 @@ async function executePS(args = undefined) {
 }
 
 document.body.addEventListener('keydown', function(e) {
-	if(!e.ctrlKey || e.shiftKey || e.altKey)
+	if(!e.ctrlKey)
 		return true;
 
 	switch(e.key) {
@@ -866,6 +872,6 @@ document.body.addEventListener('keydown', function(e) {
 	}
 	
 	return true;
-});
+}, { passive: true });
 
 executePS();
