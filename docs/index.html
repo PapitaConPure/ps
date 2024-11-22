@@ -24,13 +24,12 @@
 
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-		<script src="scripts/loadFont.js"></script>
 		<link
-			rel="preload"
+			rel="stylesheet"
 			href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&amp;display=swap&family=Fira+Code:wght@300..700&display=swap"
-			as="style"
-			onload="loadFont(this)"
-			onerror="loadFont(this)"
+			media="print"
+			onload="this.onload=null;this.onerror=null;this.media='all'"
+			onerror="this.onload=null;this.onerror=null;this.media='all'"
 		/>
 
 		<link rel="stylesheet" href="output.css" />
@@ -39,20 +38,23 @@
 			rel="stylesheet"
 			href="codemirror/addon/scroll/simplescrollbars.css"
 			media="print"
-			onload="this.onload=null;this.media='all'"
+			onload="this.onload=null;this.onerror=null;this.media='all'"
+			onerror="this.onload=null;this.onerror=null;this.media='all'"
 		/>
 		<link
 			rel="stylesheet"
 			href="codemirror/addon/hint/show-hint.css"
 			media="print"
-			onload="this.onload=null;this.media='all'"
+			onload="this.onload=null;this.onerror=null;this.media='all'"
+			onerror="this.onload=null;this.onerror=null;this.media='all'"
 		/>
 		<link
 			rel="stylesheet"
 			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
 			crossorigin="anonymous"
 			media="print"
-			onload="this.onload=null;this.media='all'"
+			onload="this.onload=null;this.onerror=null;this.media='all'"
+			onerror="this.onload=null;this.onerror=null;this.media='all'"
 		/>
 	</head>
 	<body class="bg-background font-default-sans text-foreground">
@@ -278,14 +280,14 @@ ENVIAR otroMarco
 		</div>
 
 		<!-- CodeMirror -->
-		<script src="codemirror/lib/codemirror.min.js"></script>
+		<script defer src="codemirror/lib/codemirror.min.js"></script>
 		<script defer src="codemirror/addon/mode/simple.js"></script>
 		<script defer src="codemirror/addon/hint/show-hint.js"></script>
 		<script defer src="codemirror/addon/scroll/simplescrollbars.js"></script>
 		<script defer src="codemirror/addon/selection/active-line.js"></script>
 
 		<!-- Custom -->
-		<script src="scripts/puréscript.bundle.js"></script>
+		<script defer src="scripts/puréscript.bundle.js"></script>
 		<script defer src="scripts/editor.js"></script>
 	</body>
 </html>
