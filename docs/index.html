@@ -206,17 +206,21 @@ ENVIAR "¡Consulta la [documentación](https://papitaconpure.github.io/ps-docs/)
 //---------------[ ENVÍO DE MARCOS ]---------------//
 CREAR Marco unMarco
 
+CARGAR imagenDemo con Función(nombre)
+	DEVOLVER "https://raw.githubusercontent.com/PapitaConPure/ps/refs/heads/main/demo/" + nombre
+FIN
+
 //Para asignar propiedades a un Marco, se utilizan "métodos de Marco"
 EJECUTAR unMarco->asignarColor("#f8b7cb")
-EJECUTAR unMarco->asignarAutor("Bot de Puré", "https://i.imgur.com/Ah7G6iV.jpeg")
+EJECUTAR unMarco->asignarAutor("Bot de Puré", imagenDemo("author.webp"))
 EJECUTAR unMarco->asignarTítulo("Esto es un Marco")
 EJECUTAR unMarco->asignarDescripción("No, de verdad. Esto es un **Marco**.")
 EJECUTAR unMarco->agregarCampo("Este es un **campo**", "Y este es su **valor**", Verdadero)
 
 //También, puedes encadenar métodos de Marco de la siguiente manera:
-USAR unMarco->asignarMiniatura("https://i.imgur.com/3Dp8zFa.jpeg")
-	->asignarImagen("https://i.imgur.com/T6kxYxq.png")
-	->asignarPie("Esto es el pie del marco.")
+USAR unMarco->asignarMiniatura(imagenDemo("thumb.webp"))
+	->asignarImagen(imagenDemo("image.webp"))
+	->asignarPie("Esto es el pie del marco.", imagenDemo("footer.webp"))
 	->agregarCampo("Este es otro campo", "Y este su valor también", Verdadero)
 	->agregarCampo("Un campo más", "Y este está en su línea")
 
