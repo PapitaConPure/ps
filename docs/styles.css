@@ -63,7 +63,7 @@
 }
 
 .message a {
-	@apply text-[#48b5fd];
+	@apply text-[#ffa7cc];
 }
 
 .message .list-order,

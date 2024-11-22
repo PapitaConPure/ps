@@ -6,12 +6,13 @@
     "tw-build": "npx tailwindcss -i ./docs/styles.css -o ./docs/output.css --minify",
     "tw-build-watch": "npx tailwindcss -i ./docs/styles.css -o ./docs/output.css --minify -w",
     "ps-test": "node ./tests",
-    "ps-build": "esbuild src/index.js --bundle --outfile=docs/scripts/puréscript.bundle.js --global-name=PuréScript --minify"
+    "ps-build": "esbuild src/index.js --bundle --outfile=docs/scripts/puréscript.bundle.js --global-name=PuréScript --minify",
+    "codemirror-min": "esbuild docs/codemirror/lib/codemirror.js --bundle --outfile=docs/codemirror/lib/codemirror.min.js --global-name=CodeMirror --minify && esbuild docs/codemirror/lib/codemirror.css --outfile=docs/codemirror/lib/codemirror.min.css --minify"
   },
   "devDependencies": {
     "@types/node": "^22.9.0",
     "chalk": "^4.1.2",
-    "esbuild": "0.24.0",
+    "esbuild": "^0.24.0",
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.8",
     "tailwindcss": "^3.4.14"

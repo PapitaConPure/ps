@@ -166,7 +166,8 @@ const editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
 	},
 	hintOptions: {
 		hint: CodeMirror.hint.pureescript,
-	}
+	},
+	screenReaderLabel: 'Editor de código PuréScript',
 });
 
 editor.on('inputRead', function (cm, change) {
@@ -722,7 +723,7 @@ function initOutput(isTestDrive) {
 					icon.loading = 'lazy';
 					icon.decoding = 'async';
 					icon.fetchPriority = 'low';
-					element.alt = 'Ícono de pie';
+					icon.alt = 'Ícono de pie';
 					element.appendChild(icon);
 				}
 
@@ -1006,4 +1007,4 @@ document.body.addEventListener('keydown', function(e) {
 	return true;
 }, { passive: true });
 
-executePS();
+setTimeout(executePS, 200);
