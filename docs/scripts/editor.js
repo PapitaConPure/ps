@@ -736,8 +736,6 @@ function initOutput(isTestDrive) {
 				content.classList.add('message-text');
 				if(kind === 'input') {
 					content.innerHTML = (lastInput == null) ? sanitizeHtml(data) : '';
-					content.ariaLabel = 'Ingresa entradas de re-ejecución separadas por espacios aquí';
-					lastInput = content;
 				} else
 					content.innerHTML = markup(data);
 			}
@@ -745,6 +743,10 @@ function initOutput(isTestDrive) {
 			message.appendChild(content);
 			
 			if(kind === 'input') {
+				content.name = 'entradas';
+				content.ariaLabel = 'Ingresa entradas de re-ejecución separadas por espacios aquí';
+				lastInput = content;
+				
 				const sendBtn = createSendButton(kind);
 				message.appendChild(sendBtn);
 
@@ -768,6 +770,7 @@ function initOutput(isTestDrive) {
 						newIcon.classList.add('message-icon', 'fa', MessageKinds[kind].icon);
 						newMessage.appendChild(newIcon);
 						const newContent = document.createElement('textarea');
+						newContent.name = 'entradas';
 						newContent.innerHTML = '';
 						newContent.ariaLabel = 'Ingresa entradas de re-ejecución separadas por espacios aquí';
 						newContent.classList.add('message-text');
@@ -782,7 +785,7 @@ function initOutput(isTestDrive) {
 								outputCont.scrollTo({ top: outputCont.scrollHeight, behavior: 'smooth' });
 
 							if(kind === 'input')
-								setTimeout(_ => lastInput && !lastInput.disabled && lastInput.focus(), 320 + 80 * messagesBeforeInput);
+								setTimeout(_ => newContent != null && !newContent.disabled && newContent.focus(), 320 + 80 * messagesBeforeInput);
 						});
 						busyOutput = true;
 
@@ -815,7 +818,7 @@ function initOutput(isTestDrive) {
 				outputCont.scrollTo({ top: outputCont.scrollHeight, behavior: 'smooth' });
 
 			if(kind === 'input')
-				setTimeout(_ => lastInput && !lastInput.disabled && lastInput.focus(), 320 + 80 * messagesBeforeInput);
+				setTimeout(_ => lastInput != null && !lastInput.disabled && lastInput.focus(), 320 + 80 * messagesBeforeInput);
 		});
 		busyOutput = true;
 	}
