@@ -582,9 +582,20 @@ function initOutput(isTestDrive) {
 			if(footer) {
 				const element = document.createElement('div');
 				element.classList.add('message-embed-footer');
-				element.textContent = footer.text;
+				const text = document.createElement('div');
+
+				if(footer.iconUrl) {
+					const icon = document.createElement('img');
+					icon.src = footer.iconUrl;
+					element.alt = 'Ícono de pie';
+					element.appendChild(icon);
+				}
+
+				text.textContent = footer.text;
+				element.appendChild(text);
 				message.appendChild(element);
 			}
+
 		} else {
 			const icon = document.createElement('i');
 			icon.classList.add('message-icon', 'fa', MessageKinds[kind].icon);

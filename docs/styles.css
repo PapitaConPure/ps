@@ -146,7 +146,15 @@
 }
 
 .message.message-embed .message-embed-footer {
-	@apply message-content mb-1 mt-1.5 text-sm text-secondary-200;
+	@apply flex flex-row items-center;
+}
+
+.message.message-embed .message-embed-footer > * {
+	@apply block message-content mb-1 mt-1.5 text-sm text-secondary-200;
+}
+
+.message.message-embed .message-embed-footer > img {
+	@apply size-5 min-w-5 rounded-full mr-2;
 }
 
 .message.message-embed img {
