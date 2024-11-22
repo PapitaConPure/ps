@@ -1,9 +1,9 @@
-const { coerceValue } = require('./interpreter/values.js');
-const { stringifyPSAST, logPSAST } = require('./util/debug.js');
-const { Token } = require('./lexer/tokens.js');
-const { Lexer } = require('./lexer/lexer.js');
-const { Parser } = require('./parser/parser.js');
-const { Interpreter } = require('./interpreter/interpreter.js');
+const { ValueKinds, coerceValue, makeValue, makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeNativeFunction, makeFunction, makeLambda, makeEmbed, makeNada } = require('./interpreter/values');
+const { stringifyPSAST, logPSAST } = require('./util/debug');
+const { Token } = require('./lexer/tokens');
+const { Lexer } = require('./lexer/lexer');
+const { Parser } = require('./parser/parser');
+const { Interpreter } = require('./interpreter/interpreter');
 const { Scope } = require('./interpreter/scope.js');
 const { Input } = require('./interpreter/inputReader.js');
 const { declareNatives, declareContext } = require('./interpreter/environment/environment.js');
@@ -64,7 +64,19 @@ module.exports = {
     lexer,
     parser,
     interpreter,
+    ValueKinds,
     coerceValue,
+    makeValue,
+    makeNumber,
+    makeText,
+    makeBoolean,
+    makeList,
+    makeRegistry,
+    makeNativeFunction,
+    makeFunction,
+    makeLambda,
+    makeEmbed,
+    makeNada,
     declareNatives,
     declareContext,
     stringifyPSAST,
