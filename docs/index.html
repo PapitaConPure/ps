@@ -18,7 +18,7 @@
 		<meta name="theme-color" content="#9c162d" />
 		<meta property="og:site_name" content="PuréScript Playground" />
 		<meta property="og:title" content="Página Principal" />
-		<meta property="og:image" content="./thumb.png" />
+		<meta property="og:image" content="https://github.com/PapitaConPure/ps/blob/main/docs/thumb.png" />
 
 		<link rel="icon" href="./favicon.ico" type="image/x-icon" />
 
@@ -67,6 +67,7 @@
 							<button
 								onclick="gotoPSDocs()"
 								class="flex-initial overflow-clip rounded-md px-1 py-1 text-secondary-100 transition-all hover:bg-secondary-600 hover:text-white active:bg-secondary-500 lg:ml-2 lg:px-3"
+								aria-label="Aprender PuréScript"
 							>
 								<span class="pr-2 lg:inline">
 									<i class="fa fa-book"></i>
@@ -76,6 +77,7 @@
 							<button
 								onclick="exportPS()"
 								class="ml-1.5 flex-initial overflow-clip rounded-md px-1 py-1 text-secondary-100 transition-all hover:bg-secondary-600 hover:text-white active:bg-secondary-500 lg:ml-2 lg:px-3"
+								aria-label="Exportar código a archivo"
 							>
 								<span class="pr-2 lg:inline">
 									<i class="fa fa-file-export"></i>
@@ -85,6 +87,7 @@
 							<button
 								onclick="executePS()"
 								class="group relative ml-2 flex-initial overflow-clip rounded-md p-0 text-white transition-all [transition-duration:.6s] hover:scale-[1.02] hover:shadow-[#2c2f33_0px_0px_42pt] active:scale-[1.05] active:shadow-[#f04557_0px_0px_72pt] lg:ml-3"
+								aria-label="Ejecutar código"
 							>
 								<div
 									class="absolute left-0 top-0 -z-50 h-full w-full bg-primary-500"
@@ -111,6 +114,7 @@
 				<button
 					onclick="gotoPSDocs()"
 					class="group my-2 block h-11 w-11 flex-initial overflow-clip text-nowrap rounded-md bg-secondary-400 drop-shadow-lg transition-all hover:w-max hover:px-4 active:bg-accent-400 sm:h-14 sm:w-14"
+					aria-label="Aprender PuréScript"
 				>
 					<span class="sm:hidden"><i class="fa fa-book"></i></span>
 					<span class="hidden sm:inline"><i class="fa fa-book fa-xl"></i></span>
@@ -121,6 +125,7 @@
 				<button
 					onclick="exportPS()"
 					class="group my-2 block h-11 w-11 flex-initial overflow-clip text-nowrap rounded-md bg-secondary-400 drop-shadow-lg transition-all hover:w-max hover:px-4 active:bg-accent-400 sm:h-14 sm:w-14"
+					aria-label="Exportar código a archivo"
 				>
 					<span class="sm:hidden"><i class="fa fa-file-export"></i></span>
 					<span class="hidden sm:inline"><i class="fa fa-file-export fa-xl"></i></span>
@@ -131,6 +136,7 @@
 				<button
 					onclick="executePS()"
 					class="group my-2 block h-11 w-11 flex-initial overflow-clip text-nowrap rounded-md bg-gradient-to-br from-primary-500 to-accent-500 drop-shadow-lg transition-all [transition-duration:.6s] hover:w-max hover:scale-[1.02] hover:px-4 hover:shadow-[#2c2f33_0px_0px_22pt] active:scale-[1.05] active:shadow-[#d04557_0px_0px_36pt] sm:h-14 sm:w-14"
+					aria-label="Ejecutar código"
 				>
 					<div class="absolute left-0 top-0 -z-50 h-full w-full bg-primary-500"></div>
 					<div
@@ -155,7 +161,7 @@
 					<div
 						class="mb-3 mt-3 h-[34rem] flex-auto sm:mt-6 sm:h-[40rem] md:my-6 md:mr-2 md:h-auto md:w-7/12 lg:w-2/3 md:flex-grow"
 					>
-						<textarea class="bg-secondary-600 w-full h-full" id="editor">
+						<textarea class="bg-secondary-600 w-full h-full" id="editor" aria-label="Editor de código PuréScript">
 COMENTAR "
 	Los comentarios no afectan el funcionamiento del código.
 	Estos comentarios pueden ser de múltiples líneas
@@ -227,7 +233,7 @@ ENVIAR otroMarco
 				</section>
 			</main>
 			<footer
-				class="mx-4 my-1 border-t border-t-secondary-600 py-2 text-center text-[10pt] text-secondary-300 sm:my-2"
+				class="mx-4 my-1 border-t border-t-secondary-600 py-2 text-center text-[10pt] text-secondary-200 sm:my-2"
 			>
 				<span>
 					<a
@@ -252,9 +258,13 @@ ENVIAR otroMarco
 			</footer>
 		</div>
 
+		<!-- CodeMirror -->
 		<script src="codemirror/lib/codemirror.js"></script>
 		<script src="codemirror/addon/mode/simple.js"></script>
 		<script src="codemirror/addon/scroll/simplescrollbars.js"></script>
+		<script src="codemirror/addon/selection/active-line.js"></script>
+
+		<!-- Custom -->
 		<script src="scripts/puréscript.bundle.js"></script>
 		<script src="scripts/editor.js"></script>
 	</body>

@@ -58,8 +58,8 @@
 }
 
 .message {
-	@apply m-2 min-h-8 rounded-md bg-secondary-600 px-2.5 pb-2 pt-1.5 font-extralight;
-	animation: message-swipe 250ms cubic-bezier(0.215, 0.610, 0.355, 1) forwards;
+	@apply m-2 min-h-8 max-w-full rounded-md bg-secondary-600 px-2.5 pb-2 pt-1.5 font-extralight;
+	animation: message-swipe 250ms cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
 }
 
 .message a {
@@ -67,12 +67,12 @@
 }
 
 .message .list-order,
-		 .list-indent {
+.list-indent {
 	@apply inline-block;
 }
 
 .message .list-order {
-	@apply text-right pr-3 my-0.5;
+	@apply my-0.5 pr-3 text-right;
 }
 
 .message .disclaimer {
@@ -80,11 +80,11 @@
 }
 
 .message .spoiler {
-	@apply px-1 rounded-md text-secondary-700 bg-secondary-700 hover:text-secondary-200 hover:cursor-help;
+	@apply rounded-md bg-secondary-700 px-1 text-secondary-700 hover:cursor-help hover:text-secondary-200;
 }
 
 .message .quote {
-	@apply border-l-secondary-400 border-l-4 my-0 py-1 pl-2;
+	@apply my-0 border-l-4 border-l-secondary-400 py-1 pl-2;
 }
 
 .message h1,
@@ -114,15 +114,15 @@
 }
 
 .message.message-embed .message-embed-hgroup .message-embed-author {
-	@apply mb-2 font-medium flex flex-row items-center;
+	@apply mb-2 flex flex-row items-center font-medium;
 }
 
 .message.message-embed .message-embed-hgroup .message-embed-author img {
-	@apply inline-block h-6 rounded-full my-auto mr-2;
+	@apply my-auto mr-2 inline-block h-6 rounded-full;
 }
 
 .message.message-embed .message-embed-hgroup .message-embed-title {
-	@apply message-content mt-0 mb-1.5 block text-lg font-bold;
+	@apply message-content mb-1.5 mt-0 block text-lg font-bold;
 }
 
 .message.message-embed .message-embed-hgroup p {
@@ -150,11 +150,11 @@
 }
 
 .message.message-embed .message-embed-footer > * {
-	@apply block message-content mb-1 mt-1.5 text-sm text-secondary-200;
+	@apply message-content mb-1 mt-1.5 block text-sm text-secondary-200;
 }
 
 .message.message-embed .message-embed-footer > img {
-	@apply size-5 min-w-5 rounded-full mr-2;
+	@apply mr-2 size-5 min-w-5 rounded-full;
 }
 
 .message.message-embed img {
@@ -174,7 +174,7 @@
 }
 
 .message.message-error h2 {
-	@apply mt-0 mb-2 text-lg font-semibold text-foreground;
+	@apply mb-2 mt-0 text-lg font-semibold text-foreground;
 }
 
 .message.message-return {
@@ -190,15 +190,15 @@
 }
 
 .message.message-input textarea:disabled {
-	@apply border-0 my-0;
+	@apply my-0 border-0;
 }
 
 .message.message-input button {
-	@apply transition-colors duration-100 my-1 ml-2 block flex-auto rounded-md bg-primary-100 p-0 py-[7px] pl-2.5 pr-3 text-primary-500 hover:bg-white active:bg-primary-200;
+	@apply my-1 ml-2 block flex-auto rounded-md bg-primary-100 p-0 py-[7px] pl-2.5 pr-3 text-primary-500 transition-colors duration-100 hover:bg-white active:bg-primary-200;
 }
 
 .message.message-input button.sent {
-	@apply h-max my-auto text-primary-100 bg-primary-500;
+	@apply my-auto h-max bg-primary-500 text-primary-100;
 }
 
 .message.message-input button i {
@@ -218,6 +218,10 @@
 
 #playground > * {
 	@apply md:shadow-2xl md:shadow-secondary-700;
+}
+
+.CodeMirror-activeline-background {
+	@apply border-b-2 border-t-2 border-code-hl-select bg-secondary-500;
 }
 
 .cm-s-psdocs div.CodeMirror-selected {
@@ -240,19 +244,15 @@
 }
 
 .cm-s-psdocs .CodeMirror-gutters {
-	@apply border-r-[#4c4d50] bg-[#202325] text-secondary-300;
+	@apply border-r-[#4c4d50] bg-[#202325];
 }
 
 .cm-s-psdocs .CodeMirror-linenumber {
 	@apply pl-1 pr-2.5 text-secondary-300;
 }
 
-.cm-s-psdocs .CodeMirror-activeline .CodeMirror-linenumber.CodeMirror-gutter-elt {
-	@apply bg-yellow-300 text-blue-900;
-}
-
-.cm-s-psdocs .CodeMirror-linenumber {
-	@apply text-secondary-400;
+.CodeMirror-activeline-gutter .CodeMirror-linenumber {
+	@apply text-white;
 }
 
 .cm-s-psdocs .CodeMirror-cursor {

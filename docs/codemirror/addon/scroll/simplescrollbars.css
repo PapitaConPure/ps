@@ -42,3 +42,7 @@
   right: 0;
   width: 100%;
 }
+
+.CodeMirror-scrollbar-filler {
+  visibility: hidden;
+}
