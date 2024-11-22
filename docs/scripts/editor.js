@@ -594,7 +594,6 @@ function initOutput(isTestDrive) {
 					thumb.style.margin = '0 0 0.25rem auto';
 					thumb.src = thumbUrl;
 					thumb.alt = 'Miniatura';
-					thumb.crossOrigin = 'anonymous';
 					thumb.loading = 'lazy';
 					thumb.decoding = 'async';
 					thumb.fetchPriority = 'low';
@@ -614,7 +613,6 @@ function initOutput(isTestDrive) {
 						const icon = document.createElement('img');
 						icon.src = author.iconUrl;
 						icon.alt = 'Ícono de autor';
-						icon.crossOrigin = 'anonymous';
 						icon.loading = 'lazy';
 						icon.decoding = 'async';
 						icon.fetchPriority = 'low';
@@ -657,7 +655,6 @@ function initOutput(isTestDrive) {
 					thumb.style.margin = '0 0 0.25rem 0.25rem';
 					thumb.src = thumbUrl;
 					thumb.alt = 'Miniatura';
-					thumb.crossOrigin = 'anonymous';
 					thumb.loading = 'lazy';
 					thumb.decoding = 'async';
 					thumb.fetchPriority = 'low';
@@ -708,7 +705,6 @@ function initOutput(isTestDrive) {
 				const element = document.createElement('img');
 				element.src = imageUrl;
 				element.alt = 'Imagen';
-				element.crossOrigin = 'anonymous';
 				element.loading = 'lazy';
 				element.decoding = 'async';
 				element.fetchPriority = 'low';
@@ -723,7 +719,6 @@ function initOutput(isTestDrive) {
 				if(footer.iconUrl) {
 					const icon = document.createElement('img');
 					icon.src = footer.iconUrl;
-					icon.crossOrigin = 'anonymous';
 					icon.loading = 'lazy';
 					icon.decoding = 'async';
 					icon.fetchPriority = 'low';
