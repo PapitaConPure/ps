@@ -594,6 +594,10 @@ function initOutput(isTestDrive) {
 					thumb.style.margin = '0 0 0.25rem auto';
 					thumb.src = thumbUrl;
 					thumb.alt = 'Miniatura';
+					thumb.crossOrigin = 'anonymous';
+					thumb.loading = 'lazy';
+					thumb.decoding = 'async';
+					thumb.fetchPriority = 'low';
 					message.appendChild(thumb);
 				}
 			} else {
@@ -610,6 +614,10 @@ function initOutput(isTestDrive) {
 						const icon = document.createElement('img');
 						icon.src = author.iconUrl;
 						icon.alt = 'Ícono de autor';
+						icon.crossOrigin = 'anonymous';
+						icon.loading = 'lazy';
+						icon.decoding = 'async';
+						icon.fetchPriority = 'low';
 						element.appendChild(icon);
 
 						const name = document.createElement('span')
@@ -649,6 +657,10 @@ function initOutput(isTestDrive) {
 					thumb.style.margin = '0 0 0.25rem 0.25rem';
 					thumb.src = thumbUrl;
 					thumb.alt = 'Miniatura';
+					thumb.crossOrigin = 'anonymous';
+					thumb.loading = 'lazy';
+					thumb.decoding = 'async';
+					thumb.fetchPriority = 'low';
 					embedTop.appendChild(thumb);
 				}
 
@@ -696,6 +708,10 @@ function initOutput(isTestDrive) {
 				const element = document.createElement('img');
 				element.src = imageUrl;
 				element.alt = 'Imagen';
+				element.crossOrigin = 'anonymous';
+				element.loading = 'lazy';
+				element.decoding = 'async';
+				element.fetchPriority = 'low';
 				message.appendChild(element);
 			}
 
@@ -707,6 +723,10 @@ function initOutput(isTestDrive) {
 				if(footer.iconUrl) {
 					const icon = document.createElement('img');
 					icon.src = footer.iconUrl;
+					icon.crossOrigin = 'anonymous';
+					icon.loading = 'lazy';
+					icon.decoding = 'async';
+					icon.fetchPriority = 'low';
 					element.alt = 'Ícono de pie';
 					element.appendChild(icon);
 				}

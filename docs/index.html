@@ -6,23 +6,21 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
 		<title>Editor Web Interactivo de PuréScript</title>
-		<meta
-			name="description"
-			content="Crea y exporta comandos PuréScript"
-		/>
-		<meta
-			name="og:description"
-			content="Crea y exporta comandos PuréScript"
-		/>
+		<meta name="description" content="Crea y exporta comandos PuréScript" />
+		<meta name="og:description" content="Crea y exporta comandos PuréScript" />
 		<meta name="author" content="Papita con Puré" />
 		<meta name="theme-color" content="#9c162d" />
 		<meta property="og:site_name" content="PuréScript Playground" />
 		<meta property="og:title" content="Editor Web Interactivo de PuréScript" />
-		<meta property="og:image" content="https://github.com/PapitaConPure/ps/blob/main/docs/thumb.png" />
+		<meta
+			property="og:image"
+			content="https://github.com/PapitaConPure/ps/blob/main/docs/thumb.png"
+		/>
 
 		<link rel="icon" href="./favicon.ico" type="image/x-icon" />
 
-		<link href="codemirror/lib/codemirror.css" rel="stylesheet" />
+		<link rel="preload" href="codemirror/lib/codemirror.css" as="style" />
+		<link async rel="stylesheet" href="codemirror/lib/codemirror.css" />
 
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
@@ -37,12 +35,24 @@
 
 		<link rel="stylesheet" href="output.css" />
 
-		<link rel="stylesheet" href="codemirror/addon/scroll/simplescrollbars.css" />
-		<link rel="stylesheet" href="codemirror/addon/hint/show-hint.css" />
+		<link
+			rel="stylesheet"
+			href="codemirror/addon/scroll/simplescrollbars.css"
+			media="print"
+			onload="this.onload=null;this.media='all'"
+		/>
+		<link
+			rel="stylesheet"
+			href="codemirror/addon/hint/show-hint.css"
+			media="print"
+			onload="this.onload=null;this.media='all'"
+		/>
 		<link
 			rel="stylesheet"
 			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
 			crossorigin="anonymous"
+			media="print"
+			onload="this.onload=null;this.media='all'"
 		/>
 	</head>
 	<body class="bg-background font-default-sans text-foreground">
@@ -160,9 +170,13 @@
 					class="flex-col justify-between md:flex md:h-[32rem] md:flex-row lg:h-[42rem]"
 				>
 					<div
-						class="mb-3 mt-3 h-[34rem] flex-auto sm:mt-6 sm:h-[40rem] md:my-6 md:mr-2 md:h-auto md:w-7/12 lg:w-2/3 md:flex-grow"
+						class="mb-3 mt-3 h-[34rem] flex-auto sm:mt-6 sm:h-[40rem] md:my-6 md:mr-2 md:h-auto md:w-7/12 md:flex-grow lg:w-2/3"
 					>
-						<textarea class="bg-secondary-600 w-full h-full" id="editor" aria-label="Editor de código PuréScript">
+						<textarea
+							class="h-full w-full bg-secondary-600"
+							id="editor"
+							aria-label="Editor de código PuréScript"
+						>
 COMENTAR "
 	Los comentarios no afectan el funcionamiento del código.
 	Estos comentarios pueden ser de múltiples líneas
@@ -261,13 +275,13 @@ ENVIAR otroMarco
 
 		<!-- CodeMirror -->
 		<script src="codemirror/lib/codemirror.js"></script>
-		<script src="codemirror/addon/mode/simple.js"></script>
-		<script src="codemirror/addon/hint/show-hint.js"></script>
-		<script src="codemirror/addon/scroll/simplescrollbars.js"></script>
-		<script src="codemirror/addon/selection/active-line.js"></script>
+		<script defer src="codemirror/addon/mode/simple.js"></script>
+		<script defer src="codemirror/addon/hint/show-hint.js"></script>
+		<script defer src="codemirror/addon/scroll/simplescrollbars.js"></script>
+		<script defer src="codemirror/addon/selection/active-line.js"></script>
 
 		<!-- Custom -->
 		<script src="scripts/puréscript.bundle.js"></script>
-		<script src="scripts/editor.js"></script>
+		<script defer src="scripts/editor.js"></script>
 	</body>
 </html>
