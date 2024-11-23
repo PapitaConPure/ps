@@ -7,6 +7,7 @@
     "tw-build-watch": "npx tailwindcss -i ./docs/styles.css -o ./docs/output.css --minify -w",
     "ps-test": "node ./tests",
     "ps-build": "esbuild src/index.js --bundle --outfile=docs/scripts/puréscript.bundle.js --global-name=PuréScript --minify",
+    "editor-build": "esbuild docs/scripts/editor.js --outfile=docs/scripts/editor.min.js --minify",
     "codemirror-min": "esbuild docs/codemirror/lib/codemirror.js --bundle --outfile=docs/codemirror/lib/codemirror.min.js --global-name=CodeMirror --minify && esbuild docs/codemirror/lib/codemirror.css --outfile=docs/codemirror/lib/codemirror.min.css --minify"
   },
   "devDependencies": {
