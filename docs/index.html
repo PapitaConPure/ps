@@ -19,8 +19,10 @@
 
 		<link rel="icon" href="./favicon.ico" type="image/x-icon" />
 
-		<link rel="preload" href="codemirror/lib/codemirror.min.css" as="style" />
-		<link async rel="stylesheet" href="codemirror/lib/codemirror.min.css" />
+		<link rel="stylesheet" href="codemirror/lib/codemirror.min.css" />
+
+		<link rel="preconnect" href="output.css" as="style" />
+		<link rel="stylesheet" href="output.css" />
 
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
@@ -31,8 +33,6 @@
 			onload="this.onload=null;this.onerror=null;this.media='all'"
 			onerror="this.onload=null;this.onerror=null;this.media='all'"
 		/>
-
-		<link rel="stylesheet" href="output.css" />
 
 		<link
 			rel="stylesheet"
@@ -78,7 +78,7 @@
 						</h2>
 						<nav class="bg-red hidden flex-initial flex-row items-center md:block">
 							<button
-								onclick="document.getElementById('modal-backdrop').classList.toggle('hidden')"
+								onclick="toggleKeybindsWindow()"
 								class="flex-initial overflow-clip rounded-md px-1 py-1 text-secondary-100 transition-all hover:bg-secondary-600 hover:text-white active:bg-secondary-500 lg:ml-2 lg:px-3"
 								aria-label="Atajos"
 							>
@@ -292,18 +292,18 @@ ENVIAR otroMarco
 		<div
 			id="modal-backdrop"
 			class="fixed left-0 top-0 z-30 hidden size-full overflow-auto bg-[rgba(0,0,0,0.2)] backdrop-blur-sm sm:backdrop-blur-md md:backdrop-blur-lg lg:backdrop-blur-xl xl:backdrop-blur-2xl"
-			onclick="this.classList.toggle('hidden')"
-			onkeypress="alert(event.key)"
+			onclick="toggleKeybindsWindow(false)"
 		>
 			<div
+				id="modal-window"
 				class="absolute left-1/2 top-1/2 m-0 w-11/12 max-w-[48rem] -translate-x-1/2 -translate-y-1/2 rounded-md border border-secondary-400 bg-secondary-500 px-4 py-6 drop-shadow-lg transition-all sm:w-10/12 md:w-9/12"
 				onclick="event.stopPropagation()"
 			>
 				<h2 class="mb-4 text-center text-3xl font-bold">Atajos de Teclado</h2>
 
-				<div class="overflow-clip rounded-md">
+				<div id="modal-content" class="overflow-clip rounded-md">
 					<div
-						class="keybinds-table my-4 grid max-h-[28rem] w-full overflow-y-auto overflow-x-hidden"
+						class="keybinds-table my-4 grid max-h-[28rem] w-full overflow-y-auto overflow-x-hidden focus:outline-none"
 					>
 						<div
 							class="bg-primary-500 px-2 py-1.5 text-center text-lg font-bold text-white md:px-10"
@@ -402,6 +402,42 @@ ENVIAR otroMarco
 						>
 							Abre la página principal de la documentación oficial de PuréScript
 							(pueden haber problemas con este atajo).
+						</div>
+
+						<div
+							class="m-0 flex flex-wrap items-center justify-center bg-secondary-700 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+						></div>
+						<div
+							class="m-0 flex flex-wrap items-center justify-center bg-secondary-700 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+						>
+							<span class="keyboard-key">Ctrl</span>
+							+
+							<span class="keyboard-key">Alt</span>
+							+
+							<span class="keyboard-key">←</span>
+						</div>
+						<div
+							class="m-0 flex flex-wrap items-center justify-start bg-secondary-700 px-1 py-3 text-left font-extralight text-foreground md:px-4"
+						>
+							Enfoca el panel del editor de texto
+						</div>
+
+						<div
+							class="m-0 flex flex-wrap items-center justify-center bg-secondary-600 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+						></div>
+						<div
+							class="m-0 flex flex-wrap items-center justify-center bg-secondary-600 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+						>
+							<span class="keyboard-key">Ctrl</span>
+							+
+							<span class="keyboard-key">Alt</span>
+							+
+							<span class="keyboard-key">→</span>
+						</div>
+						<div
+							class="m-0 flex flex-wrap items-center justify-start bg-secondary-600 px-1 py-3 text-left font-extralight text-foreground md:px-4"
+						>
+							Enfoca la caja de Entradas del panel de resultados
 						</div>
 
 						<div
@@ -656,8 +692,9 @@ ENVIAR otroMarco
 				</div>
 
 				<button
+					id="modal-button"
 					class="mx-auto mt-8 block w-max rounded-md bg-secondary-400 px-6 py-2 transition-all hover:bg-secondary-300 hover:text-white active:bg-secondary-600"
-					onclick="document.getElementById('modal-backdrop').classList.toggle('hidden')"
+					onclick="toggleKeybindsWindow(false)"
 				>
 					<i class="fa fa-close fa-xl mr-2"></i>
 					Cerrar
@@ -674,6 +711,6 @@ ENVIAR otroMarco
 
 		<!-- Custom -->
 		<script defer src="scripts/puréscript.bundle.js"></script>
-		<script defer src="scripts/editor.js"></script>
+		<script defer src="scripts/editor.min.js"></script>
 	</body>
 </html>
