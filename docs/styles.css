@@ -52,6 +52,31 @@
 	scrollbar-width: none;
 }
 
+.keybinds-table {
+	grid-template-columns: min-content min-content auto;
+	scrollbar-width: 0.75rem;
+	scrollbar-color: #abacad;
+}
+
+.keybinds-table::-webkit-scrollbar {
+	width: 0.75rem;
+	background: linear-gradient(to bottom, #9c162d, #232629, #232629, #232629, #1a1c1f);
+}
+
+.keybinds-table::-webkit-scrollbar-track {
+	border-top-right-radius: 9999px;
+	border-bottom-right-radius: 9999px;
+}
+
+.keybinds-table::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background-color: #abacad;
+}
+
+.keyboard-key {
+	@apply transition-colors cursor-default mx-1 rounded-md border border-b-4 border-secondary-400 px-1 py-0.5 font-light hover:bg-secondary-400 hover:border-secondary-300;
+}
+
 /*Zona de texto*/
 .code-area {
 	@apply bg-secondary-500 font-code text-xs font-normal text-code-neutral sm:text-sm md:text-xs lg:text-sm;

@@ -983,10 +983,25 @@ async function executePS(args = undefined) {
 }
 
 document.body.addEventListener('keydown', function(e) {
+	if(e.key === 'F1') {
+		window.onhelp = function() {
+			alert();
+			return false;
+		}
+		e.stopPropagation();
+		e.preventDefault();
+		gotoPSDocs();
+		return false;
+	}
+
 	if(!e.ctrlKey)
 		return true;
 
 	switch(e.key) {
+	case '/':
+		document.getElementById('modal-backdrop').classList.toggle('hidden');
+		return false;
+
 	case 'Enter':
 		executePS();
 		return false;
