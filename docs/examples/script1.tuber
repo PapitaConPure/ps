@@ -1,0 +1,22 @@
+CARGAR mapeoDados con Registro
+	1: '⚀',
+	2: '⚁',
+	3: '⚂',
+	4: '⚃',
+	5: '⚄',
+	6: '⚅',
+
+CREAR Lista dados
+
+REPETIR 5 veces
+	EXTENDER dados con dado()
+FIN
+
+ENVIAR dados->mapear(d => mapeoDados->(d))->unir(' ')
+
+CREAR Número total
+PARA CADA d en dados
+	SUMAR total con d
+FIN
+
+DEVOLVER total

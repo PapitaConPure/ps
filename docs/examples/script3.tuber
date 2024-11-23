@@ -1,0 +1,14 @@
+LEER Número n con 6 entre 1 y 20
+CARGAR n con n->aEntero()
+
+CARGAR fac con Función(n)
+	SI n excede 1
+		DEVOLVER n * fac(n - 1)
+	SINO
+		DEVOLVER 1
+	FIN
+FIN
+
+CARGAR resultado con fac(n)
+ENVIAR n + "! = " + resultado
+DEVOLVER resultado

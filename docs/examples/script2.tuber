@@ -1,0 +1,7 @@
+CARGAR contador con contador o 0
+
+LEER Número opcional incremento con 1
+SUMAR contador con incremento
+ENVIAR "Valor actual: " + contador
+
+GUARDAR contador
