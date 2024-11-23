@@ -47,20 +47,67 @@ CodeMirror.defineSimpleMode('pureescript', {
 	},
 });
 
+const scopeTokens = [
+	'BLOQUE',
+	'HACER',
+	'MIENTRAS',
+	'PARA',
+	'PARA CADA',
+	'REPETIR',
+	'SI',
+];
+
+const unscopeTokens = [
+	'FIN', 'HASTA',
+];
+
+const statementTokens = [
+	...scopeTokens,
+	...unscopeTokens,
+	'SINO',
+	'BORRAR',
+	'CARGAR',
+	'COMENTAR',
+	'CREAR',
+	'DEVOLVER',
+	'DIVIDIR',
+	'EJECUTAR',
+	'ENVIAR',
+	'EXTENDER',
+	'GUARDAR',
+	'LEER',
+	'MULTIPLICAR',
+	'PARAR',
+	'RESTAR',
+	'SUMAR',
+	'TERMINAR',
+];
+
+const typeTokens = [
+	'Número',
+	'Texto',
+	'Lógico',
+	'Lista',
+	'Registro',
+	'Marco',
+	'Función',
+];
+
 const keywords = [
-	//Sentencias
-	'BORRAR', 'CARGAR', 'COMENTAR', 'CREAR', 'DEVOLVER', 'DIVIDIR', 'EJECUTAR', 'ENVIAR', 'EXTENDER', 'GUARDAR', 'LEER', 'MULTIPLICAR', 'PARAR', 'RESTAR', 'SUMAR', 'TERMINAR',
-	'BLOQUE', 'FIN', 'HACER', 'HASTA', 'MIENTRAS', 'PARA', 'PARA CADA', 'REPETIR', 'SI', 'SINO',
+	'Verdadero', 'Falso', 'Nada', 'con', 'en', 'desde', 'opcional', 'veces',
+];
 
-	//Indicadores de Tipo
-	'Número', 'Texto', 'Lógico', 'Lista', 'Registro', 'Marco', 'Función',
-
-	//Keywords
-	'Verdadero', 'Falso', 'Nada',
-].map(keyword => ({
-	bias: (/**@type {number}*/start) => /**@type {number}*/(start === 0 ? -4 : +2),
-	value: keyword,
-}));
+const tokens = new Map([
+	...statementTokens,
+	...typeTokens,
+	...keywords,
+].map(token => ([
+	token,
+	{
+		bias: (/**@type {number}*/start) => /**@type {number}*/(start === 0 ? -4 : +2),
+		value: token,
+	},
+])));
 
 const nativeVariableNames = (() => {
 	/**@param {Function} fn*/
@@ -79,15 +126,17 @@ const nativeVariableNames = (() => {
 	const scope = new PuréScript.Scope();
 	PuréScript.declareNatives(scope);
 
-    const variableNames = /**@type {Set<{ bias: (start: number) => number, value: string }>}*/(new Set());
+    const variableNames = /**@type {Map<string, { bias: (start: number) => number, value: string }>}*/(new Map());
 	for(const [ name, variable ] of scope.variables) {
 		let finalName;
-		if(variable.kind === 'NativeFunction' || variable.kind === 'Function')
+		if(variable.kind === 'NativeFunction' || variable.kind === 'Function') {
+			finalName = `${name}()`;
+			variableNames.set(finalName, { bias: _ => 0, value: finalName });
 			finalName = `${name}(${getFunctionArgs(variable.call)})`;
-		else
+		} else
 			finalName = name;
 
-		variableNames.add({ bias: _ => 0, value: finalName });
+		variableNames.set(finalName, { bias: _ => 0, value: finalName });
 	}
 
 	return variableNames;
@@ -99,11 +148,11 @@ function getDeclaredVariables(editor) {
     const lines = /**@type {string}*/(editor.getValue()).split('\n').slice(0, cursor.line + 1);
 	lines[lines.length - 1] = lines[lines.length - 1].slice(0, token.start);
 	const content = lines.join('\n');
-    const variables = /**@type {Set<{ bias: (start: number) => number, value: string }>}*/(new Set());
+    const variables = /**@type {Map<string, { bias: (start: number) => number, value: string }>}*/(new Map());
 
-	const matches = content.matchAll(/\b(?:(?:CREAR\s+?[a-zÀ-ÖØ-öø-ÿ_]+?\s+?)|(?:CARGAR\s+?)|(?:LEER\s+?[a-zÀ-ÖØ-öø-ÿ_]+?\s+?(?:opcional\s+?)?))([a-zÀ-ÖØ-öø-ÿ_]+)/gi);
+	const matches = content.matchAll(/\b(?:(?:CREAR\s+?[a-zÀ-ÖØ-öø-ÿ_]+?\s+?)|(?:CARGAR\s+?)|(?:LEER\s+?[a-zÀ-ÖØ-öø-ÿ_]+?\s+?(?:opcional\s+?)?)|(?:PARA\s+?CADA\s+?))([a-zÀ-ÖØ-öø-ÿ_]+)/gi);
 	for(const match of matches) {
-		variables.add({ bias: _ => -1, value: match[1] });
+		variables.set(match[1], { bias: _ => -1, value: match[1] });
 	}
 
     return variables;
@@ -117,16 +166,16 @@ CodeMirror.registerHelper('hint', 'pureescript', function (editor) {
     const currentWord = /**@type {string}*/(token.string).trim();
 
 	if(!currentWord.length) return {
-		list: (start === 0 ? keywords : [ ...nativeVariableNames, ...getDeclaredVariables(editor) ]).map(h => h.value),
+		list: (start === 0 ? Array.from(tokens.values()) : new Map([...nativeVariableNames.entries(), ...getDeclaredVariables(editor).entries()])).map(h => h.value),
 		from: CodeMirror.Pos(cursor.line, cursor.ch),
 		to: CodeMirror.Pos(cursor.line, cursor.ch),
 	};
 
-	const hints = [ ...new Set([
-		...keywords,
-		...nativeVariableNames,
-		...getDeclaredVariables(editor),
-	])];
+	const hints = Array.from(new Map([
+		...tokens.entries(),
+		...nativeVariableNames.entries(),
+		...getDeclaredVariables(editor).entries(),
+	]).values());
 
     const list = hints
 		.map(hint => {
@@ -752,6 +801,7 @@ function initOutput(isTestDrive) {
 				content.classList.add('message-text');
 				if(kind === 'input') {
 					content.innerHTML = (lastInput == null) ? sanitizeHtml(data) : '';
+					content.addEventListener('focus', e => content.select(), { passive: true });
 				} else
 					content.innerHTML = markup(data);
 			}
@@ -775,6 +825,7 @@ function initOutput(isTestDrive) {
 					const args = trimmedContent.length ? groupQuoted(trimmedContent.split(/\s+/)) : [];
 					const success = await executePS(args);
 					argsHolder.disabled = true;
+					argsHolder.removeEventListener('focus', e => content.select());
 					button.disabled = true;
 					button.classList.add('sent');
 
@@ -982,6 +1033,22 @@ async function executePS(args = undefined) {
 	}
 }
 
+function toggleKeybindsWindow(active = null) {
+	const modalBackdrop = document.getElementById('modal-backdrop');
+
+	if(active == null)
+		modalBackdrop.classList.toggle('hidden');
+	else if(active)
+		modalBackdrop.classList.contains('hidden') && modalBackdrop.classList.remove('hidden');
+	else
+		!modalBackdrop.classList.contains('hidden') && modalBackdrop.classList.add('hidden');
+		
+	if(!modalBackdrop.classList.contains('hidden')) {
+		const content = document.querySelector('#modal-content .keybinds-table');
+		content.focus();
+	}
+}
+
 document.body.addEventListener('keydown', function(e) {
 	if(e.key === 'F1') {
 		window.onhelp = function() {
@@ -999,7 +1066,7 @@ document.body.addEventListener('keydown', function(e) {
 
 	switch(e.key) {
 	case '/':
-		document.getElementById('modal-backdrop').classList.toggle('hidden');
+		toggleKeybindsWindow();
 		return false;
 
 	case 'Enter':
@@ -1017,9 +1084,28 @@ document.body.addEventListener('keydown', function(e) {
 		if(!e.shiftKey) return true;
 		gotoPSDocs();
 		return false;
+		
+	case 'ArrowLeft':
+	case 'Left':
+		if(!e.altKey) return true;
+		editor.focus();
+		return false;
+	
+	case 'ArrowRight':
+	case 'Right':
+		if(!e.altKey) return true;
+		(document.querySelector('.message.message-input textarea:enabled') ?? document.getElementById('output'))?.focus();
+		return false;
 	}
 	
 	return true;
 }, { passive: true });
+
+document.getElementById('modal-backdrop').addEventListener('keydown', e => {
+	if(e.key !== 'Enter' && e.key !== 'Escape') return true;
+
+	toggleKeybindsWindow(false);
+	return false;
+});
 
 setTimeout(executePS, 200);
