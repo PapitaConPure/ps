@@ -1112,6 +1112,7 @@ async function loadModalContent(contentPath) {
 	});
 	const content = modalContent.querySelector('#modal-focus') ?? modalButtons.firstElementChild ?? modalButtons;
 	content?.focus();
+	content?.scrollTo?.({ top: 0 });
 }
 
 document.body.addEventListener('keydown', function(e) {
