@@ -1,0 +1,49 @@
+<template>
+	<h2 id="modal-title" class="modal-title">Bot de Puré</h2>
+
+	<div class="flex flex-col flex-nowrap items-center justify-between space-x-6 md:flex-row">
+		<div class="flex-none md:hidden">
+			<img
+				class="mb-4 w-full max-w-48 rounded-full sm:mb-6 sm:w-36"
+				src="https://cdn.discordapp.com/avatars/651250669390528561/4880f59c0eef3ba38dea02104d4a29aa.webp?size=1024"
+			/>
+		</div>
+		<div>
+			<p class="my-2">
+				Si todavía no lo has hecho, invita a Bot de Puré a tu servidor para obtener acceso a
+				comandos personalizados de servidor con PuréScript.
+			</p>
+
+			<p class="my-2">
+				Las primeras páginas de la
+				<a
+					href="https://papitaconpure.github.io/ps-docs/"
+					class="text-accent-200 hover:underline"
+					>documentación</a
+				>
+				explican el proceso de crear un "Tubérculo" con Bot de Puré. También puedes usar
+				<code>p!ayuda tubérculo</code>.
+			</p>
+		</div>
+		<div class="hidden flex-none md:block">
+			<img
+				class="w-48 rounded-full lg:w-32"
+				src="https://cdn.discordapp.com/avatars/651250669390528561/4880f59c0eef3ba38dea02104d4a29aa.webp?size=1024"
+			/>
+		</div>
+	</div>
+
+	<button
+		id="modal-focus"
+		class="btn-modal primary"
+		onclick="window.open('https://discord.com/oauth2/authorize?client_id=651250669390528561&scope=bot&permissions=1394522582224', '_blank');toggleModal(false)"
+	>
+		<i class="fa fa-brands fa-discord fa-xl mr-2"></i>
+		<span>Invitar</span>
+	</button>
+
+	<button class="btn-modal" onclick="toggleModal(false)">
+		<i class="fa fa-close fa-xl mr-2"></i>
+		<span>Cerrar</span>
+	</button>
+</template>

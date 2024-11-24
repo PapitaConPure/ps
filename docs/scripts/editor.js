@@ -98,16 +98,15 @@ const keywords = [
 ];
 
 const tokens = new Map([
-	...statementTokens,
-	...typeTokens,
-	...keywords,
-].map(token => ([
-	token,
-	{
-		bias: (/**@type {number}*/start) => /**@type {number}*/(start === 0 ? -4 : +2),
-		value: token,
-	},
-])));
+	...statementTokens.map(token => ([
+		token, {
+			bias: (/**@type {number}*/start) => /**@type {number}*/(start < 4 ? -4 : +2),
+			value: token,
+		},
+	])),
+	...typeTokens.map(token => ([ token, { bias: start => 0, value: token } ])),
+	...keywords.map(token => ([ token, { bias: start => 0, value: token } ])),
+]);
 
 const nativeVariableNames = (() => {
 	/**@param {Function} fn*/
@@ -181,8 +180,9 @@ CodeMirror.registerHelper('hint', 'pureescript', function (editor) {
 		.map(hint => {
 			const pos = hint.value.toLowerCase().indexOf(currentWord.toLowerCase());
 			const lengthDiffBias = (hint.value.length - currentWord.length) * 0.25;
+			const actualStartValue = start - (editor.getLine(cursor.line).match(/^(\s*)/)?.[0].length ?? 0);
 			const result = {
-				distance: pos >= 0 ? (pos + lengthDiffBias + hint.bias(start)) : 9999,
+				distance: pos >= 0 ? (pos + lengthDiffBias + hint.bias(actualStartValue)) : 9999,
 				hint: hint.value,
 			};
 			
@@ -1033,20 +1033,85 @@ async function executePS(args = undefined) {
 	}
 }
 
-function toggleKeybindsWindow(active = null) {
-	const modalBackdrop = document.getElementById('modal-backdrop');
+const fetchedTemplates = new Map();
+async function fetchTemplate(path) {
+	const alreadyFetchedTemplateHTMLText = fetchedTemplates.get(path);
+	let templateHTMLText;
 
-	if(active == null)
-		modalBackdrop.classList.toggle('hidden');
-	else if(active)
-		modalBackdrop.classList.contains('hidden') && modalBackdrop.classList.remove('hidden');
-	else
-		!modalBackdrop.classList.contains('hidden') && modalBackdrop.classList.add('hidden');
-		
-	if(!modalBackdrop.classList.contains('hidden')) {
-		const content = document.querySelector('#modal-content .keybinds-table');
-		content.focus();
+	if(alreadyFetchedTemplateHTMLText) {
+		templateHTMLText = alreadyFetchedTemplateHTMLText
+	} else {
+		const fetchedTemplate = await fetch(path);
+	
+		if(fetchedTemplate.status !== 200) {
+			return {
+				status: fetchedTemplate.status,
+				statusText: fetchedTemplate.statusText,
+				result: null,
+			};
+		}
+
+		templateHTMLText = await fetchedTemplate.text();
+		fetchedTemplates.set(path, templateHTMLText);
 	}
+
+	const temp = document.createElement('div');
+	temp.innerHTML = templateHTMLText;
+
+	return {
+		status: 200,
+		statusText: 'OK',
+		result: temp.querySelector('template'),
+	};
+}
+
+function toggleModal(active = null) {
+	const modalBackdrop = document.getElementById('modal-backdrop');
+	const modalWindow = document.getElementById('modal-window');
+
+	const hide = (active == null)
+		? !modalBackdrop.dataset.hidden
+		: !active;
+
+	if(hide) modalBackdrop.dataset.hidden = true;
+	else delete modalBackdrop.dataset.hidden;
+
+	const inactiveStyle = [ 'scale-0', 'opacity-0' ];
+
+	setTimeout(() => {
+		if(hide)
+			inactiveStyle.forEach(className => !modalWindow.classList.contains(className) && modalWindow.classList.add(className));
+		else
+			inactiveStyle.forEach(className => modalWindow.classList.contains(className) && modalWindow.classList.remove(className));
+	}, 1);
+
+	return !hide;
+}
+
+async function loadModalContent(contentPath) {
+	const modalWindow = document.getElementById('modal-window');
+	const modalContent = document.getElementById('modal-content');
+	const modalButtons = document.getElementById('modal-buttons');
+	modalContent.innerHTML = '';
+	modalButtons.innerHTML = '';
+
+	!modalWindow.classList.contains('animate-pulse') && modalWindow.classList.add('animate-pulse');
+
+	let templateResponse = await fetchTemplate(contentPath);
+	if(templateResponse.status !== 200) {
+		console.error(templateResponse.status, templateResponse.statusText);
+		return;
+	}
+
+	modalWindow.classList.contains('animate-pulse') && modalWindow.classList.remove('animate-pulse');
+
+	modalContent.replaceChildren(templateResponse.result.content);
+
+	modalContent.querySelectorAll('.btn-modal').forEach(button => {
+		modalButtons.appendChild(button);
+	});
+	const content = modalContent.querySelector('#modal-focus') ?? modalButtons.firstElementChild ?? modalButtons;
+	content?.focus();
 }
 
 document.body.addEventListener('keydown', function(e) {
@@ -1066,7 +1131,9 @@ document.body.addEventListener('keydown', function(e) {
 
 	switch(e.key) {
 	case '/':
-		toggleKeybindsWindow();
+		if(toggleModal())
+			loadModalContent('components/keybinds-modal-content');
+		
 		return false;
 
 	case 'Enter':
@@ -1104,8 +1171,23 @@ document.body.addEventListener('keydown', function(e) {
 document.getElementById('modal-backdrop').addEventListener('keydown', e => {
 	if(e.key !== 'Enter' && e.key !== 'Escape') return true;
 
-	toggleKeybindsWindow(false);
+	toggleModal(false);
 	return false;
 });
 
 setTimeout(executePS, 200);
+
+(async () => {
+	const modalContentPaths = [
+		'components/bdp-modal-content',
+		'components/keybinds-modal-content',
+	];
+	
+	await Promise.all(modalContentPaths.map(async modalContentPath => {
+		const result = await fetch(modalContentPath);
+		if(result.status === 200) {
+			const text = await result.text();
+			fetchedTemplates.set(modalContentPath, text);
+		}
+	}));
+})();

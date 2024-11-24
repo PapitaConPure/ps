@@ -1,0 +1,400 @@
+<template>
+	<h2 id="modal-title" class="modal-title">Atajos de Teclado</h2>
+
+	<div class="overflow-clip rounded-md">
+		<div
+			id="modal-focus"
+			tabindex="0"
+			class="keybinds-table my-4 grid max-h-[28rem] w-full overflow-y-auto overflow-x-hidden focus:outline-none"
+		>
+			<div
+				class="bg-primary-500 px-2 py-1.5 text-center text-lg font-bold text-white md:px-10"
+			>
+				Ubicación
+			</div>
+			<div
+				class="bg-primary-500 px-2 py-1.5 text-center text-lg font-bold text-white md:px-10"
+			>
+				Combinación
+			</div>
+			<div
+				class="bg-primary-500 px-2 py-1.5 text-center text-lg font-bold text-white md:px-10"
+			>
+				Descripción
+			</div>
+
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-600 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			></div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-600 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				<span class="keyboard-key">Ctrl</span>
+				+
+				<span class="keyboard-key">/</span>
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-start bg-secondary-600 px-1 py-3 text-left font-extralight text-foreground md:px-4"
+			>
+				Muestra la ventana de atajos de teclado.
+			</div>
+
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-700 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			></div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-700 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				<span class="keyboard-key">Ctrl</span>
+				+
+				<span class="keyboard-key">Enter</span>
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-start bg-secondary-700 px-1 py-3 text-left font-extralight text-foreground md:px-4"
+			>
+				Ejecuta el código PuréScript ingresado en el editor.
+			</div>
+
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-600 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			></div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-600 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				<span class="keyboard-key">Ctrl</span>
+				+
+				<span class="keyboard-key">Shift</span>
+				+
+				<span class="keyboard-key">E</span>
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-start bg-secondary-600 px-1 py-3 text-left font-extralight text-foreground md:px-4"
+			>
+				Exporta el código PuréScript ingresado en el editor.
+			</div>
+
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-700 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			></div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-700 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				<span class="keyboard-key">Ctrl</span>
+				+
+				<span class="keyboard-key">Shift</span>
+				+
+				<span class="keyboard-key">H</span>
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-start bg-secondary-700 px-1 py-3 text-left font-extralight text-foreground md:px-4"
+			>
+				Abre la página principal de la documentación oficial de PuréScript.
+			</div>
+
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-600 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			></div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-600 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				<span class="keyboard-key">F1</span>
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-start bg-secondary-600 px-1 py-3 text-left font-extralight text-foreground md:px-4"
+			>
+				Abre la página principal de la documentación oficial de PuréScript (pueden haber
+				problemas con este atajo).
+			</div>
+
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-700 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			></div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-700 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				<span class="keyboard-key">Ctrl</span>
+				+
+				<span class="keyboard-key">Alt</span>
+				+
+				<span class="keyboard-key">←</span>
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-start bg-secondary-700 px-1 py-3 text-left font-extralight text-foreground md:px-4"
+			>
+				Enfoca el panel del editor de texto
+			</div>
+
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-600 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			></div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-600 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				<span class="keyboard-key">Ctrl</span>
+				+
+				<span class="keyboard-key">Alt</span>
+				+
+				<span class="keyboard-key">→</span>
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-start bg-secondary-600 px-1 py-3 text-left font-extralight text-foreground md:px-4"
+			>
+				Enfoca la caja de Entradas del panel de resultados
+			</div>
+
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-700 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				Caja de Entradas
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-700 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				<span class="keyboard-key">Enter</span>
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-start bg-secondary-700 px-1 py-3 text-left font-extralight text-foreground md:px-4"
+			>
+				Re-ejecuta el programa escrito en el editor con las entradas indicadas.
+			</div>
+
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-600 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				Caja de Entradas
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-600 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				<span class="keyboard-key">Shift</span>
+				+
+				<span class="keyboard-key">Enter</span>
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-start bg-secondary-600 px-1 py-3 text-left font-extralight text-foreground md:px-4"
+			>
+				Baja un renglón en la caja de entradas sin re-ejecutar el programa.
+			</div>
+
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-700 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				Editor
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-700 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				<span class="keyboard-key">Ctrl</span>
+				+
+				<span class="keyboard-key">Espacio</span>
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-start bg-secondary-700 px-1 py-3 text-left font-extralight text-foreground md:px-4"
+			>
+				Muestra sugerencias de autocompletado en base a lo que se esté escribiendo
+				actualmente.
+			</div>
+
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-600 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				Editor
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-600 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				<span class="keyboard-key">Tab</span>
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-start bg-secondary-600 px-1 py-3 text-left font-extralight text-foreground md:px-4"
+			>
+				Si hay líneas seleccionadas, aumenta la sangría de esas líneas. De lo contrario,
+				agrega una sangría en la posición actual del cursor.
+			</div>
+
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-700 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				Editor
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-700 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				<span class="keyboard-key">Shift</span>
+				+
+				<span class="keyboard-key">Tab</span>
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-start bg-secondary-700 px-1 py-3 text-left font-extralight text-foreground md:px-4"
+			>
+				Si hay líneas seleccionadas, reduce la sangría de esas líneas. De lo contrario,
+				reduce la sangría de la línea actual.
+			</div>
+
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-600 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				Editor
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-600 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				<span class="keyboard-key">Ctrl</span>
+				+
+				<span class="keyboard-key">←</span>
+				,<span class="w-full py-1"></span>
+				<span class="keyboard-key">Ctrl</span>
+				+
+				<span class="keyboard-key">→</span>
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-start bg-secondary-600 px-1 py-3 text-left font-extralight text-foreground md:px-4"
+			>
+				Desplaza el cursor entre palabras y símbolos.
+			</div>
+
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-700 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				Editor
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-700 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				<span class="keyboard-key">Alt</span>
+				+
+				<span class="keyboard-key">←</span>
+				,<span class="w-full py-1"></span>
+				<span class="keyboard-key">Alt</span>
+				+
+				<span class="keyboard-key">→</span>
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-start bg-secondary-700 px-1 py-3 text-left font-extralight text-foreground md:px-4"
+			>
+				Desplaza el cursor al inicio y fin de la línea actual respectivamente.
+			</div>
+
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-600 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				Editor
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-600 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				<span class="keyboard-key">Ctrl</span>
+				+
+				<span class="keyboard-key">C</span>
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-start bg-secondary-600 px-1 py-3 text-left font-extralight text-foreground md:px-4"
+			>
+				Si hay texto seleccionado, copia ese texto al portapapeles. De lo contrario, copia
+				toda la línea actual al portapapeles.
+			</div>
+
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-700 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				Editor
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-700 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				<span class="keyboard-key">Ctrl</span>
+				+
+				<span class="keyboard-key">V</span>
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-start bg-secondary-700 px-1 py-3 text-left font-extralight text-foreground md:px-4"
+			>
+				Si el portapapeles contiene una línea de código, se pega esa línea por encima de la
+				línea actual. De lo contrario, se intenta pegar texto del portapapeles en la
+				posición actual del cursor.
+			</div>
+
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-600 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				Editor
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-600 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				<span class="keyboard-key">Ctrl</span>
+				+
+				<span class="keyboard-key">X</span>
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-start bg-secondary-600 px-1 py-3 text-left font-extralight text-foreground md:px-4"
+			>
+				Si hay texto seleccionado, corta ese texto al portapapeles. De lo contrario, corta
+				toda la línea actual al portapapeles.
+			</div>
+
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-700 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				Editor
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-700 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				<span class="keyboard-key">Ctrl</span>
+				+
+				<span class="keyboard-key">A</span>
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-start bg-secondary-700 px-1 py-3 text-left font-extralight text-foreground md:px-4"
+			>
+				Selecciona todo el texto ingresado en el editor.
+			</div>
+
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-600 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				Editor
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-600 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				<span class="keyboard-key">Ctrl</span>
+				+
+				<span class="keyboard-key">D</span>
+				,<span class="w-full py-1"></span>
+				<span class="keyboard-key">Shift</span>
+				+
+				<span class="keyboard-key">Supr</span>
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-start bg-secondary-600 px-1 py-3 text-left font-extralight text-foreground md:px-4"
+			>
+				Elimina la línea actual junto con sus contenidos.
+			</div>
+
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-700 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				Editor
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-center bg-secondary-700 px-1 py-3 text-center font-extralight text-foreground md:px-4"
+			>
+				<span class="keyboard-key">Ctrl</span>
+				+
+				<span class="keyboard-key">Supr</span>
+			</div>
+			<div
+				class="m-0 flex flex-wrap items-center justify-start bg-secondary-700 px-1 py-3 text-left font-extralight text-foreground md:px-4"
+			>
+				Elimina la palabra o símbolo que le sigue al cursor.
+			</div>
+		</div>
+	</div>
+
+	<button class="btn-modal" onclick="toggleModal(false)">
+		<i class="fa fa-close fa-xl mr-2"></i>
+		<span>Cerrar</span>
+	</button>
+</template>

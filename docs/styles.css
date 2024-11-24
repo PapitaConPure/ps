@@ -39,6 +39,18 @@
 	.message-content {
 		@apply whitespace-pre-wrap text-wrap break-words;
 	}
+
+	.modal-title {
+		@apply mb-4 text-center text-3xl font-bold;
+	}
+
+	.btn-modal {
+		@apply mx-1 block w-fit rounded-md bg-secondary-400 px-6 py-2 transition-colors hover:bg-secondary-300 hover:text-white active:bg-secondary-600;
+	}
+
+	.btn-modal.primary {
+		@apply bg-primary-500 font-semibold hover:bg-primary-400 active:bg-primary-600;
+	}
 }
 
 /*Webkit*/
@@ -69,12 +81,12 @@
 }
 
 .keybinds-table::-webkit-scrollbar-thumb {
-  border-radius: 9999px;
-  background-color: #abacad;
+	border-radius: 9999px;
+	background-color: #abacad;
 }
 
 .keyboard-key {
-	@apply transition-colors cursor-default mx-1 rounded-md border border-b-4 border-secondary-400 px-1 py-0.5 font-light hover:bg-secondary-400 hover:border-secondary-300;
+	@apply mx-1 cursor-default rounded-md border border-b-4 border-secondary-400 px-1 py-0.5 font-light transition-colors hover:border-secondary-300 hover:bg-secondary-400;
 }
 
 /*Zona de texto*/
