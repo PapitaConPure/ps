@@ -1115,6 +1115,13 @@ async function loadModalContent(contentPath) {
 	content?.scrollTo?.({ top: 0 });
 }
 
+//Advertencia para móvil
+window.addEventListener('touchstart', function() {
+	console.warn('Dispositivo táctil detectado. La experiencia de usuario puede verse negativamente afectada.');
+	toggleModal(true);
+	loadModalContent('components/touch-modal-content');
+}, { once: true });
+
 document.body.addEventListener('keydown', function(e) {
 	if(e.key === 'F1') {
 		window.onhelp = function() {
@@ -1180,8 +1187,9 @@ setTimeout(executePS, 200);
 
 (async () => {
 	const modalContentPaths = [
-		'components/bdp-modal-content',
 		'components/keybinds-modal-content',
+		'components/bdp-modal-content',
+		'components/touch-modal-content',
 	];
 	
 	await Promise.all(modalContentPaths.map(async modalContentPath => {
