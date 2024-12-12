@@ -1039,7 +1039,7 @@ async function fetchTemplate(path) {
 	let templateHTMLText;
 
 	if(alreadyFetchedTemplateHTMLText) {
-		templateHTMLText = alreadyFetchedTemplateHTMLText
+		templateHTMLText = alreadyFetchedTemplateHTMLText;
 	} else {
 		const fetchedTemplate = await fetch(path);
 	
