@@ -306,7 +306,7 @@ class Interpreter {
 		this.#source = source.replace(/(^\s+)|(\s+$)/g, '');
 		this.#provider = provider;
 		this.#stop = Stops.NONE;
-		this.#quota = 1000;
+		this.#quota = 2000;
 
 		this.#inputReader = isTestDrive
 			? new TestDriveInputReader(this, args)
