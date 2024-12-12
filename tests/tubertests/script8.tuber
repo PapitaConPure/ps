@@ -1,0 +1,35 @@
+bloque fin
+
+bloque
+    enviar "hola"
+fin
+
+bloque
+    enviar 1
+    enviar 2
+    enviar 3
+fin
+
+si 2 es 2
+    enviar "wtf"
+fin
+
+si 3 es 4
+    enviar "lol"
+sino
+    enviar "lmao"
+fin
+
+cargar a con Falso
+cargar b con Verdadero
+cargar c con Falso
+
+si a
+    enviar "uoh"
+sino si b
+    enviar "sob"
+sino si c
+    enviar "kek"
+fin
+
+devolver "🥺"

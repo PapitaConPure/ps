@@ -1,0 +1,12 @@
+CARGAR fn con Función()
+    ENVIAR "me cago en la puta"
+FIN
+
+CARGAR fn2 con Función(a, b)
+    ENVIAR "maraco"
+    DEVOLVER a + b
+    ENVIAR "wjat"
+FIN
+
+EJECUTAR fn()
+ENVIAR fn2(42, 69) //111

@@ -1,0 +1,12 @@
+EJECUTAR holaMundo()
+EJECUTAR hola->mundo()
+EJECUTAR hola->mundo()->pene
+
+EJECUTAR holaMundo("hola")
+
+EJECUTAR holaMundo(1, 2, 3)
+
+EJECUTAR holaMundo((3 + 5) * 2, Lista 1, 2, 3, "cuando se te jijean los jijonazos")
+
+ENVIAR hola->2 + 2
+ENVIAR hola->(2 + 2)

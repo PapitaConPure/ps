@@ -1,0 +1,39 @@
+SI Falso
+    CARGAR a con 0
+
+    MIENTRAS a < 5
+        SUMAR a
+        ENVIAR a
+    FIN
+
+    HACER
+        RESTAR a
+        ENVIAR a
+        ENVIAR "wawa"
+        ENVIAR "chiwawa"
+    HASTA a es 0
+FIN
+
+REPETIR 5 veces
+    ENVIAR "wjat"
+FIN
+
+CARGAR megamix con Lista "peruano", "chaibol", "poni"
+
+PARA CADA cumbia en megamix
+    ENVIAR cumbia
+FIN
+
+CARGAR gnomos con Registro a: 3, b: 2, c: 1
+
+PARA CADA gnomo en gnomos
+    ENVIAR gnomo
+FIN
+
+PARA i desde 3 hasta 5
+    ENVIAR i
+FIN
+
+PARA i con 15 MIENTRAS i no precede 5 RESTAR i con 5
+    ENVIAR i
+FIN

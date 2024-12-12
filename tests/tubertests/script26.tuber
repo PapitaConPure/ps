@@ -1,0 +1,7 @@
+LEER Número a con 23 entre 10 y 30
+LEER Texto b con "pp" en minúsculas
+Leer Lógico c con Verdadero
+
+ENVIAR a
+ENVIAR b
+ENVIAR c

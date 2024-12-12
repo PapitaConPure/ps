@@ -1,0 +1,5 @@
+ENVIAR 42_000_000_000_000_000_000_000_000->formatear(Verdadero, 3)
+ENVIAR 42_000_000_000_000_000_000_000_000->formatear(Falso, 3)
+ENVIAR 300_000_000_000_000_000_000->formatear(Verdadero, 1)
+ENVIAR 3_000->formatear(Verdadero, 2)
+ENVIAR 3_000->formatear(Falso, 6)
