@@ -464,6 +464,10 @@ class Interpreter {
 			returnValue = this.#evaluateRegistry(node, scope);
 			break;
 
+		case ExpressionKinds.EMBED_LITERAL:
+			returnValue = makeEmbed();
+			break;
+
 		case ExpressionKinds.FUNCTION:
 			returnValue = this.#evaluateFunction(node, scope);
 			break;

@@ -70,6 +70,12 @@ function parsePrimaryExpression(parser) {
 			...metadata,
 		};
 
+	case TokenKinds.EMBED:
+		return {
+			kind: ExpressionKinds.EMBED_LITERAL,
+			...metadata,
+		};
+
 	case TokenKinds.NADA:
 		return {
 			kind: ExpressionKinds.NADA_LITERAL,

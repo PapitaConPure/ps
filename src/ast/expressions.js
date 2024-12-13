@@ -6,6 +6,7 @@ const ExpressionKinds = /**@type {const}*/({
     BOOLEAN_LITERAL: 'BooleanLiteralExpression',
     LIST_LITERAL: 'ListLiteralExpression',
     REGISTRY_LITERAL: 'RegistryLiteralExpression',
+    EMBED_LITERAL: 'EmbedLiteralExpression',
     NADA_LITERAL: 'NadaLiteralExpression',
     IDENTIFIER: 'Identifier',
 
@@ -60,6 +61,10 @@ const ExpressionKinds = /**@type {const}*/({
  * @typedef {Object} RegistryLiteralExpressionData
  * @property {Map<String, Expression>} entries
  * @typedef {BaseExpressionData<'RegistryLiteralExpression'> & RegistryLiteralExpressionData} RegistryLiteralExpression
+ */
+
+/**
+ * @typedef {BaseExpressionData<'EmbedLiteralExpression'>} EmbedLiteralExpression
  */
 
 /**
@@ -171,6 +176,7 @@ const ExpressionKinds = /**@type {const}*/({
  *          |BooleanLiteralExpression
  *          |ListLiteralExpression
  *          |RegistryLiteralExpression
+ *          |EmbedLiteralExpression
  *          |NadaLiteralExpression
  *          |Identifier
  * } PrimaryExpression

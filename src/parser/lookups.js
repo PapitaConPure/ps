@@ -166,6 +166,7 @@ function createLookups() {
     nud(TokenKinds.LIT_BOOLEAN, parsePrimaryExpression);
     nud(TokenKinds.LIST, parsePrimaryExpression);
     nud(TokenKinds.REGISTRY, parsePrimaryExpression);
+    nud(TokenKinds.EMBED, parsePrimaryExpression);
     nud(TokenKinds.IDENTIFIER, parsePrimaryExpression);
     nud(TokenKinds.NADA, parsePrimaryExpression);
 
