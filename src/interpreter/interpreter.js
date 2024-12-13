@@ -950,6 +950,9 @@ class Interpreter {
 			sendValue = makeRegistry(new Map([ ...sendValue.entries.entries() ]));
 			break;
 		case ValueKinds.EMBED:
+			if(sendValue.value.empty)
+				throw this.TuberInterpreterError('No se puede enviar un valor de Marco vacío', node);
+
 			const embedDataCopy = sendValue.value.copy();
 			sendValue = makeEmbed();
 			sendValue.value = embedDataCopy;

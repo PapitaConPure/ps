@@ -245,6 +245,16 @@ class EmbedData {
 		return this;
 	}
 
+	get empty() {
+		return !this.#author?.name
+			&& !this.#description
+			&& !this.#fields?.length
+			&& !this.#footer?.text
+			&& !this.#imageUrl
+			&& !this.#thumbUrl
+			&& !this.#title;
+	}
+
 	get data() {
 		return /**@type {EmbedResolvable}*/({
 			author: this.#author,
