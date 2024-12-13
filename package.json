@@ -4,6 +4,7 @@
   "description": "PuréScript (no confundir con PureScript) es un lenguaje de scripting de comandos personalizados de servidor para Bot de Puré",
   "scripts": {
     "test": "node ./tests",
+    "tests": "node ./tests",
     "build": "node ./buildNode.js"
   },
   "devDependencies": {
