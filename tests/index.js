@@ -230,7 +230,6 @@ const tests = [
 		label: 'Varias Entradas de Usuario II',
 		expect: Results.SUCCESS,
 		args: [ 'nwn', 'verdadero', '42', 'tiraba esa', '1', '2', '3', '4' ],
-		log,
 		test: function({ inputStack, sendStack, returned }) {
 			expect(inputStack.length).toBe(5);
 
@@ -423,6 +422,17 @@ const tests = [
 		test: function({ sendStack }) {
 			expect(sendStack.length).toBe(1);
 			expect(sendStack[0]).toBe(makeBoolean(true));
+		},
+	},
+	{
+		file: 32,
+		label: 'Elegir de Lista',
+		expect: Results.SUCCESS,
+		log,
+		test: function({ sendStack }) {
+			expect(sendStack.length).toBe(2);
+			expect(sendStack[0].kind).toBe(ValueKinds.LIST);
+			expect(sendStack[1].kind).toBe(ValueKinds.NUMBER);
 		},
 	},
 ];

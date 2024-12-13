@@ -1,5 +1,6 @@
 const { ValueKinds, makeText, makeBoolean, makeList, makeRegistry, makeNada, coerceValue, makeNumber } = require('../../values');
 const { expectParam, getParamOrNada, makePredicateFn, getParamOrDefault } = require('../nativeUtils');
+const { randRange } = require('../../../util/utils');
 
 /**
  * @typedef {import('../../values').NumberValue} NumberValue
@@ -64,6 +65,14 @@ function listaCortar(self, [ inicio, fin ], scope) {
 		return makeList(self.elements.slice(inicioResult.value));
 
 	return makeList(self.elements.slice(inicioResult.value, finResult.value));
+}
+
+/**@type {ListMethod<[ NumberValue, NumberValue ]>}*/
+function listaElegir(self, [ mínimo, máximo ], scope) {
+	const mínimoResult = getParamOrDefault('mínimo', mínimo, ValueKinds.NUMBER, scope, 0);
+	const máximoResult = getParamOrDefault('máximo', máximo, ValueKinds.NUMBER, scope, self.elements.length);
+
+	return self.elements[randRange(mínimoResult.value, máximoResult.value, true)];
 }
 
 /**@type {ListMethod<[ FunctionValue ]>}*/
@@ -187,6 +196,7 @@ function listaVacía(self, [], scope) {
 /**@type {Map<String, ListMethod>}*/
 const listMethods = new Map();
 listMethods
+	.set('aleatorio', listaElegir)
 	.set('aInvertida', listaAInvertido)
 	.set('aInvertido', listaAInvertido)
 	.set('algun', listaAlguno)
@@ -197,6 +207,7 @@ listMethods
 	.set('aRegistro', listaARegistro)
 	.set('contiene', listaContiene)
 	.set('cortar', listaCortar)
+	.set('elegir', listaElegir)
 	.set('encontrar', listaEncontrar)
 	.set('encontrarId', listaEncontrarId)
 	.set('encontrarUltimaId', listaEncontrarÚltimoId)
@@ -205,6 +216,7 @@ listMethods
 	.set('encontrarÚltimoId', listaEncontrarÚltimoId)
 	.set('encontrarUltimo', listaEncontrarÚltimo)
 	.set('encontrarÚltimo', listaEncontrarÚltimo)
+	.set('escoger', listaElegir)
 	.set('filtrar', listaFiltrar)
 	.set('incluye', listaContiene)
 	.set('invertir', listaInvertir)
