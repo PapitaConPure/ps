@@ -3,7 +3,7 @@ const { Scope } = require('./scope');
 const { TokenKinds } = require('../lexer/tokens');
 const { ExpressionKinds } = require('../ast/expressions');
 const { StatementKinds } = require('../ast/statements');
-const { ValueKinds, makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeNada, coerceValue, isInternalOperable, makeNativeFunction, makeFunction, makeLambda, ValueKindTranslationLookups } = require('./values');
+const { ValueKinds, makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeNada, coerceValue, isInternalOperable, makeNativeFunction, makeFunction, makeLambda, ValueKindTranslationLookups, makeEmbed } = require('./values');
 const { UnaryOperationLookups, BinaryOperationLookups, ValueKindLookups } = require('./lookups');
 const { NativeMethodsLookup } = require('./environment/environment');
 const { iota, shortenText } = require('../util/utils.js');
@@ -948,6 +948,11 @@ class Interpreter {
 			break;
 		case ValueKinds.REGISTRY:
 			sendValue = makeRegistry(new Map([ ...sendValue.entries.entries() ]));
+			break;
+		case ValueKinds.EMBED:
+			const embedDataCopy = sendValue.value.copy();
+			sendValue = makeEmbed();
+			sendValue.value = embedDataCopy;
 			break;
 		}
 
