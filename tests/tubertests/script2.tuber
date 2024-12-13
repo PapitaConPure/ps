@@ -12,9 +12,9 @@ CARGAR pjs con Lista
   (Registro nombre: "Captain"   , imagen: "https://i.imgur.com/gw6UaLL.png", color: "#afac87"),
   (Registro nombre: "Railgunner", imagen: "https://i.imgur.com/rsgTKu4.png", color: "#dc1548"),
   (Registro nombre: "Void Fiend", imagen: "https://i.imgur.com/IqNXiVb.png", color: "#ab15dc"),
-  (Registro nombre: "Seeker",     imagen: "https://i.imgur.com/yCah2fa.png", color: "#c9a448"),
-  (Registro nombre: "False Son",  imagen: "https://i.imgur.com/sNfQ3Bt.png", color: "#c16e5b"),
-  (Registro nombre: "Chef",       imagen: "https://i.imgur.com/LSEkCo3.png", color: "#bd155b"),
+  (Registro nombre: "Seeker"    , imagen: "https://i.imgur.com/yCah2fa.png", color: "#c9a448"),
+  (Registro nombre: "False Son" , imagen: "https://i.imgur.com/sNfQ3Bt.png", color: "#c16e5b"),
+  (Registro nombre: "Chef"      , imagen: "https://i.imgur.com/LSEkCo3.png", color: "#bd155b"),
 
 CARGAR idx con dado(pjs->largo)
 CARGAR pj CON pjs->(idx)
