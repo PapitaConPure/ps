@@ -36,9 +36,23 @@
  * Whether or not this field should display inline
  */
 
+/**
+ * @typedef {Object} EmbedResolvable
+ * @property {AuthorData?} author
+ * @property {ColorResolvable?} color
+ * @property {string?} description
+ * @property {Array<EmbedFieldData>?} fields
+ * @property {FooterData?} footer
+ * @property {string?} imageUrl
+ * @property {string?} thumbUrl
+ * @property {(Date | number)?} timestamp
+ * @property {string?} title
+ * @property {string?} url
+ */
+
 class EmbedData {
 	/**@type {AuthorData?}*/ #author;
-	/**@type {ColorResolvable}*/ #color;
+	/**@type {ColorResolvable?}*/ #color;
 	/**@type {string?}*/ #description;
 	/**@type {Array<EmbedFieldData>?}*/ #fields;
 	/**@type {FooterData?}*/ #footer;
@@ -59,6 +73,42 @@ class EmbedData {
 		this.#timestamp = null;
 		this.#title = null;
 		this.#url = null;
+	}
+
+	/**
+	 * Hard-copies the supplied data into an EmbedData instance
+	 * @param {EmbedResolvable} data 
+	 */
+	static from(data) {
+		const embed = new EmbedData();
+
+		embed.#color = data.color;
+		embed.#description = data.description;
+		embed.#imageUrl = data.imageUrl;
+		embed.#thumbUrl = data.thumbUrl;
+		embed.#timestamp = data.timestamp;
+		embed.#title = data.title;
+		embed.#url = data.url;
+
+		if(data.author) {
+			const { name, iconUrl, url } = data.author;
+			embed.#author = { name, iconUrl, url };
+		}
+
+		if(data.fields?.length)
+			embed.#fields = JSON.parse(JSON.stringify(data.fields));
+
+		if(data.footer) {
+			const { text, iconUrl } = data.footer;
+			embed.#footer = { text, iconUrl };
+		}
+
+		return embed;
+	}
+
+	/**Returns a hard-copy of this instance*/
+	copy() {
+		return EmbedData.from(this.data);
 	}
 
 	/**
@@ -196,7 +246,7 @@ class EmbedData {
 	}
 
 	get data() {
-		return {
+		return /**@type {EmbedResolvable}*/({
 			author: this.#author,
 			color: this.#color,
 			description: this.#description,
@@ -207,11 +257,11 @@ class EmbedData {
 			timestamp: this.#timestamp,
 			title: this.#title,
 			url: this.#url,
-		};
+		});
 	}
 
-	toJSON() {
-		return JSON.parse(JSON.stringify(this.data));
+	hardCopiedData() {
+		return /**@type {EmbedResolvable}*/(JSON.parse(JSON.stringify(this.data)));
 	}
 
 	toString() {
