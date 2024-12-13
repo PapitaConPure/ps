@@ -38,10 +38,10 @@ function makeKindFromValue(kind, ...values) {
 
 /**
  * @template {import('../values').ValueKind} T
- * @param {String} name
- * @param {Extract<import('../values').RuntimeValue, { kind: T }>} coerced 
- * @param {T} kind 
- * @param {Scope} scope
+ * @param {String} name El nombre públicamente representativo del argumento que se pide del usuario.
+ * @param {Extract<import('../values').RuntimeValue, { kind: T }>} coerced El valor ya convertido de este argumento de la Función nativa.
+ * @param {T} kind El tipo de valor del argumento de la Función nativa.
+ * @param {Scope} scope El {@link Scope} de la Función nativa que llama esta función.
  */
 function verifyParam(name, coerced, kind, scope) {
 	if(kind === ValueKinds.NUMBER && !isOperable(coerced))
@@ -57,10 +57,10 @@ function verifyParam(name, coerced, kind, scope) {
  * Si el parámetro existe y puede ser convertido al valor esperado correctamente (si no lo era antes), devuelve el resultado de esa conversión. En cualquier otro caso, arroja un error
  * 
  * @template {import('../values').ValueKind} T
- * @param {String} name
- * @param {import('../values').RuntimeValue} value 
- * @param {T} kind 
- * @param {Scope} scope 
+ * @param {String} name El nombre públicamente representativo del argumento que se pide del usuario.
+ * @param {import('../values').RuntimeValue} value El valor del argumento tal como fue facilitado por el usuario, si existe.
+ * @param {T} kind El tipo de valor del argumento de la Función nativa.
+ * @param {Scope} scope El {@link Scope} de la Función nativa que llama esta función.
  * @returns {Extract<import('../values').RuntimeValue, { kind: T }>}
  */
 function expectParam(name, value, kind, scope) {
@@ -86,11 +86,11 @@ function expectParam(name, value, kind, scope) {
  * * Si el parámetro no existe, se devuelve el valor por defecto especificado envuelto en un {@link RuntimeValue} del tipo especificado.
  * 
  * @template {import('../values').ValueKind} T
- * @param {String} name
- * @param {import('../values').RuntimeValue} value 
- * @param {T} kind 
- * @param {Scope} scope 
- * @param {...*} fallback
+ * @param {String} name El nombre públicamente representativo del argumento que se pide del usuario.
+ * @param {import('../values').RuntimeValue} value El valor del argumento tal como fue facilitado por el usuario, si existe.
+ * @param {T} kind El tipo de valor del argumento de la Función nativa.
+ * @param {Scope} scope El {@link Scope} de la Función nativa que llama esta función.
+ * @param {...*} fallback Definición del valor por defecto. Para la mayoría de tipos, solo se pasa un parámetro que es meramente el valor. Para Listas puedes pasar un argumento de Array o varios argumentos de sus elementos. Para tipos de Función no-nativa, se pasan el cuerpo de la Función, los argumentos y el {@link Scope} de la misma.
  * @returns {Extract<import('../values').RuntimeValue, { kind: T }>}
  */
 function getParamOrDefault(name, value, kind, scope, ...fallback) {
@@ -114,9 +114,9 @@ function getParamOrDefault(name, value, kind, scope, ...fallback) {
  * * Si el parámetro no existe, se devuelve Nada independientemente del tipo.
  * 
  * @template {import('../values').ValueKind} T
- * @param {import('../values').RuntimeValue} value 
- * @param {T} kind 
- * @param {Scope} scope 
+ * @param {import('../values').RuntimeValue} value El valor del argumento tal como fue facilitado por el usuario, si existe.
+ * @param {T} kind El tipo de valor del argumento de la Función nativa.
+ * @param {Scope} scope El {@link Scope} de la Función nativa que llama esta función.
  * @returns {[ false, import('../values').NadaValue ] | [ true, Extract<import('../values').RuntimeValue, { kind: T }> ]}
  */
 function getParamOrNada(name, value, kind, scope) {
