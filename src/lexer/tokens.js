@@ -1,16 +1,20 @@
 /**Contiene tipos de token de lexer*/
 const TokenKinds = /**@type {const}*/({
+	//Valores
 	LIT_NUMBER: 'Number',
 	LIT_TEXT: 'String',
 	LIT_BOOLEAN: 'Boolean',
 	IDENTIFIER: 'Identifier',
+	NADA: 'Nada',
 
+	//Agrupación
 	PAREN_OPEN: 'ParenOpen',
 	PAREN_CLOSE: 'ParenClose',
 
 	BLOCK_OPEN: 'BlockOpen',
 	BLOCK_CLOSE: 'BlockClose',
 
+	//Indicadores de Sentencia de Control
 	IF: 'If',
 	ELSE: 'Else',
 	ELSE_IF: 'ElseIf',
@@ -21,6 +25,7 @@ const TokenKinds = /**@type {const}*/({
 	FOR_EACH: 'ForEach',
 	FOR: 'For',
 
+	//Indicadores de sentencia
 	READ: 'Read',
 	CREATE: 'Create',
 	SAVE: 'Save',
@@ -38,10 +43,12 @@ const TokenKinds = /**@type {const}*/({
 	SEND: 'Send',
 	COMMENT: 'Comment',
 
+	//Operadores lógicos
 	OR: 'Or',
 	AND: 'And',
 	NOT: 'Not',
 
+	//Operadores comparativos
 	EQUALS: 'Equals',
 	NOT_EQUALS: 'NotEquals',
 	SEEMS: 'Seems',
@@ -51,17 +58,7 @@ const TokenKinds = /**@type {const}*/({
 	GREATER: 'Greater',
 	GREATER_EQUALS: 'GreaterEquals',
 
-	ASSIGNMENT: 'Assignment',
-	ARROW: 'Arrow',
-	COLON: 'Colon',
-	COMMA: 'Comma',
-	LAMBDA: 'Lambda',
-	TIMES: 'Times',
-	DOT: 'Dot',
-	IN: 'In',
-	FROM: 'From',
-	OPTIONAL: 'Optional',
-
+	//Operadores aritméticos
 	PLUS: 'Plus',
 	DASH: 'Dash',
 	STAR: 'Star',
@@ -70,6 +67,21 @@ const TokenKinds = /**@type {const}*/({
 	CARET: 'Caret',
 	DOUBLE_STAR: 'DoubleStar',
 
+	//Otros operadores
+	ARROW: 'Arrow',
+	COLON: 'Colon',
+	COMMA: 'Comma',
+	LAMBDA: 'Lambda',
+	DOT: 'Dot',
+	
+	//Palabras clave
+	ASSIGNMENT: 'Assignment',
+	TIMES: 'Times',
+	IN: 'In',
+	FROM: 'From',
+	OPTIONAL: 'Optional',
+
+	//Indicadores de Tipo
 	NUMBER: 'NumberKind',
 	TEXT: 'TextKind',
 	BOOLEAN: 'BooleanKind',
@@ -78,8 +90,8 @@ const TokenKinds = /**@type {const}*/({
 	EMBED: 'Embed',
 	INPUT: 'Input',
 	FUNCTION: 'Function',
-	NADA: 'Nada',
 
+	//EOF
 	EOF: 'EOF',
 });
 /**
