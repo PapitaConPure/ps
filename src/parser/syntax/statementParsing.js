@@ -495,7 +495,7 @@ function parseSaveStatement(parser) {
 }
 
 /**
- * Parsea una Sentencia de Asignación de Variable
+ * Parsea una Sentencia de Asignación de Variable (CARGAR, SUMAR, MULTIPLICAR, etc)
  * @param {import('../parser.js').Parser} parser
  * @returns {import('../../ast/statements.js').AssignmentStatement|import('../../ast/statements.js').LoadStatement}
  */
@@ -510,30 +510,21 @@ function parseAssignmentStatement(parser) {
 	const receptorToken = parser.current;
 	const receptor = parser.parseExpression(BindingPowers.COMMA);
 
-	if(receptor.kind !== ExpressionKinds.IDENTIFIER && receptor.kind !== ExpressionKinds.ARROW)
+	if(receptor.kind !== ExpressionKinds.IDENTIFIER && receptor.kind !== ExpressionKinds.ARROW && receptor.kind !== ExpressionKinds.BINARY)
 		throw parser.TuberParserError(`Se esperaba una expresión receptora asignable en Sentencia ${operatorString}. Sin embargo, se recibió: *${receptorToken.translated}*`, receptorToken);
 
 	if(!parser.current.is(TokenKinds.ASSIGNMENT)) {
-		if(operator.isAny(TokenKinds.ADD, TokenKinds.SUBTRACT)) {
-			return ({
-				kind: StatementKinds.ASSIGNMENT,
-				operator,
-				receptor,
-				reception: null,
-				...makeMetadata(operator, receptor),
-			});
-		}
+		const result = parseSingleSideAssignment(parser, operator, receptor);
+		
+		if(!result)
+			parser.TuberParserError(
+				`Se esperaba "con" y una expresión luego de expresión receptora en Sentencia \`${`${operator.value}`.toUpperCase()}\`. Sin embargo, se recibió: ${parser.current.translated}`
+			);
 
-		if(operator.is(TokenKinds.LOAD) && parser.current.isStatement && receptor.kind === ExpressionKinds.IDENTIFIER) {
-			return ({
-				kind: StatementKinds.LOAD,
-				identifier: receptor.name,
-				...makeMetadata(operator, receptor),
-			});
-		}
+		return result;
 	}
 
-	parser.expect(TokenKinds.ASSIGNMENT, `Se esperaba "con" y una expresión luego de expresión receptora en Sentencia ${operatorString}. Sin embargo, se recibió: ${parser.current.translated}`);
+	parser.advance();
 
 	parser.ensureExpression(
 		`Se esperaba una expresión de recepción válida luego del operador \`con\` en Sentencia ${operatorString}. Sin embargo, se recibió: *${parser.current.translated}*`,
@@ -545,8 +536,87 @@ function parseAssignmentStatement(parser) {
 		operator,
 		receptor,
 		reception,
-		...makeMetadata(operator, receptor),
+		...makeMetadata(operator, reception),
 	});
+}
+
+/**
+ * Parsea una Sentencia de Asignación de Variable sin "con" (por ende, sin 2 lados)
+ * @param {import('../parser.js').Parser} parser
+ * @param {import('../../lexer/tokens.js').Token} operator
+ * @param {import('../../ast/expressions.js').Expression} receptor
+ * @returns {import('../../ast/statements.js').AssignmentStatement | import('../../ast/statements.js').LoadStatement | null}
+ */
+function parseSingleSideAssignment(parser, operator, receptor) {
+	if(operator.isAny(TokenKinds.ADD, TokenKinds.SUBTRACT)) {
+		return ({
+			kind: StatementKinds.ASSIGNMENT,
+			operator,
+			receptor,
+			reception: null,
+			...makeMetadata(operator, receptor),
+		});
+	}
+
+	if(!operator.is(TokenKinds.LOAD)
+	|| (receptor.kind !== ExpressionKinds.IDENTIFIER && receptor.kind !== ExpressionKinds.BINARY)
+	|| !parser.current.isStatement)
+		return null;
+
+	if(receptor.kind === ExpressionKinds.IDENTIFIER) {
+		return ({
+			kind: StatementKinds.LOAD,
+			conditional: false,
+			identifier: receptor.name,
+			...makeMetadata(operator, receptor),
+		});
+	}
+
+	if(receptor.left.kind === ExpressionKinds.IDENTIFIER) {
+		const reception = receptor.right;
+		receptor = receptor.left;
+
+		return {
+			kind: StatementKinds.ASSIGNMENT,
+			operator,
+			receptor,
+			reception,
+			...makeMetadata(operator, reception),
+		};
+	}
+
+	if(receptor.left.kind !== ExpressionKinds.BINARY)
+		return null;
+	
+	/**
+	 * @param {import('../../ast/expressions.js').Expression} expr 
+	 * @returns {Array<import('../../ast/expressions.js').Expression>}
+	 */
+	function walkExpressions(expr) {
+		if(expr.kind === ExpressionKinds.BINARY) {
+			if(!expr.operator.is(TokenKinds.OR) || expr.right.kind === ExpressionKinds.BINARY)
+				throw parser.TuberParserError('Solo se permiten expresiones binarias lógicas disyuntivas (`o`) sin agrupamientos en sentencias de Asignación Condicional');
+
+			return [ ...walkExpressions(expr.left), ...walkExpressions(expr.right) ];
+		}
+
+		return [ expr ];
+	}
+
+	const expressions = walkExpressions(receptor);
+
+	if(expressions[0].kind !== ExpressionKinds.IDENTIFIER)
+		throw parser.TuberParserError('La primera expresión de una Sentencia de Asignación Condicional debe ser un identificador');
+
+	const identifier = expressions[0].name;
+
+	return {
+		kind: StatementKinds.LOAD,
+		conditional: true,
+		identifier,
+		expressions,
+		...makeMetadata(operator, expressions[expressions.length - 1]),
+	};
 }
 
 /**

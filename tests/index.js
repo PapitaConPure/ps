@@ -453,6 +453,15 @@ const tests = [
 			expect(sendStack[0]).toBe(makeNumber(42));
 		},
 	},
+	{
+		file: 34,
+		label: 'Cargar Condicional',
+		expect: Results.SUCCESS,
+		test: function({ sendStack }) {
+			expect(sendStack.length).toBe(1);
+			expect(sendStack[0]).toBe(makeNumber(42));
+		},
+	},
 ];
 
 const pass = [];

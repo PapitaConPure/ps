@@ -800,12 +800,20 @@ class Interpreter {
 	 * @param {Scope} scope 
 	 */
 	#evaluateLoadStatement(node, scope) {
-		const { identifier } = node;
+		const { identifier, conditional } = node;
 
-		const value = scope.lookup(identifier, false);
-
-		if(value.kind === ValueKinds.NADA)
-			scope.assignVariable(identifier, value);
+		if(conditional) {
+			const assignment = node.expressions
+				.map(expr => this.evaluate(expr, scope, false))
+				.find(value => coerceValue(this, value, ValueKinds.BOOLEAN).value);
+			
+			scope.assignVariable(identifier, assignment);
+		} else {
+			const value = scope.lookup(identifier, false);
+	
+			if(value.kind === ValueKinds.NADA)
+				scope.assignVariable(identifier, value);
+		}
 
 		return makeNada();
 	}

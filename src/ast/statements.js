@@ -142,9 +142,17 @@ const ScopeAbortKinds = [
  */
 
 /**
- * @typedef {Object} LoadStatementData
+ * @typedef {Object} BaseLoadStatementData
  * @property {String} identifier
- * @typedef {BaseStatementData<'LoadStatement'> & LoadStatementData} LoadStatement
+ * @typedef {BaseStatementData<'LoadStatement'> & BaseLoadStatementData} BaseLoadStatement
+ * @typedef {Object} UnconditionalLoadStatementData
+ * @property {false} conditional
+ * @typedef {Object} ConditionalLoadStatementData
+ * @property {true} conditional
+ * @property {Array<import('./expressions.js').Expression>} expressions
+ * @typedef {BaseLoadStatement & UnconditionalLoadStatementData} UnconditionalLoadStatement
+ * @typedef {BaseLoadStatement & ConditionalLoadStatementData} ConditionalLoadStatement
+ * @typedef {UnconditionalLoadStatement | ConditionalLoadStatement} LoadStatement
  */
 
 /**
