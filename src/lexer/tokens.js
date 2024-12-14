@@ -72,6 +72,7 @@ const TokenKinds = /**@type {const}*/({
 	COLON: 'Colon',
 	COMMA: 'Comma',
 	LAMBDA: 'Lambda',
+	AFTER: 'After',
 	DOT: 'Dot',
 	
 	//Palabras clave
