@@ -78,6 +78,7 @@ class Lexer {
 			{ match: 'desde', kind: TokenKinds.FROM },
 			{ match: 'veces', kind: TokenKinds.TIMES },
 			{ match: 'opcional', kind: TokenKinds.OPTIONAL },
+			{ match: 'luego', kind: TokenKinds.AFTER },
 
 			{ match: 'verdadero', kind: TokenKinds.LIT_BOOLEAN, value: true },
 			{ match: 'falso', kind: TokenKinds.LIT_BOOLEAN, value: false },
