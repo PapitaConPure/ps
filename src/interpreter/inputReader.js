@@ -180,6 +180,15 @@ class InputReader {
 		return this.#spreadInput?.name;
 	}
 
+	/**
+	 * Comprueba si este {@link InputReader} es de pruebas de ejecución (`true`) o no (`false`)
+	 * @abstract
+	 * @returns {boolean}
+	 */
+	isTestDrive() {
+		throw new Error('No implementado');
+	}
+
 	/**@type {(node: import('../ast/statements').ReadStatement, scope: Scope) => import('./values').RuntimeValue}}*/
 	readInput(node, scope) {
 		return makeNada();
@@ -257,6 +266,11 @@ class TestDriveInputReader extends InputReader {
 		super(interpreter, args ?? []);
 	}
 
+	/**@override*/
+	isTestDrive() {
+		return true;
+	}
+
 	/**
 	 * Lee una Entrada de Ejecución de Prueba
 	 * @override
@@ -294,6 +308,11 @@ class ProductionInputReader extends InputReader {
 	 */
 	constructor(interpreter, args) {
 		super(interpreter, args ?? []);
+	}
+
+	/**@override*/
+	isTestDrive() {
+		return false;
 	}
 
 	/**

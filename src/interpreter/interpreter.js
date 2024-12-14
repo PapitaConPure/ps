@@ -217,6 +217,10 @@ class Interpreter {
 		return stackTrace.join('\n');
 	}
 
+	isTestDrive() {
+		return this.#inputReader.isTestDrive();
+	}
+
 	/**
 	 * @template {import('./values').ValueKind} T
 	 * @param {RuntimeValue | null | undefined} value
@@ -1039,6 +1043,9 @@ class Interpreter {
 	#evaluateBinary(node, scope, mustBeDeclared = true) {
 		const { operator, left, right } = node;
 
+		if(operator.is(TokenKinds.AFTER))
+			return this.#evaluateAfter(node, scope, mustBeDeclared);
+
 		//Caso especial de operaciones binarias lógicas
 		if(operator.isAny(TokenKinds.AND, TokenKinds.OR))
 			return this.#evaluateLogical(node, scope, mustBeDeclared);
@@ -1052,6 +1059,20 @@ class Interpreter {
 			throw this.TuberInterpreterError(`Operación binaria inválida. No se puede evaluar ${this.astString(node)} porque el operador "${operator.value}" es inválido`, operator);
 
 		return operation(this, leftValue, rightValue, left, right);
+	}
+
+	/**
+	 * Evalúa una expresión binaria "luego" y devuelve el valor resultante de la operación
+	 * @param {import('../ast/expressions').BinaryExpression} node 
+	 * @param {Scope} scope
+	 */
+	#evaluateAfter(node, scope, mustBeDeclared = true) {
+		const { left, right } = node;
+
+		if(this.isTestDrive())
+			return this.evaluate(left, scope, mustBeDeclared);
+		else
+			return this.evaluate(right, scope, mustBeDeclared);
 	}
 
 	/**

@@ -428,11 +428,29 @@ const tests = [
 		file: 32,
 		label: 'Elegir de Lista',
 		expect: Results.SUCCESS,
-		log,
 		test: function({ sendStack }) {
 			expect(sendStack.length).toBe(2);
 			expect(sendStack[0].kind).toBe(ValueKinds.LIST);
 			expect(sendStack[1].kind).toBe(ValueKinds.NUMBER);
+		},
+	},
+	{
+		file: 33,
+		label: 'Operador luego (Primera Ejecución)',
+		expect: Results.SUCCESS,
+		test: function({ sendStack }) {
+			expect(sendStack.length).toBe(1);
+			expect(sendStack[0]).toBe(makeText('¡Hola Mundo!'));
+		},
+	},
+	{
+		file: 33,
+		label: 'Operador luego (Ejecución Ordinaria)',
+		expect: Results.SUCCESS,
+		args: [ 'Una Entrada de Usuario cualquiera' ],
+		test: function({ sendStack }) {
+			expect(sendStack.length).toBe(1);
+			expect(sendStack[0]).toBe(makeNumber(42));
 		},
 	},
 ];
