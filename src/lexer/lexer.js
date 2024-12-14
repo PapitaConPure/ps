@@ -34,14 +34,14 @@ class Lexer {
 		this.#keywords = [
 			{ match: 'con', kind: TokenKinds.ASSIGNMENT },
 
+			{ match: 'o', kind: TokenKinds.OR },
+			{ match: 'y', kind: TokenKinds.AND },
+			{ match: 'no', kind: TokenKinds.NOT },
+
 			{ match: 'es', kind:TokenKinds.EQUALS },
 			{ match: 'parece', kind:TokenKinds.SEEMS },
 			{ match: 'precede', kind: TokenKinds.LESS },
 			{ match: 'excede', kind: TokenKinds.GREATER },
-
-			{ match: 'o', kind: TokenKinds.OR },
-			{ match: 'y', kind: TokenKinds.AND },
-			{ match: 'no', kind: TokenKinds.NOT },
 
 			{ match: 'leer', kind: TokenKinds.READ },
 			{ match: 'crear', kind: TokenKinds.CREATE },
