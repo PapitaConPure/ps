@@ -32,9 +32,8 @@ class Lexer {
 		this.#pos = this.#col = this.#line = 1;
 
 		this.#keywords = [
-			{ match: 'verdadero', kind: TokenKinds.LIT_BOOLEAN, value: true },
-			{ match: 'falso', kind: TokenKinds.LIT_BOOLEAN, value: false },
-			
+			{ match: 'con', kind: TokenKinds.ASSIGNMENT },
+
 			{ match: 'es', kind:TokenKinds.EQUALS },
 			{ match: 'parece', kind:TokenKinds.SEEMS },
 			{ match: 'precede', kind: TokenKinds.LESS },
@@ -43,23 +42,6 @@ class Lexer {
 			{ match: 'o', kind: TokenKinds.OR },
 			{ match: 'y', kind: TokenKinds.AND },
 			{ match: 'no', kind: TokenKinds.NOT },
-
-			{ match: 'con', kind: TokenKinds.ASSIGNMENT },
-			{ match: 'en', kind: TokenKinds.IN },
-			{ match: 'desde', kind: TokenKinds.FROM },
-			{ match: 'veces', kind: TokenKinds.TIMES },
-			{ match: 'opcional', kind: TokenKinds.OPTIONAL },
-
-			{ match: 'bloque', kind: TokenKinds.BLOCK_OPEN },
-			{ match: 'fin', kind: TokenKinds.BLOCK_CLOSE },
-
-			{ match: 'si', kind: TokenKinds.IF },
-			{ match: 'sino', kind: TokenKinds.ELSE },
-			{ match: 'mientras', kind: TokenKinds.WHILE },
-			{ match: 'hacer', kind: TokenKinds.DO },
-			{ match: 'hasta', kind: TokenKinds.UNTIL },
-			{ match: 'repetir', kind: TokenKinds.REPEAT },
-			{ match: 'para', kind: TokenKinds.FOR },
 
 			{ match: 'leer', kind: TokenKinds.READ },
 			{ match: 'crear', kind: TokenKinds.CREATE },
@@ -80,6 +62,9 @@ class Lexer {
 			{ match: 'decir', kind: TokenKinds.SEND },
 			{ match: 'comentar', kind: TokenKinds.COMMENT },
 
+			{ match: 'bloque', kind: TokenKinds.BLOCK_OPEN },
+			{ match: 'fin', kind: TokenKinds.BLOCK_CLOSE },
+
 			{ match: 'numero', kind: TokenKinds.NUMBER },
 			{ match: 'texto', kind: TokenKinds.TEXT },
 			{ match: 'logico', kind: TokenKinds.BOOLEAN },
@@ -88,6 +73,22 @@ class Lexer {
 			{ match: 'marco', kind: TokenKinds.EMBED },
 			{ match: 'funcion', kind: TokenKinds.FUNCTION },
 			{ match: 'nada', kind: TokenKinds.NADA, value: null },
+
+			{ match: 'en', kind: TokenKinds.IN },
+			{ match: 'desde', kind: TokenKinds.FROM },
+			{ match: 'veces', kind: TokenKinds.TIMES },
+			{ match: 'opcional', kind: TokenKinds.OPTIONAL },
+
+			{ match: 'verdadero', kind: TokenKinds.LIT_BOOLEAN, value: true },
+			{ match: 'falso', kind: TokenKinds.LIT_BOOLEAN, value: false },
+
+			{ match: 'si', kind: TokenKinds.IF },
+			{ match: 'sino', kind: TokenKinds.ELSE },
+			{ match: 'mientras', kind: TokenKinds.WHILE },
+			{ match: 'hacer', kind: TokenKinds.DO },
+			{ match: 'hasta', kind: TokenKinds.UNTIL },
+			{ match: 'repetir', kind: TokenKinds.REPEAT },
+			{ match: 'para', kind: TokenKinds.FOR },
 		];
 
 		this.#patterns = [
