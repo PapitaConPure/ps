@@ -115,6 +115,7 @@ function createLookups() {
 
     //Asignación y Misceláneo
     led(TokenKinds.LAMBDA, BindingPowers.ASSIGNMENT, Associativities.RIGHT, parseLambdaExpression);
+    led(TokenKinds.AFTER, BindingPowers.ASSIGNMENT, Associativities.LEFT, parseBinaryExpression);
 
     //Lógico
     led(TokenKinds.OR, BindingPowers.LOGICAL_DISJUNCTION, Associativities.LEFT, parseBinaryExpression);
