@@ -132,6 +132,11 @@ function elegir(self, valores, scope) {
 	return valores[idx];
 }
 
+/**@type {NativeFunction<[], BooleanValue>}*/
+function esPrueba(self, [], scope) {
+	return makeBoolean(scope.interpreter.isTestDrive());
+}
+
 /**@type {NativeFunction<Array<NumberValue>, NumberValue>}*/
 function maximizar(self, números, scope) {
 	if(números.length === 0)
@@ -206,6 +211,7 @@ const utilFunctions = [
 	{ id: 'cos', fn: cos },
 	{ id: 'dado', fn: dado },
 	{ id: 'elegir', fn: elegir },
+	{ id: 'esPrueba', fn: esPrueba },
 	{ id: 'hayEntradas', fn: quedanEntradas },
 	{ id: 'hsl', fn: colorHSL },
 	{ id: 'hsb', fn: colorHSV },
