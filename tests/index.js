@@ -462,6 +462,17 @@ const tests = [
 			expect(sendStack[0]).toBe(makeNumber(42));
 		},
 	},
+	{
+		file: 35,
+		label: 'Expresiones Condicionales',
+		expect: Results.SUCCESS,
+		log,
+		test: function({ sendStack }) {
+			expect(sendStack.length).toBe(2);
+			expect(sendStack[0]).toBe(makeText('wenamechaindesama'));
+			expect(sendStack[1]).toBe(makeText('burundanga'));
+		},
+	},
 ];
 
 const pass = [];

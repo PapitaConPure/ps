@@ -249,6 +249,31 @@ function parseBinaryExpression(parser, left, bp, ass) {
 
 /**
  * @param {import('../parser.js').Parser} parser
+ * @param {import('../../ast/expressions').Expression} left
+ * @param {import('../../ast/ast').BindingPower} bp
+ * @param {import('../../ast/ast').Associativity} ass
+ * @returns {import('../../ast/expressions').ConditionalExpression}
+ */
+function parseConditionalExpression(parser, left, bp, ass) {
+	const operator = parser.advance();
+	const consequent = parser.parseExpression(bp, ass);
+	parser.expect(TokenKinds.COLON, `Se esperaba el operador \`:\` luego del operando medio en expresión ternaria. Sin embargo, se recibió: ${parser.current.translated}`);
+	const alternate = parser.parseExpression(bp, ass);
+
+	return {
+		kind: ExpressionKinds.CONDITIONAL,
+		line: operator.line,
+		column: operator.column,
+		start: left.start,
+		end: alternate.end,
+		test: left,
+		consequent,
+		alternate,
+	};
+}
+
+/**
+ * @param {import('../parser.js').Parser} parser
  * @returns {import('../../ast/expressions').CastExpression}
  */
 function parseCastExpression(parser) {
@@ -508,6 +533,7 @@ module.exports = {
 	parseCallExpression,
 	parseFunctionExpression,
 	parseSequenceExpression,
+	parseConditionalExpression,
 	parseLambdaExpression,
 	parseGroupExpression,
 };

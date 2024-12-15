@@ -16,6 +16,7 @@ const ExpressionKinds = /**@type {const}*/({
     BINARY: 'BinaryExpression',
     ARROW: 'ArrowExpression',
     CALL: 'CallExpression',
+    CONDITIONAL: 'ConditionalExpression',
     FUNCTION: 'FunctionExpression',
     SEQUENCE: 'SequenceExpression',
 });
@@ -132,6 +133,14 @@ const ExpressionKinds = /**@type {const}*/({
  */
 
 /**
+ * @typedef {Object} ConditionalExpressionData
+ * @property {Expression} test
+ * @property {Expression} consequent
+ * @property {Expression} alternate
+ * @typedef {BaseExpressionData<'ConditionalExpression'> & ConditionalExpressionData} ConditionalExpression
+ */
+
+/**
  * @typedef {Object} BaseArgumentExpressionData
  * @property {String} identifier
  * 
@@ -188,6 +197,7 @@ const ExpressionKinds = /**@type {const}*/({
  *          |CastExpression
  *          |ArrowExpression
  *          |CallExpression
+ *          |ConditionalExpression
  *          |SequenceExpression
  *          |ArgumentExpression
  *          |FunctionExpression
@@ -195,7 +205,7 @@ const ExpressionKinds = /**@type {const}*/({
  */
 
 /**
- * @typedef {PrimaryExpression|ComplexExpression} Expression
+ * @typedef {PrimaryExpression | ComplexExpression} Expression
  */
 //#endregion
 

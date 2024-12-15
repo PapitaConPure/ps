@@ -71,6 +71,7 @@ const TokenKinds = /**@type {const}*/({
 	ARROW: 'Arrow',
 	COLON: 'Colon',
 	COMMA: 'Comma',
+	QUESTION: 'Question',
 	LAMBDA: 'Lambda',
 	AFTER: 'After',
 	DOT: 'Dot',
@@ -155,6 +156,7 @@ TokenKindTranslations
 	.set(TokenKinds.ASSIGNMENT, 'Operador \`con\`')
 	.set(TokenKinds.ARROW, 'Operador de flecha \`->\`')
 	.set(TokenKinds.COLON, 'Operador \`:\`')
+	.set(TokenKinds.QUESTION, 'Operador \`?\`')
 	.set(TokenKinds.COMMA, 'Operador \`,\`')
 	.set(TokenKinds.LAMBDA, 'Operador Lambda')
 	.set(TokenKinds.TIMES, 'Operador especial \`veces\`')

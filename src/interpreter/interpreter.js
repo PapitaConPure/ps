@@ -351,7 +351,7 @@ class Interpreter {
 			break;
 
 		case StatementKinds.CONDITIONAL:
-			returnValue = this.#evaluateConditional(node, scope);
+			returnValue = this.#evaluateConditionalStmt(node, scope);
 			break;
 
 		case StatementKinds.WHILE:
@@ -491,6 +491,10 @@ class Interpreter {
 		case ExpressionKinds.BINARY:
 			returnValue = this.#evaluateBinary(node, scope, mustBeDeclared);
 			break;
+
+		case ExpressionKinds.CONDITIONAL:
+			returnValue = this.#evaluateConditionalExpr(node, scope, mustBeDeclared);
+			break;
 			
 		case ExpressionKinds.CAST:
 			returnValue = this.#evaluateCast(node, scope);
@@ -539,7 +543,7 @@ class Interpreter {
 	 * @param {import('../ast/statements').ConditionalStatement} node 
 	 * @param {Scope} scope
 	 */
-	#evaluateConditional(node, scope) {
+	#evaluateConditionalStmt(node, scope) {
 		const { test, consequent, alternate } = node;
 
 		const testValue = this.evaluateAs(test, scope, ValueKinds.BOOLEAN, false);
@@ -1067,6 +1071,21 @@ class Interpreter {
 			throw this.TuberInterpreterError(`Operación binaria inválida. No se puede evaluar ${this.astString(node)} porque el operador "${operator.value}" es inválido`, operator);
 
 		return operation(this, leftValue, rightValue, left, right);
+	}
+
+	/**
+	 * Evalúa una expresión ternaria condicional y devuelve el valor resultante de la operación
+	 * @param {import('../ast/expressions').ConditionalExpression} node 
+	 * @param {Scope} scope
+	 */
+	#evaluateConditionalExpr(node, scope, mustBeDeclared = true) {
+		const { test, consequent, alternate } = node;
+
+		const testValue = this.evaluateAs(test, scope, ValueKinds.BOOLEAN, false);
+		const consequentValue = this.evaluate(consequent, scope, mustBeDeclared);
+		const alternateValue = this.evaluate(alternate, scope, mustBeDeclared);
+
+		return testValue.value ? consequentValue : alternateValue;
 	}
 
 	/**

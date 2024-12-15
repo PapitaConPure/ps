@@ -9,6 +9,7 @@ const {
     parseCallExpression,
     parseFunctionExpression,
 	parseSequenceExpression,
+    parseConditionalExpression,
     parseLambdaExpression,
     parseGroupExpression,
 } = require('./syntax/expressionParsing.js');
@@ -115,6 +116,7 @@ function createLookups() {
 
     //Asignación y Misceláneo
     led(TokenKinds.LAMBDA, BindingPowers.ASSIGNMENT, Associativities.RIGHT, parseLambdaExpression);
+    led(TokenKinds.QUESTION, BindingPowers.ASSIGNMENT, Associativities.RIGHT, parseConditionalExpression);
     led(TokenKinds.AFTER, BindingPowers.ASSIGNMENT, Associativities.LEFT, parseBinaryExpression);
 
     //Lógico

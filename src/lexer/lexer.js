@@ -101,17 +101,18 @@ class Lexer {
 			{ match: ')', handler: this.#makeDefaultHandler(TokenKinds.PAREN_CLOSE) },
 
 			{ match: '->', handler: this.#makeDefaultHandler(TokenKinds.ARROW) },
-			{ match: ':', handler: this.#makeDefaultHandler(TokenKinds.COLON) },
 			{ match: ',', handler: this.#makeDefaultHandler(TokenKinds.COMMA) },
+			{ match: ':', handler: this.#makeDefaultHandler(TokenKinds.COLON) },
+			{ match: '?', handler: this.#makeDefaultHandler(TokenKinds.QUESTION) },
 			{ match: '=>', handler: this.#makeDefaultHandler(TokenKinds.LAMBDA) },
 
 			{ match: '+', handler: this.#makeDefaultHandler(TokenKinds.PLUS) },
 			{ match: '-', handler: this.#makeDefaultHandler(TokenKinds.DASH) },
+			{ match: '**', handler: this.#makeDefaultHandler(TokenKinds.DOUBLE_STAR) },
 			{ match: '*', handler: this.#makeDefaultHandler(TokenKinds.STAR) },
 			{ match: '/', handler: this.#makeDefaultHandler(TokenKinds.SLASH) },
 			{ match: '%', handler: this.#makeDefaultHandler(TokenKinds.PERCENT) },
 			{ match: '^', handler: this.#makeDefaultHandler(TokenKinds.CARET) },
-			{ match: '**', handler: this.#makeDefaultHandler(TokenKinds.DOUBLE_STAR) },
 			
 			{ match: '<=', handler: this.#makeDefaultHandler(TokenKinds.LESS_EQUALS) },
 			{ match: '<', handler: this.#makeDefaultHandler(TokenKinds.LESS) },
