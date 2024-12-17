@@ -384,7 +384,6 @@ const tests = [
 		file: 26,
 		label: 'Formatos de Entrada (Primera Ejecución)',
 		expect: Results.SUCCESS,
-		log,
 		test: function({ sendStack }) {
 			expect(sendStack[0]).toBe(makeNumber(23));
 			expect(sendStack[1]).toBe(makeText('W'));
@@ -402,7 +401,6 @@ const tests = [
 		label: 'Formatos de Entrada (Ejecución Ordinaria)',
 		expect: Results.SUCCESS,
 		args: [ '2', 'WhAT', 'yay', 'Verdadero', '3', '0.7', '0.25', 'EN EFECTO', 'Magnífico' ],
-		log,
 		test: function({ sendStack }) {
 			expect(sendStack[0]).toBe(makeNumber(10));
 			expect(sendStack[1]).toBe(makeText('what'));
@@ -420,7 +418,6 @@ const tests = [
 		label: 'Formatos de Entrada (Ejecución Ordinaria 2)',
 		expect: Results.SUCCESS,
 		args: [ '12.5', '', 'nay', 'Falso', '5', '60%', '30%', 'minus', 'INCREÍBLE' ],
-		log,
 		test: function({ sendStack }) {
 			expect(sendStack[0]).toBe(makeNumber(12));
 			expect(sendStack[1]).toBe(makeText(''));
