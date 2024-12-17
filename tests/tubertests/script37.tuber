@@ -1,0 +1,4 @@
+CARGAR pasaje con "   El que no disfruta de la soledad, no amará a la libertad   "
+
+ENVIAR pasaje->acotar()
+ENVIAR pasaje->normalizado()

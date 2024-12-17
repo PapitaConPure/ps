@@ -466,11 +466,37 @@ const tests = [
 		file: 35,
 		label: 'Expresiones Condicionales',
 		expect: Results.SUCCESS,
-		log,
 		test: function({ sendStack }) {
 			expect(sendStack.length).toBe(2);
 			expect(sendStack[0]).toBe(makeText('wenamechaindesama'));
 			expect(sendStack[1]).toBe(makeText('burundanga'));
+		},
+	},
+	{
+		file: 36,
+		label: 'tipoDe()',
+		expect: Results.SUCCESS,
+		test: function({ sendStack }) {
+			expect(sendStack.length).toBe(9);
+			expect(sendStack[0]).toBe(makeText('número'));
+			expect(sendStack[1]).toBe(makeText('texto'));
+			expect(sendStack[2]).toBe(makeText('lógico'));
+			expect(sendStack[3]).toBe(makeText('lista'));
+			expect(sendStack[4]).toBe(makeText('registro'));
+			expect(sendStack[5]).toBe(makeText('marco'));
+			expect(sendStack[6]).toBe(makeText('función'));
+			expect(sendStack[7]).toBe(makeText('nada'));
+			expect(sendStack[8]).toBe(makeText('función'));
+		},
+	},
+	{
+		file: 37,
+		label: 'Texto->acotar() Texto->normalizar()',
+		expect: Results.SUCCESS,
+		test: function({ sendStack }) {
+			expect(sendStack.length).toBe(2);
+			expect(sendStack[0]).toBe(makeText('El que no disfruta de la soledad, no amará a la libertad'));
+			expect(sendStack[1]).toBe(makeText('el que no disfruta de la soledad, no amara a la libertad'));
 		},
 	},
 ];

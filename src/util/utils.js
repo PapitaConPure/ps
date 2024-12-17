@@ -84,7 +84,8 @@ function improveNumber(num, shorten = false, minDigits = 1) {
 /**
  * @typedef {object} LowerCaseNormalizationOptions
  * @property {boolean} [removeCarriageReturns=false] Indica si remover los caracteres de retorno de carro "\r". Por defecto: `false`
- * 
+ */
+/**
  * Pasa a minúsculas y remueve las tildes de un texto
  * @param {string} text
  * @param {LowerCaseNormalizationOptions} options

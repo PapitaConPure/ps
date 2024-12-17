@@ -1,5 +1,6 @@
 const { ValueKinds, makeNumber, makeText, makeBoolean, makeList, makeNada, isInternalOperable } = require('../../values');
 const { calculatePositionOffset, expectParam, getParamOrDefault } = require('../nativeUtils');
+const { toLowerCaseNormalized } = require('../../../util/utils');
 
 /**
  * @typedef {import('../../values').NumberValue} NumberValue
@@ -18,6 +19,11 @@ const { calculatePositionOffset, expectParam, getParamOrDefault } = require('../
  * @template {RuntimeValue} [TResult=RuntimeValue]
  * @typedef {import('../../values').NativeFunction<TextValue, TArg, TResult>} TextMethod
  */
+
+/**@type {TextMethod<[], TextValue>}*/
+function textoAcotar(self, [], scope) {
+	return makeText(self.value.trim());
+}
 
 /**@type {TextMethod<[], ListValue>}*/
 function textoALista(self, [], scope) {
@@ -69,7 +75,7 @@ function textoCortar(self, [ inicio, fin ], scope) {
 
 /**@type {TextMethod<[], TextValue>}*/
 function textoNormalizar(self, [], scope) {
-	return makeText(self.value.trim());
+	return makeText(toLowerCaseNormalized(self.value.trim()));
 }
 
 /**@type {TextMethod<[ TextValue ], ListValue>}*/
@@ -127,6 +133,7 @@ function textoÚltimaPosiciónDe(self, [ texto ], scope) {
 /**@type {Map<String, TextMethod>}*/
 const textMethods = new Map();
 textMethods
+	.set('acotar', textoAcotar)
 	.set('aLista', textoALista)
 	.set('aMinuscula', textoAMinúsculas)
 	.set('aMinúscula', textoAMinúsculas)
@@ -144,6 +151,7 @@ textMethods
 	.set('cortar', textoCortar)
 	.set('incluye', textoContiene)
 	.set('normalizar', textoNormalizar)
+	.set('normalizado', textoNormalizar)
 	.set('partir', textoPartir)
 	.set('posicionDe', textoPosiciónDe)
 	.set('posiciónDe', textoPosiciónDe)
