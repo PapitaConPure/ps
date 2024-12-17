@@ -190,7 +190,7 @@ function raíz(self, [ radicando, grado ], scope) {
 
 /**@type {NativeFunction<[ NumberValue ], NumberValue>}*/
 function sen(self, [ valor ], scope) {
-	const valorValue = expectParam('valor',  valor,  ValueKinds.NUMBER, scope).value;
+	const valorValue = expectParam('valor', valor, ValueKinds.NUMBER, scope).value;
 	
 	const sin = Math.sin(valorValue);
 	return makeNumber(sin);
@@ -198,10 +198,33 @@ function sen(self, [ valor ], scope) {
 
 /**@type {NativeFunction<[ NumberValue ], NumberValue>}*/
 function tan(self, [ valor ], scope) {
-	const valorValue = expectParam('valor',  valor,  ValueKinds.NUMBER, scope).value;
+	const valorValue = expectParam('valor', valor, ValueKinds.NUMBER, scope).value;
 	
 	const tan = Math.tan(valorValue);
 	return makeNumber(tan);
+}
+
+/**@type {NativeFunction<[ RuntimeValue ], TextValue>}*/
+function tipoDe(self, [ valor ], scope) {
+	if(valor == null)
+		throw scope.interpreter.TuberInterpreterError('Se esperaba un valor para el parámetro requerido `valor`');
+
+	/**@satisfies {Record<import('../../values').ValueKind, string>}*/
+	const mappings = /**@type {const}*/({
+		Number: 'número',
+		Text: 'texto',
+		Boolean: 'lógico',
+		List: 'lista',
+		Registry: 'registro',
+		Embed: 'marco',
+		Function: 'función',
+		NativeFunction: 'función',
+		Nada: 'nada',
+	});
+
+	const result = mappings[valor.kind];
+	
+	return makeText(result);
 }
 
 /**@type {Array<{ id: String, fn: NativeFunction }>}*/
@@ -225,6 +248,7 @@ const utilFunctions = [
 	{ id: 'rgb', fn: colorRGB },
 	{ id: 'sen', fn: sen },
 	{ id: 'tan', fn: tan },
+	{ id: 'tipoDe', fn: tipoDe },
 ];
 
 module.exports = {

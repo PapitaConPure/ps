@@ -1,0 +1,18 @@
+CREAR Número aa
+CREAR Texto bb
+CREAR Lógico cc
+CREAR Lista dd
+CREAR Registro ee
+CREAR Marco ff
+CARGAR gg con () => Nada
+CARGAR hh
+
+ENVIAR tipoDe(aa)
+ENVIAR tipoDe(bb)
+ENVIAR tipoDe(cc)
+ENVIAR tipoDe(dd)
+ENVIAR tipoDe(ee)
+ENVIAR tipoDe(ff)
+ENVIAR tipoDe(gg)
+ENVIAR tipoDe(hh)
+ENVIAR tipoDe(dado)
