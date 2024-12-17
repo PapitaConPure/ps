@@ -382,13 +382,55 @@ const tests = [
 	},
 	{
 		file: 26,
-		label: 'Formatos de Entrada',
+		label: 'Formatos de Entrada (Primera Ejecución)',
 		expect: Results.SUCCESS,
-		args: [ '2', 'POLLA', 'si' ],
+		log,
+		test: function({ sendStack }) {
+			expect(sendStack[0]).toBe(makeNumber(23));
+			expect(sendStack[1]).toBe(makeText('W'));
+			expect(sendStack[2]).toBe(makeBoolean(true));
+			expect(sendStack[3]).toBe(makeText('C'));
+			expect(sendStack[4]).toBe(makeText('A'));
+			expect(sendStack[5]).toBe(makeNumber(50));
+			expect(sendStack[6]).toBe(makeNumber(0.5));
+			expect(sendStack[7]).toBe(makeText('touché'));
+			expect(sendStack[8]).toBe(makeText('è'));
+		},
+	},
+	{
+		file: 26,
+		label: 'Formatos de Entrada (Ejecución Ordinaria)',
+		expect: Results.SUCCESS,
+		args: [ '2', 'WhAT', 'yay', 'Verdadero', '3', '0.7', '0.25', 'EN EFECTO', 'Magnífico' ],
+		log,
 		test: function({ sendStack }) {
 			expect(sendStack[0]).toBe(makeNumber(10));
-			expect(sendStack[1]).toBe(makeText('polla'));
+			expect(sendStack[1]).toBe(makeText('what'));
 			expect(sendStack[2]).toBe(makeBoolean(true));
+			expect(sendStack[3]).toBe(makeText('A'));
+			expect(sendStack[4]).toBe(makeText('C'));
+			expect(sendStack[5]).toBe(makeNumber(70));
+			expect(sendStack[6]).toBe(makeNumber(0.25));
+			expect(sendStack[7]).toBe(makeText('En efecto'));
+			expect(sendStack[8]).toBe(makeText('magnifico'));
+		},
+	},
+	{
+		file: 26,
+		label: 'Formatos de Entrada (Ejecución Ordinaria 2)',
+		expect: Results.SUCCESS,
+		args: [ '12.5', '', 'nay', 'Falso', '5', '60%', '30%', 'minus', 'INCREÍBLE' ],
+		log,
+		test: function({ sendStack }) {
+			expect(sendStack[0]).toBe(makeNumber(12));
+			expect(sendStack[1]).toBe(makeText(''));
+			expect(sendStack[2]).toBe(makeBoolean(false));
+			expect(sendStack[3]).toBe(makeText('B'));
+			expect(sendStack[4]).toBe(makeText('E'));
+			expect(sendStack[5]).toBe(makeNumber(60));
+			expect(sendStack[6]).toBe(makeNumber(0.3));
+			expect(sendStack[7]).toBe(makeText('Minus'));
+			expect(sendStack[8]).toBe(makeText('increible'));
 		},
 	},
 	{

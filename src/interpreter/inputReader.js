@@ -277,7 +277,7 @@ class TestDriveInputReader extends InputReader {
 	 * @type {(node: import('../ast/statements').ReadStatement, scope: Scope) => import('./values').RuntimeValue}
 	 */
 	readInput(node, scope) {
-		const { receptor, dataKind, optional, fallback } = node;
+		const { receptor, dataKind, optional, fallback, modifiers } = node;
 		
 		//Cargar valor de prueba
 		const name = this.interpreter.astString(receptor);
@@ -292,7 +292,7 @@ class TestDriveInputReader extends InputReader {
 			this.addInput(new Input(name, valueKind, optional));
 
 		try {
-			const coercedValue = coerceValue(this.interpreter, fallbackValue, valueKind);
+			const coercedValue = modifiers.length ? fallbackValue : coerceValue(this.interpreter, fallbackValue, valueKind);
 			return coercedValue;
 		} catch {
 			const fallbackString = this.interpreter.astString(fallback);
@@ -321,7 +321,7 @@ class ProductionInputReader extends InputReader {
 	 * @type {(node: import('../ast/statements').ReadStatement, scope: Scope) => import('./values').RuntimeValue}
 	 */
 	readInput(node, scope) {
-		const { receptor, dataKind, optional, fallback, modifiers } = node;
+		const { receptor, dataKind, optional, fallback, preModifiers, modifiers } = node;
 
 		const name = this.interpreter.astString(receptor);
 		const valueKind = ValueKindLookups.get(dataKind.kind);
@@ -336,7 +336,7 @@ class ProductionInputReader extends InputReader {
 		
 		let receptionValue;
 		if(arg != null)
-			receptionValue = this.#getValueFromArg(name, arg, valueKind);
+			receptionValue = this.#getValueFromArg(name, arg, valueKind, scope, preModifiers);
 		else if(optional) {
 			try {
 				receptionValue = (fallback != null)
@@ -356,12 +356,16 @@ class ProductionInputReader extends InputReader {
 	 * @param {string} name 
 	 * @param {string} arg 
 	 * @param {import('./values').ValueKind} valueKind
+	 * @param {Scope} scope
+	 * @param {Array<import('../ast/statements').ReadStatementPreModifier>} preModifiers
 	 * @returns {import('./values').RuntimeValue}
 	 */
-	#getValueFromArg(name, arg, valueKind) {
+	#getValueFromArg(name, arg, valueKind, scope, preModifiers) {
+		const preModifiedArg = preModifiers.reduce((value, preModifier) => preModifier(value, this.interpreter, scope), arg);
+
 		switch(valueKind) {
 		case ValueKinds.NUMBER: {
-			const narg = +arg;
+			const narg = +preModifiedArg;
 
 			if(isNaN(narg))
 				throw TuberInputError(`Se esperaba un Número para la entrada \`${name}\``);
@@ -370,10 +374,10 @@ class ProductionInputReader extends InputReader {
 		}
 
 		case ValueKinds.TEXT:
-			return makeText(arg);
+			return makeText(preModifiedArg);
 
 		case ValueKinds.BOOLEAN: {
-			const lowerArg = arg.toLowerCase();
+			const lowerArg = preModifiedArg.toLowerCase();
 
 			if(boolWords.TRUE.includes(lowerArg))
 				return makeBoolean(true);

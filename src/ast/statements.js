@@ -116,6 +116,7 @@ const ScopeAbortKinds = [
  */
 
 /**
+ * @typedef {(arg: string, it: import('../interpreter/interpreter').Interpreter, scope: import('../interpreter/scope').Scope) => string} ReadStatementPreModifier
  * @typedef {(v: import('../interpreter/values').RuntimeValue, it: import('../interpreter/interpreter').Interpreter, scope: import('../interpreter/scope').Scope) => import('../interpreter/values').RuntimeValue} ReadStatementModifier
  * 
  * @typedef {Object} ReadStatementData
@@ -123,6 +124,7 @@ const ScopeAbortKinds = [
  * @property {import('./expressions.js').Expression} receptor
  * @property {import('./expressions.js').Expression} fallback
  * @property {Boolean} optional
+ * @property {Array<ReadStatementPreModifier>} preModifiers
  * @property {Array<ReadStatementModifier>} modifiers
  * @typedef {BaseStatementData<'ReadStatement'> & ReadStatementData} ReadStatement
  */

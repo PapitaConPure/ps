@@ -1,7 +1,19 @@
-LEER Número a con 23 entre 10 y 30
-LEER Texto b con "pp" en minúsculas
-Leer Lógico c con Verdadero
+LEER Número a con 23 entre 10 y 30 como entero
+LEER Texto b con "W" en minúsculas
+LEER Lógico c con Verdadero según "yay" o "nay"
+LEER Lógico d con "C" como "A" o "B"
+LEER Número e con "A" entre 1 y 5 como opción "A", "B", "C", "D", "E"
+LEER Número f con 50 como porcentaje
+LEER Número g con 0.5 como factor
+LEER Texto h con "touché" en capital
+LEER Texto i con "è" normalizado
 
 ENVIAR a
 ENVIAR b
 ENVIAR c
+ENVIAR d
+ENVIAR e
+ENVIAR f
+ENVIAR g
+ENVIAR h
+ENVIAR i

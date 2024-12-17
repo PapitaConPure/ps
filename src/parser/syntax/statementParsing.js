@@ -1,9 +1,10 @@
 const { TokenKinds, translateTokenKind, Token, translateTokenKinds } = require('../../lexer/tokens.js');
-const { BindingPowers } = require('../../ast/ast.js');
+const { BindingPowers, Associativities } = require('../../ast/ast.js');
 const { StatementKinds, ScopeAbortKinds } = require('../../ast/statements.js');
 const { ExpressionKinds } = require('../../ast/expressions.js');
 const { makeMetadata } = require('../../ast/metadata.js')
-const { makeText, ValueKinds } = require('../../interpreter/values.js');
+const { makeText, ValueKinds, coerceValue, makeBoolean, makeNumber } = require('../../interpreter/values.js');
+const { TuberInputError } = require('../../interpreter/inputReader.js');
 const { toLowerCaseNormalized } = require('../../util/utils.js');
 
 /**
@@ -321,7 +322,7 @@ function parseReadStatement(parser) {
 	let fallback = null;
 
 	if(!parser.current.is(TokenKinds.ASSIGNMENT)) {
-		const modifiers = parseReadStmtModifiers(parser, dataKind);
+		const { preModifiers, modifiers } = parseReadStmtModifiers(parser, dataKind);
 
 		if(this.hasTokens && !this.current.isStatement)
 			throw parser.TuberParserError(`Se esperaba \`con\` y una expresión (o palabra clave \`opcional\`) luego de expresión receptora en Sentencia \`LEER\`. Sin embargo, se recibió: *${parser.current.translated}*`);
@@ -334,6 +335,7 @@ function parseReadStatement(parser) {
 			receptor,
 			fallback,
 			optional,
+			preModifiers,
 			modifiers,
 			...makeMetadata(startToken, receptor),
 		};
@@ -343,7 +345,7 @@ function parseReadStatement(parser) {
 	parser.ensureExpression(`Se esperaba una expresión de valor de respaldo luego de \`con\` en Sentencia \`LEER\`, pero la instrucción finalizó sin más con: *${parser.current.translated}*`);
 	fallback = parser.parseExpression(BindingPowers.COMMA);
 
-	const modifiers = parseReadStmtModifiers(parser, dataKind);
+	const { preModifiers, modifiers } = parseReadStmtModifiers(parser, dataKind);
 
 	return {
 		kind: StatementKinds.READ,
@@ -351,6 +353,7 @@ function parseReadStatement(parser) {
 		receptor,
 		fallback,
 		optional,
+		preModifiers,
 		modifiers,
 		...makeMetadata(startToken, fallback),
 	};
@@ -359,67 +362,248 @@ function parseReadStatement(parser) {
 /**
  * @param {import('../parser.js').Parser} parser
  * @param {Token} dataKind
- * @returns {Array<import('../../ast/statements.js').ReadStatementModifier>}
+ * @returns {{ preModifiers: Array<import('../../ast/statements.js').ReadStatementPreModifier>, modifiers: Array<import('../../ast/statements.js').ReadStatementModifier> }}
  */
 function parseReadStmtModifiers(parser, dataKind) {
+	const preModifiers = [];
 	const modifiers = [];
 
 	while(parser.hasTokens && !parser.current.isStatement)
-		modifiers.push(parseReadStmtModifier(parser, dataKind));
+		parseReadStmtModifier(preModifiers, modifiers, parser, dataKind);
 
-	return modifiers;
+	return { preModifiers, modifiers };
 }
 
 /**
+ * @type {Record<
+ * import('../../lexer/tokens.js').TokenKind,
+ * (preModifiers: Array<import('../../ast/statements.js').ReadStatementPreModifier>, modifiers: Array<import('../../ast/statements.js').ReadStatementModifier>, parser: import('../parser.js').Parser) => void
+ * >}
+ */
+const readStmtModifiers = /**@const*/({
+	[TokenKinds.NUMBER]: parseReadStmtNumberModifier,
+	[TokenKinds.TEXT]: parseReadStmtTextModifier,
+	[TokenKinds.BOOLEAN]: parseReadStmtBooleanModifier,
+});
+
+/**
+ * @param {Array<import('../../ast/statements.js').ReadStatementPreModifier>} preModifiers
+ * @param {Array<import('../../ast/statements.js').ReadStatementModifier>} modifiers
  * @param {import('../parser.js').Parser} parser
  * @param {Token} dataKind
- * @returns {import('../../ast/statements.js').ReadStatementModifier}
  */
-function parseReadStmtModifier(parser, dataKind) {
-	if(dataKind.is(TokenKinds.TEXT)) {
-		parser.expect(TokenKinds.IN, `Se esperaba un operador de formato para la definición de Entrada de Usuario, pero se recibió: *${parser.current.translated}*`);
-		const caseToken = parser.expect(TokenKinds.IDENTIFIER, `Se esperaba: \`mayusculas\`, \`minusculas\` o similares en definición de formato de Entrada de Usuario, pero se recibió un símbolo inválido`);
-		const textCase = toLowerCaseNormalized(caseToken.value);
+function parseReadStmtModifier(preModifiers, modifiers, parser, dataKind) {
+	const modifier = readStmtModifiers[dataKind.kind];
 
-		const upperCaseWords = [ 'mayus', 'mayuscula', 'mayusculas' ];
-		const lowerCaseWords = [ 'minus', 'minuscula', 'minusculas' ];
+	if(!modifier)
+		throw parser.TuberParserError(`Se intentó designar una directiva de Entrada de Usuario con \`${parser.current.value}\`, pero no existe ninguna para ${dataKind.translated}`);
 
-		if(!upperCaseWords.includes(textCase) && !lowerCaseWords.includes(textCase))
-			throw parser.TuberParserError(`Se esperaba: \`mayusculas\`, \`minusculas\` o similares en definición de formato de Entrada de Usuario. Sin embargo, se recibió: \`${textCase}\``, caseToken);
+	modifier(preModifiers, modifiers, parser);
+}
 
-		const upperCase = upperCaseWords.includes(textCase);
-		return upperCase
-			? (/**@type {import('../../interpreter/values.js').TextValue}*/ v) => makeText(v.value.toUpperCase())
-			: (/**@type {import('../../interpreter/values.js').TextValue}*/ v) => makeText(v.value.toLowerCase());
-	}
+/**@param {string} str*/
+function percentOrFactorFromString(str) {
+	const numStr = str.trim();
 
+	const pcnt = numStr.match(/^(?!_)(([0-9_]+([.][0-9]*)?)|([.][0-9]+))\s*%$/);
+	if(pcnt)
+		return { percent: +pcnt[1] };
+
+	const fac = numStr.match(/^(?!_)(([0-9_]+([.][0-9]*)?)|([.][0-9]+))\s*$/);
+	if(fac)
+		return { factor: +fac[1] };
+
+	throw TuberInputError('Se esperaba un factor o porcentaje en Entrada numérica');
+}
+
+/**
+ * @param {Array<import('../../ast/statements.js').ReadStatementPreModifier>} preModifiers
+ * @param {Array<import('../../ast/statements.js').ReadStatementModifier>} modifiers
+ * @param {import('../parser.js').Parser} parser
+ */
+function parseReadStmtNumberModifier(preModifiers, modifiers, parser) {
 	const opToken = parser.expect(TokenKinds.IDENTIFIER, `Se esperaba un operador de formato para la definición de Entrada de Usuario, pero se recibió: *${parser.current.translated}*`);
 	const name = toLowerCaseNormalized(opToken.value);
 
-	if(dataKind.is(TokenKinds.NUMBER) && name === 'entre') {
+	switch(name) {
+	case 'como': {
+		const identifier = parser.expect(TokenKinds.IDENTIFIER);
+		const word = toLowerCaseNormalized(identifier.value);
+
+		const wordMappings = /**@type {const}*/({
+			entero: () => modifiers.push((/**@type {import('../../interpreter/values.js').NumberValue}*/v) => makeNumber(Math.trunc(v.value))),
+			porcentaje: () => preModifiers.push(v => {
+				const { percent, factor } = percentOrFactorFromString(v);
+
+				if(percent)
+					return `${percent}`;
+
+				if(factor)
+					return `${factor * 100}`;
+			}),
+			factor: () => preModifiers.push(v => {
+				const { percent, factor } = percentOrFactorFromString(v);
+
+				if(percent)
+					return `${percent / 100}`;
+
+				if(factor)
+					return `${factor}`;
+			}),
+			absoluto: () => modifiers.push((/**@type {import('../../interpreter/values.js').NumberValue}*/v) => makeNumber(Math.abs(v.value))),
+			opcion: () => {
+				const first = parser.parseExpression(BindingPowers.COMMA);
+				const sequence = require('./expressionParsing.js').parseSequenceExpression(parser, first, BindingPowers.COMMA, Associativities.LEFT);
+				modifiers.push((/**@type {import('../../interpreter/values.js').NumberValue}*/v, it, scope) => {
+					const i = v.value - 1;
+
+					if(i < 0 || i >= sequence.expressions.length)
+						return v;
+
+					const expr = sequence.expressions[i];
+					return it.evaluate(expr, scope, false);
+				});
+			},
+		});
+	
+		const setModifier = wordMappings[word];
+		if(!setModifier)
+			throw parser.TuberParserError(`Palabra inválida en directiva de Entrada de Usuario de Número "cómo": \`${identifier.value}\``);
+
+		setModifier();
+		break;
+	}
+
+	case 'entre': {
 		const left = parser.parseExpression(BindingPowers.LOGICAL_CONJUNCTION);
 		parser.expect(TokenKinds.AND);
 		const right = parser.parseExpression(BindingPowers.LOGICAL_CONJUNCTION);
-
-		return (/**@type {import('../../interpreter/values.js').NumberValue}*/ v, it, scope) => {
+	
+		modifiers.push((/**@type {import('../../interpreter/values.js').NumberValue}*/ v, it, scope) => {
 			it.rememberNode(left);
 			const leftVal = it.evaluateAs(left, scope, ValueKinds.NUMBER);
 			it.forgetLastNode();
 			it.rememberNode(right);
 			const rightVal = it.evaluateAs(right, scope, ValueKinds.NUMBER);
 			it.forgetLastNode();
-
+	
 			if(v.value < leftVal.value)
-				return leftVal;
+				return makeNumber(leftVal.value);
 			
 			if(v.value > rightVal.value)
-				return rightVal;
-
+				return makeNumber(rightVal.value);
+	
 			return v;
-		};
+		});
+		break;
 	}
 
-	throw parser.TuberParserError(`El operador \`${name}\` no es válido para una Entrada de ${dataKind.translated}`, opToken);
+	case 'inverso': 
+		modifiers.push((/**@type {import('../../interpreter/values.js').NumberValue}*/v) => makeNumber(-v.value));
+		break;
+
+	default:
+		throw parser.TuberParserError(`La palabra \`${name}\` no es válida para una Entrada de Tipo Número`, opToken);
+	}
+}
+
+/**
+ * @param {Array<import('../../ast/statements.js').ReadStatementPreModifier>} preModifiers
+ * @param {Array<import('../../ast/statements.js').ReadStatementModifier>} modifiers
+ * @param {import('../parser.js').Parser} parser
+ */
+function parseReadStmtTextModifier(preModifiers, modifiers, parser) {
+	if(parser.current.is(TokenKinds.IDENTIFIER)) {
+		const token = parser.advance();
+		const name = toLowerCaseNormalized(token.value);
+
+		switch(name) {
+		case 'normalizada':
+		case 'normalizado':
+			modifiers.push((/**@type {import('../../interpreter/values.js').TextValue}*/v) => makeText(toLowerCaseNormalized(v.value)));
+			break;
+
+		default:
+			throw parser.TuberParserError(`La palabra \`${name}\` no es válida para una Entrada de Tipo Texto`, token);
+		}
+
+		return;
+	}
+
+	parser.expect(TokenKinds.IN, `Se esperaba una palabra de formato para la definición de Entrada de Usuario, pero se recibió: *${parser.current.translated}*`);
+	const caseToken = parser.expect(TokenKinds.IDENTIFIER, `Se esperaba: \`mayusculas\`, \`minusculas\` o similares en definición de formato de Entrada de Usuario, pero se recibió un símbolo inválido`);
+	const textCase = toLowerCaseNormalized(caseToken.value);
+
+	const upperCaseWords = [ 'mayus', 'mayuscula', 'mayusculas' ];
+	const lowerCaseWords = [ 'minus', 'minuscula', 'minusculas' ];
+	const capitalCaseWords = [ 'capital', 'capitales' ];
+
+	if(upperCaseWords.includes(textCase))
+		modifiers.push((/**@type {import('../../interpreter/values.js').TextValue}*/ v) => makeText(v.value.toUpperCase()))
+	else if(lowerCaseWords.includes(textCase))
+		modifiers.push((/**@type {import('../../interpreter/values.js').TextValue}*/ v) => makeText(v.value.toLowerCase()));
+	else if(capitalCaseWords.includes(textCase))
+		modifiers.push((/**@type {import('../../interpreter/values.js').TextValue}*/ v) => makeText(v.value.slice(0, 1).toUpperCase() + v.value.slice(1).toLowerCase()));
+	else 
+		throw parser.TuberParserError(`Se esperaba: \`mayusculas\`, \`minusculas\`, \`capitales\` o similares en definición de directiva de Entrada de Usuario. Sin embargo, se recibió: \`${textCase}\``, caseToken);
+}
+
+/**
+ * @param {Array<import('../../ast/statements.js').ReadStatementPreModifier>} preModifiers
+ * @param {Array<import('../../ast/statements.js').ReadStatementModifier>} modifiers
+ * @param {import('../parser.js').Parser} parser
+ */
+function parseReadStmtBooleanModifier(preModifiers, modifiers, parser) {
+	const token = parser.advance();
+	const name = toLowerCaseNormalized(token.value);
+
+	switch(name) {
+	case 'como': {
+		const left = parser.parseExpression(BindingPowers.LOGICAL_DISJUNCTION);
+		parser.expect(TokenKinds.OR);
+		const right = parser.parseExpression(BindingPowers.LOGICAL_DISJUNCTION);
+
+		modifiers.push((/**@type {import('../../interpreter/values.js').BooleanValue}*/ v, it, scope) => v.value
+			? it.evaluate(left, scope, false)
+			: it.evaluate(right, scope, false));
+		break;
+	}
+
+	case 'segun': {
+		const left = parser.parseExpression(BindingPowers.LOGICAL_DISJUNCTION);
+		parser.expect(TokenKinds.OR);
+		const right = parser.parseExpression(BindingPowers.LOGICAL_DISJUNCTION);
+
+		preModifiers.push((v, it, scope) => {
+			const truthy = it.evaluate(left, scope, true);
+			const falsy = it.evaluate(right, scope, true);
+
+			if(it.is(truthy, ValueKinds.NADA))
+				throw it.TuberInterpreterError('El operando izquierdo en disyunción lógica de directiva de Entrada de Usuario Lógica "según" fue Nada');
+
+			if(it.is(falsy, ValueKinds.NADA))
+				throw it.TuberInterpreterError('El operando derecho en disyunción lógica de directiva de Entrada de Usuario Lógica "según" fue Nada');
+
+			const textTruthy = coerceValue(it, truthy, ValueKinds.TEXT).value;
+			const textFalsy = coerceValue(it, falsy, ValueKinds.TEXT).value;
+			const normTextValue = toLowerCaseNormalized(v);
+			const normTextTruthy = toLowerCaseNormalized(textTruthy);
+			const normTextFalsy = toLowerCaseNormalized(textFalsy);
+			
+			if(normTextValue === normTextTruthy)
+				return 'Verdadero';
+
+			if(normTextValue === normTextFalsy)
+				return 'Falso';
+
+			throw TuberInputError(`Se esperaba "${textTruthy}" o "${textFalsy}" para Entrada de Tipo Lógico. Sin embargo, se recibió: ${v}`);
+		});
+		break;
+	}
+
+	default:
+		throw parser.TuberParserError(`Se esperaba una palabra clave existente en definición de directiva de Entrada de Usuario. Sin embargo, se recibió: \`${name}\``, token);
+	}
 }
 
 /**
