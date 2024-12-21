@@ -1,4 +1,4 @@
-const { makeNada, defaultValueOf } = require('./values');
+const { makeNada, defaultValueOf, ValueKinds } = require('./values');
 
 /**Representa un ámbito de variables en un contexto de ejecución de PuréScript*/
 class Scope {
@@ -25,6 +25,38 @@ class Scope {
         this.global = false;
         this.#mirror = this.resolveClosestGlobalMirror();
 	}
+
+    /**
+     * @param {import('./values').FunctionValue} fnValue 
+     * @param {Array<import('./values').RuntimeValue>} argValues
+     */
+    createFunctionScope(fnValue, argValues) {
+        const it = this.#interpreter;
+
+        let fnScope;
+
+        if(fnValue.lambda === false) {
+            fnValue.scope.include(this);
+            fnScope = new Scope(it, fnValue.scope);
+        } else
+            fnScope = new Scope(it, this);
+
+        fnValue.args.forEach((arg, i) => {
+            /**@type {import('./values').RuntimeValue}*/
+            let value;
+            if(i < argValues.length)
+                value = argValues[i];
+            else if(arg.optional)
+                value = it.evaluate(arg.fallback, this);
+            else
+                throw it.TuberInterpreterError(`Se esperaba un valor para el parámetro \`${arg.identifier}\` de la Función \`${fnValue.name}\``, arg);
+
+            fnScope.declareVariable(arg.identifier, ValueKinds.NADA);
+            fnScope.assignVariable(arg.identifier, value);
+        });
+
+        return fnScope;
+    }
 
     get interpreter() {
         return this.#interpreter;
