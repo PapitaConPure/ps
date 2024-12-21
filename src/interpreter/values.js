@@ -80,6 +80,7 @@ const ValueKinds = /**@type {const}*/({
 /**
  * @typedef {Object} BaseFunctionValueData
  * @property {String} name
+ * @property {RuntimeValue} self
  * @property {Array<import('../ast/expressions').ArgumentExpression>} args
  * 
  * @typedef {Object} StandardFunctionValueData
@@ -434,6 +435,7 @@ function makeFunction(body, args, scope) {
 		kind,
 		lambda: false,
 		name: '[Función]',
+		self: makeNada(),
 		body,
 		args,
 		scope,
@@ -453,6 +455,7 @@ function makeLambda(expression, args) {
 		kind,
 		lambda: true,
 		name: '[Lambda]',
+		self: makeNada(),
 		expression,
 		args,
 		equals: /**@type {RuntimeValue['equals']}*/(EqualsMethodLookups.get(kind)),

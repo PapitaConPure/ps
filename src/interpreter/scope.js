@@ -55,6 +55,9 @@ class Scope {
             fnScope.assignVariable(arg.identifier, value);
         });
 
+        if(fnValue.self != null && fnValue.self.kind !== ValueKinds.NADA)
+            fnScope.assignVariable('este', fnValue.self);
+
         return fnScope;
     }
 
