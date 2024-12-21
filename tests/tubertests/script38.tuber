@@ -1,0 +1,19 @@
+CARGAR ladrar con Función()
+	ENVIAR este->ladrido
+FIN
+
+CARGAR Perro con Función(ladrido)
+	DEVOLVER Registro
+		ladrido: ladrido,
+		ladrar: ladrar,
+FIN
+
+CARGAR chihuahua con Perro("Bark")
+CARGAR acrid con Perro("Moo")
+CARGAR fuwamoco con Perro("BAU BAU")
+CARGAR deme con Perro("conchetumare")
+
+EJECUTAR chihuahua->ladrar()
+EJECUTAR acrid->ladrar()
+EJECUTAR fuwamoco->ladrar()
+EJECUTAR deme->ladrar()

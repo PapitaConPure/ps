@@ -1207,6 +1207,9 @@ class Interpreter {
 			if(entryValue) {
 				if(this.is(entryValue, ValueKinds.NATIVE_FN))
 					return entryValue.with(holderValue);
+
+				if(this.is(entryValue, ValueKinds.FUNCTION))
+					entryValue.self = holderValue;
 	
 				return entryValue;
 			}
@@ -1287,27 +1290,7 @@ class Interpreter {
 			const fnScope = new Scope(this, scope);
 			returnedValue = fnValue.call(fnValue.self ?? makeNada(), argValues, fnScope);
 		} else {
-			let fnScope;
-
-			if(fnValue.lambda === false) {
-				fnValue.scope.include(scope);
-				fnScope = new Scope(this, fnValue.scope);
-			} else
-				fnScope = new Scope(this, scope);
-
-			fnValue.args.forEach((arg, i) => {
-				/**@type {import('./values').RuntimeValue}*/
-				let value;
-				if(i < argValues.length)
-					value = argValues[i];
-				else if(arg.optional)
-					value = this.evaluate(arg.fallback, scope);
-				else
-					throw this.TuberInterpreterError(`Se esperaba un valor para el parámetro \`${arg.identifier}\` de la Función \`${fnValue.name}\``, arg);
-
-				fnScope.declareVariable(arg.identifier, ValueKinds.NADA);
-				fnScope.assignVariable(arg.identifier, value);
-			});
+			const fnScope = scope.createFunctionScope(fnValue, argValues);
 
 			if(fnValue.lambda === false)
 				returnedValue = this.#evaluateBlock(fnValue.body, fnScope);

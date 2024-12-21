@@ -538,6 +538,18 @@ const tests = [
 			expect(sendStack[1]).toBe(makeText('el que no disfruta de la soledad, no amara a la libertad'));
 		},
 	},
+	{
+		file: 38,
+		label: '"este"',
+		expect: Results.SUCCESS,
+		test: function({ sendStack }) {
+			expect(sendStack.length).toBe(4);
+			expect(sendStack[0]).toBe(makeText('Bark'));
+			expect(sendStack[1]).toBe(makeText('Moo'));
+			expect(sendStack[2]).toBe(makeText('BAU BAU'));
+			expect(sendStack[3]).toBe(makeText('conchetumare'));
+		},
+	},
 ];
 
 const pass = [];
