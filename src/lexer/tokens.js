@@ -160,6 +160,7 @@ TokenKindTranslations
 	.set(TokenKinds.COMMA, 'Operador \`,\`')
 	.set(TokenKinds.LAMBDA, 'Operador Lambda')
 	.set(TokenKinds.TIMES, 'Operador especial \`veces\`')
+	.set(TokenKinds.AFTER, 'Operador \`luego\`')
 	.set(TokenKinds.DOT, 'Operador \`.\`')
 	.set(TokenKinds.IN, 'Operador especial \`en\`')
 	.set(TokenKinds.FROM, 'Operador especial \`desde\`')
