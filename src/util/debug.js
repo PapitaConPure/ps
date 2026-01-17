@@ -1,6 +1,6 @@
 const { shortenText } = require('./utils');
 const { EmbedData } = require('../embedData');
-const chalk = require('chalk');
+const chalk = require('chalk').default;
 
 const exChalk = {
 	orange: chalk.rgb(237, 171, 130),

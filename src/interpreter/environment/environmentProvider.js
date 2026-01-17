@@ -393,76 +393,69 @@ class PSMember {
 
 /**
  * Un adaptador de plataforma específica de funcionalidades de PuréScript
- * @interface EnvironmentProvider
  */
-function EnvironmentProvider() {}
-
-// /**
-//  * @function
-//  * @param {import('./embedData').EmbedData} embedData 
-//  * @returns {*}
-//  */
-// EnvironmentProvider.prototype.makeEmbedBuilder = function(embedData) {
-// 	throw 'No implementado';
-// }
-
-/**
- * @function
- * @returns {PSGuild}
- */
-EnvironmentProvider.prototype.getGuild = function() {
-	throw 'No implementado';
-}
-
-/**
- * @function
- * @returns {PSChannel}
- */
-EnvironmentProvider.prototype.getChannel = function() {
-	throw 'No implementado';
-}
-
-/**
- * @function
- * @returns {PSUser}
- */
-EnvironmentProvider.prototype.getUser = function() {
-	throw 'No implementado';
-}
-
-/**
- * @function
- * @returns {PSMember}
- */
-EnvironmentProvider.prototype.getMember = function() {
-	throw 'No implementado';
-}
-
-/**
- * @function
- * @param {string} query 
- * @returns {PSChannel?}
- */
-EnvironmentProvider.prototype.fetchChannel = function(query) {
-	throw 'No implementado';
-}
-
-/**
- * @function
- * @param {string} query 
- * @returns {PSRole?}
- */
-EnvironmentProvider.prototype.fetchRole = function(query) {
-	throw 'No implementado';
-}
-
-/**
- * @function
- * @param {string} query 
- * @returns {PSMember?}
- */
-EnvironmentProvider.prototype.fetchMember = function(query) {
-	throw 'No implementado';
+class EnvironmentProvider {
+	constructor() { }
+	// /**
+	//  * @function
+	//  * @param {import('./embedData').EmbedData} embedData 
+	//  * @returns {*}
+	//  */
+	// EnvironmentProvider.prototype.makeEmbedBuilder = function(embedData) {
+	// 	throw 'No implementado';
+	// }
+	/**
+	 * @function
+	 * @returns {PSGuild}
+	 */
+	getGuild() {
+		throw 'No implementado';
+	}
+	/**
+	 * @function
+	 * @returns {PSChannel}
+	 */
+	getChannel() {
+		throw 'No implementado';
+	}
+	/**
+	 * @function
+	 * @returns {PSUser}
+	 */
+	getUser() {
+		throw 'No implementado';
+	}
+	/**
+	 * @function
+	 * @returns {PSMember}
+	 */
+	getMember() {
+		throw 'No implementado';
+	}
+	/**
+	 * @function
+	 * @param {string} query
+	 * @returns {PSChannel?}
+	 */
+	fetchChannel(query) {
+		throw 'No implementado';
+	}
+	/**
+	 * @function
+	 * @param {string} query
+	 * @returns {PSRole?}
+	 */
+	fetchRole(query) {
+		throw 'No implementado';
+	}
+	/**
+	 * @function
+	 * @param {string} query
+	 * @returns {PSMember?}
+	 */
+	fetchMember(query) {
+		throw 'No implementado';
+	}
 }
 
 module.exports = {

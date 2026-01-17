@@ -1,7 +1,12 @@
-const { EnvironmentProvider, PSGuild, PSUser } = require('../src/interpreter/environment/environmentProvider');
+import { EnvironmentProvider, PSChannel, PSGuild, PSMember, PSRole, PSUser } from '../src/interpreter/environment/environmentProvider.js';
 
-/**@implements {EnvironmentProvider}*/
-class TestEnvironmentProvider {
+export default class TestEnvironmentProvider implements EnvironmentProvider {
+	guild: PSGuild;
+	channel: PSChannel;
+	role: PSRole;
+	user: PSUser;
+	member: PSMember;
+
 	constructor() {
 		this.guild = new PSGuild({
 			id: '123456789012345678',
@@ -166,7 +171,3 @@ class TestEnvironmentProvider {
 		return '';
 	}
 }
-
-module.exports = {
-	TestEnvironmentProvider,
-};

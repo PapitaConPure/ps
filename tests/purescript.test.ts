@@ -1,0 +1,566 @@
+import { test, expect } from 'bun:test';
+import { readdirSync } from 'node:fs';
+import { readFileSync } from 'fs';
+import { join } from 'node:path';
+import { Lexer, Parser, Interpreter, Scope, declareNatives, declareContext, Input, stringifyPSAST, Token } from '../src/index.js';
+import { makeNumber, makeText, makeBoolean, coerceValue, ValueKinds, ListValue, EmbedValue, RegistryValue, makeNada } from '../src/interpreter/values.js';
+import { ExpressionStatement, ProgramStatement, StatementKinds } from '../src/ast/statements.js';
+import { CallExpression, ExpressionKinds, Identifier } from '../src/ast/expressions.js';
+import TestEnvironmentProvider from './testEnvironmentProvider';
+import { EvaluationResult } from '../src/interpreter/interpreter.js';
+import { shortenText } from '../src/util/utils.js';
+import chalk from 'chalk';
+
+const testFiles: string[] = [];
+const relPath = './tests/tubertests';
+for(const filename of readdirSync(relPath).sort()) {
+	const file = readFileSync(join(relPath, filename), { encoding: 'utf-8' });
+	testFiles.push(file);
+}
+
+const lexer = new Lexer();
+const parser = new Parser();
+const interpreter = new Interpreter();
+
+interface ExecutePSOptions {
+	args?: string[];
+	log?: boolean;
+	skipInterpreter?: boolean;
+}
+
+interface ExecutePSResult extends Partial<EvaluationResult> {
+	tokens?: Token[];
+	tree?: ProgramStatement;
+	scope?: Scope;
+	provider?: TestEnvironmentProvider;
+}
+
+async function executePS(code: string, options: ExecutePSOptions = {}): Promise<ExecutePSResult> {
+	const { args, log = false, skipInterpreter = false } = options;
+	const isTestDrive = (args == null);
+
+	const tokens = lexer.tokenize(code);
+	if(log)
+		console.table(tokens.map(token => ({ ...token.json, value: (typeof token.value === 'string') ? shortenText(token.value, 32, '[...]') : token.value })));
+
+	const tree = parser.parse(tokens);
+	if(log) {
+		console.log(chalk.bold('\nÁrbol:'));
+		console.log(stringifyPSAST(tree, 3));
+	}
+
+	if(skipInterpreter)
+		return { tokens, tree };
+
+	const scope = new Scope(interpreter);
+	const provider = new TestEnvironmentProvider();
+	declareNatives(scope);
+	await declareContext(scope, provider);
+	
+	const result = interpreter.evaluateProgram(tree, scope, code, provider, args, isTestDrive);
+	if(log) {
+		console.log(chalk.bold('\nResultado:'));
+		console.log(stringifyPSAST(result));
+		console.log('-'.repeat(119));
+	}
+
+	return {
+		tokens,
+		tree,
+		scope,
+		...result,
+	};
+}
+
+test.concurrent('Piloto', async () => {
+	const result = await executePS(testFiles[0]);
+	const { inputStack, saveTable } = result;
+
+	expect(inputStack.length).toBe(1);
+	expect(inputStack[0]).toMatchObject(new Input('folladito', 'Text', false));
+
+	const cosita = saveTable.get('cosita') as ListValue;
+	expect(cosita.kind).toBe('List');
+	expect(cosita.elements[0]).toMatchObject(makeNumber(45));
+	expect(cosita.elements[1]).toMatchObject(makeText('hola'));
+	expect(cosita.elements[2]).toMatchObject(makeText('@ALEMSITA'));
+	expect(cosita.elements[3]).toMatchObject(makeText('qué weá jaja'));
+});
+
+test.concurrent('Envío simple', async () => {
+	const result = await executePS(testFiles[1]);
+	const { sendStack } = result;
+
+	expect(sendStack.length).toBe(1);
+	expect(sendStack[0]).toMatchObject(makeNumber(50));
+});
+
+test.concurrent('Randomrain', async () => {
+	const result = await executePS(testFiles[2]);
+	const { sendStack } = result;
+
+	expect(sendStack.length).toBe(1);
+	expect(sendStack[0].kind).toBe('Embed');
+
+	const inferredEmbed = (sendStack[0] as EmbedValue).value;
+	expect(inferredEmbed.data.color).toBe(15844367);
+	expect(inferredEmbed.data.fields?.length).toBe(1);
+	expect(inferredEmbed.data.fields?.[0].name).toBe('Vas a ir con...');
+	expect(inferredEmbed.data.fields?.[0].inline).toBe(false);
+});
+
+test.concurrent('Variables y Expresiones', async () => {
+	const result = await executePS(testFiles[3]);
+	const { sendStack } = result;
+
+	expect(sendStack.length).toBe(1);
+
+	const a = makeNumber(-25.4);
+	const b = makeNumber(3 * 2 + 2);
+	const c = makeBoolean(a.value > b.value);
+	const av = a.value;
+	const bv = b.value;
+	const cv = coerceValue(interpreter, c, ValueKinds.TEXT).value;
+
+	expect(sendStack[0]).toMatchObject(
+		makeText(av + ' ' + bv + ' ' + cv)
+	);
+});
+
+test.concurrent('Asignaciones complejas', async () => {
+	const result = await executePS(testFiles[4]);
+	const { sendStack } = result;
+
+	expect(sendStack.length).toBe(7);
+
+	expect(sendStack[0].kind).toBe(ValueKinds.LIST);
+	const inferredList = sendStack[0] as ListValue;
+
+	expect(inferredList.elements).toBeArrayOfSize(1);
+	expect(inferredList.elements[0]).toMatchObject(makeNumber(911));
+
+	expect(sendStack[1].kind).toBe(ValueKinds.REGISTRY);
+	const inferredRegistry = sendStack[1] as RegistryValue;
+
+	expect(inferredRegistry.entries.size).toBe(3);
+	expect(inferredRegistry.entries.get('a')).toMatchObject(makeNumber(3));
+	expect(inferredRegistry.entries.get('b')).toMatchObject(makeNumber(2));
+	expect(inferredRegistry.entries.get('c')).toMatchObject(makeNumber(1));
+
+	expect(sendStack[2]).toMatchObject(makeNumber(3));
+	expect(sendStack[3]).toMatchObject(makeNumber(4));
+	expect(sendStack[4]).toMatchObject(makeNumber(-3));
+	expect(sendStack[5]).toMatchObject(makeNumber(-9));
+	expect(sendStack[6]).toMatchObject(makeNumber(-4.5));
+});
+
+test.concurrent('Expresiones de flecha', async () => {
+	const result = await executePS(testFiles[5]);
+	const { sendStack } = result;
+
+	expect(sendStack.length).toBe(20);
+
+	expect(sendStack[0]).toMatchObject(makeNumber(42));
+	expect(sendStack[1]).toMatchObject(makeNumber(69));
+
+	expect(sendStack[2].kind).toBe(ValueKinds.REGISTRY);
+	let inferredRegistry = sendStack[2] as RegistryValue;
+	expect(inferredRegistry.entries.size).toBe(3);
+	expect(inferredRegistry.entries.get('a')).toMatchObject(makeNumber(3));
+	expect(inferredRegistry.entries.get('b')).toMatchObject(makeNumber(2));
+	expect(inferredRegistry.entries.get('c')).toMatchObject(makeNumber(1));
+
+	expect(sendStack[3]).toMatchObject(makeNumber(3));
+	expect(sendStack[4]).toMatchObject(makeNumber(2));
+	expect(sendStack[5]).toMatchObject(makeNumber(1));
+	expect(sendStack[6]).toMatchObject(makeNumber(3));
+	expect(sendStack[7]).toMatchObject(makeNumber(30));
+
+	expect(sendStack[8].kind).toBe(ValueKinds.REGISTRY);
+	inferredRegistry = sendStack[8] as RegistryValue;
+	expect(inferredRegistry.entries.size).toBe(3);
+	expect(inferredRegistry.entries.get('a')).toMatchObject(makeNumber(3));
+	expect(inferredRegistry.entries.get('b')).toMatchObject(makeNumber(2));
+	expect(inferredRegistry.entries.get('c')).toMatchObject(makeNumber(1));
+
+	expect(sendStack[9].kind).toBe(ValueKinds.LIST);
+	let inferredList = sendStack[9] as ListValue;
+	expect(inferredList.elements.length).toBe(3);
+	expect(inferredList.elements[0]).toMatchObject(makeNumber(3));
+	expect(inferredList.elements[1]).toMatchObject(makeNumber(6));
+	expect(inferredList.elements[2]).toMatchObject(makeNumber(9));
+
+	expect(sendStack[10]).toMatchObject(makeNada());
+
+	expect(sendStack[11]).toMatchObject(makeNumber(3));
+	expect(sendStack[12]).toMatchObject(makeNumber(2));
+	expect(sendStack[13]).toMatchObject(makeNumber(1));
+
+	expect(sendStack[14]).toMatchObject(makeNumber(3));
+	expect(sendStack[15]).toMatchObject(makeNumber(6));
+	expect(sendStack[16]).toMatchObject(makeNumber(9));
+
+	expect(sendStack[17]).toMatchObject(makeNumber(30));
+
+	expect(sendStack[18].kind).toBe(ValueKinds.REGISTRY);
+	expect(sendStack[19]).toMatchObject(makeNumber(42));
+});
+
+test.concurrent('Varias Entradas de Usuario I', async () => {
+	const result = await executePS(testFiles[6]);
+	const { inputStack, sendStack, returned } = result;
+
+	expect(inputStack.length).toBe(4);
+
+	expect(inputStack[0]).toMatchObject(new Input('a', 'Text', false));
+	expect(inputStack[1]).toMatchObject(new Input('b', 'Boolean', true));
+	expect(inputStack[2]).toMatchObject(new Input('c', 'Number', false));
+	expect(inputStack[3]).toMatchObject(new Input('d', 'Text', true));
+
+	expect(sendStack.length).toBe(1);
+	expect(sendStack[0]).toMatchObject(makeText('Ingresa valores'));
+	expect(returned).toMatchObject(makeText('Ingresa valores'));
+});
+
+test.concurrent('Varias Entradas de Usuario II', async () => {
+	const result = await executePS(testFiles[6], {
+		args: [ 'nwn', 'verdadero', '42', 'tiraba esa', '1', '2', '3', '4' ],
+	});
+	const { inputStack, sendStack, returned } = result;
+
+	expect(inputStack.length).toBe(5);
+	expect(inputStack[4].spread).toBe(true);
+
+	expect(sendStack).toHaveLength(5);
+	expect(sendStack[0]).toMatchObject(makeNumber(1));
+	expect(sendStack[4]).toMatchObject(makeText('Bien'));
+
+	const list = returned as ListValue;
+	expect(list.elements.length).toBe(4);
+	expect(list.elements[0]).toMatchObject(makeText('nwn'));
+});
+
+test.concurrent('Sentencias de retorno rápido', async () => {
+	const result = await executePS(testFiles[7]);
+	const { sendStack, returned } = result;
+
+	expect(sendStack.length).toBe(1);
+	expect(sendStack[0]).toMatchObject(makeText('holi'));
+	expect(returned).toMatchObject(makeBoolean(true));
+});
+
+test.concurrent('Estructuras de control', async () => {
+	const result = await executePS(testFiles[8]);
+	const { returned } = result;
+
+	expect(returned).toMatchObject(makeText('🥺'));
+});
+
+test.concurrent('Estructuras iterativas', async () => {
+	const result = await executePS(testFiles[9]);
+	const {  } = result;
+
+	
+});
+
+test.concurrent('EJECUTAR + expresiones de flecha y llamado', async () => {
+	const result = await executePS(testFiles[10], { skipInterpreter: true, log: true });
+    const { tokens, tree } = result;
+
+	expect(tokens.length).toBeWithin(64, 69);
+
+	const statement = tree.body[0];
+	
+	expect(statement.kind).toBe(StatementKinds.EXPRESSION);
+	const inferredExpr = statement as ExpressionStatement;
+
+	expect(inferredExpr.expression.kind).toBe(ExpressionKinds.CALL);
+	const inferredCallExpr = inferredExpr.expression as CallExpression;
+
+	expect(inferredCallExpr.args).toBeArrayOfSize(0);
+
+	expect(inferredCallExpr.fn.kind).toBe(ExpressionKinds.IDENTIFIER);
+	const inferredIdentifier = inferredCallExpr.fn as Identifier;
+
+	expect(inferredIdentifier.name).toBe('holaMundo');
+});
+
+test.concurrent('Expresión de función', async () => {
+	const result = await executePS(testFiles[11]);
+	const { sendStack } = result;
+
+	expect(sendStack).toHaveLength(3);
+
+	expect(sendStack[0]).toMatchObject(makeText('me cago en la puta'));
+	expect(sendStack[1]).toMatchObject(makeText('maraco'));
+	expect(sendStack[2]).toMatchObject(makeNumber(111));
+});
+
+test.concurrent('Casteos Primitivos de expresiones', async () => {
+	const result = await executePS(testFiles[12]);
+	const { sendStack } = result;
+
+	expect(sendStack.length).toBeGreaterThan(0);
+
+	for (const value of sendStack) {
+		expect(value).toHaveProperty('kind');
+	}
+});
+
+test.concurrent('Funciones nativas', async () => {
+	const result = await executePS(testFiles[13]);
+	const { sendStack } = result;
+
+	expect(sendStack.length).toBeGreaterThan(0);
+
+	for(const value of sendStack) {
+		expect(value.kind).not.toBe(ValueKinds.NADA);
+	}
+});
+
+test.concurrent('Métodos nativos', async () => {
+	const result = await executePS(testFiles[14]);
+	const {  } = result;
+
+	
+});
+
+test.concurrent('Secuencias y Lambdas', async () => {
+	const result = await executePS(testFiles[15]);
+	const {  } = result;
+
+	
+});
+
+test.concurrent('Creación, modificación y envío de Marco', async () => {
+	const result = await executePS(testFiles[16]);
+	const {  } = result;
+
+	
+});
+
+test.concurrent('Funciones impuras', async () => {
+	const result = await executePS(testFiles[17]);
+	const {  } = result;
+
+	
+});
+
+test.concurrent('Retorno de Funciones y Ámbito de Función', async () => {
+	const result = await executePS(testFiles[18]);
+	const {  } = result;
+
+	
+});
+
+test.concurrent('Recursividad', async () => {
+	const result = await executePS(testFiles[19]);
+	const {  } = result;
+
+	
+});
+
+test.concurrent('Guardar y Cargar', async () => {
+	const result = await executePS(testFiles[20]);
+	const {  } = result;
+
+	
+});
+
+test.concurrent('Daño de Risko', async () => {
+	const result = await executePS(testFiles[21]);
+	const {  } = result;
+
+	
+});
+
+test.concurrent('Guardar y Cargar Listas', async () => {
+	const result = await executePS(testFiles[22]);
+	const {  } = result;
+
+	
+});
+
+test.concurrent('Error con Entradas Extensivas', async () => {
+	expect(
+		executePS(testFiles[23])
+	).rejects.toThrow();
+});
+
+test.concurrent('Juego de Bomba', async () => {
+	const result = await executePS(testFiles[24]);
+	const {  } = result;
+
+
+});
+
+test.concurrent('Guardado Inválido de Marco', async () => {
+	expect(
+		executePS(testFiles[25])
+	).rejects.toThrow();
+});
+
+test.concurrent('Formatos de Entrada (Primera Ejecución)', async () => {
+	const result = await executePS(testFiles[26]);
+	const { sendStack } = result;
+
+	expect(sendStack[0]).toMatchObject(makeNumber(23));
+	expect(sendStack[1]).toMatchObject(makeText('W'));
+	expect(sendStack[2]).toMatchObject(makeBoolean(true));
+	expect(sendStack[3]).toMatchObject(makeText('C'));
+	expect(sendStack[4]).toMatchObject(makeText('A'));
+	expect(sendStack[5]).toMatchObject(makeNumber(50));
+	expect(sendStack[6]).toMatchObject(makeNumber(0.5));
+	expect(sendStack[7]).toMatchObject(makeText('touché'));
+	expect(sendStack[8]).toMatchObject(makeText('è'));
+});
+
+test.concurrent('Formatos de Entrada (Ejecución Ordinaria)', async () => {
+	const result = await executePS(testFiles[26], {
+		args: [ '2', 'WhAT', 'yay', 'Verdadero', '3', '0.7', '0.25', 'EN EFECTO', 'Magnífico' ],
+	});
+	const { sendStack } = result;
+
+	expect(sendStack[0]).toMatchObject(makeNumber(10));
+	expect(sendStack[1]).toMatchObject(makeText('what'));
+	expect(sendStack[2]).toMatchObject(makeBoolean(true));
+	expect(sendStack[3]).toMatchObject(makeText('A'));
+	expect(sendStack[4]).toMatchObject(makeText('C'));
+	expect(sendStack[5]).toMatchObject(makeNumber(70));
+	expect(sendStack[6]).toMatchObject(makeNumber(0.25));
+	expect(sendStack[7]).toMatchObject(makeText('En efecto'));
+	expect(sendStack[8]).toMatchObject(makeText('magnifico'));
+});
+
+test.concurrent('Formatos de Entrada (Ejecución Ordinaria 2)', async () => {
+	const result = await executePS(testFiles[26], {
+		args: [ '12.5', '', 'nay', 'Falso', '5', '60%', '30%', 'minus', 'INCREÍBLE' ],
+	});
+	const { sendStack } = result;
+
+	expect(sendStack[0]).toMatchObject(makeNumber(12));
+	expect(sendStack[1]).toMatchObject(makeText(''));
+	expect(sendStack[2]).toMatchObject(makeBoolean(false));
+	expect(sendStack[3]).toMatchObject(makeText('B'));
+	expect(sendStack[4]).toMatchObject(makeText('E'));
+	expect(sendStack[5]).toMatchObject(makeNumber(60));
+	expect(sendStack[6]).toMatchObject(makeNumber(0.3));
+	expect(sendStack[7]).toMatchObject(makeText('Minus'));
+	expect(sendStack[8]).toMatchObject(makeText('increible'));
+});
+
+test.concurrent('Terraria', async () => {
+	const result = await executePS(testFiles[27]);
+	const {  } = result;
+
+
+});
+
+test.concurrent('Predicados', async () => {
+	const result = await executePS(testFiles[28]);
+	const {  } = result;
+
+
+});
+
+test.concurrent('Formateo de Números', async () => {
+	const result = await executePS(testFiles[29]);
+	const {  } = result;
+
+
+});
+
+test.concurrent('Mismo identificador en Funciones', async () => {
+	const result = await executePS(testFiles[30]);
+	const {  } = result;
+
+
+});
+
+test.concurrent('Asignación en mientras', async () => {
+	const result = await executePS(testFiles[31]);
+	const { sendStack } = result;
+
+	expect(sendStack.length).toBe(1);
+	expect(sendStack[0]).toMatchObject(makeBoolean(true));
+});
+
+test.concurrent('Elegir de Lista', async () => {
+	const result = await executePS(testFiles[32]);
+	const { sendStack } = result;
+
+	expect(sendStack.length).toBe(2);
+	expect(sendStack[0].kind).toBe(ValueKinds.LIST);
+	expect(sendStack[1].kind).toBe(ValueKinds.NUMBER);
+});
+
+test.concurrent('Operador luego (Primera Ejecución)', async () => {
+	const result = await executePS(testFiles[33]);
+	const { sendStack } = result;
+
+	expect(sendStack.length).toBe(1);
+	expect(sendStack[0]).toMatchObject(makeText('¡Hola Mundo!'));
+});
+
+test.concurrent('Operador luego (Ejecución Ordinaria)', async () => {
+	const result = await executePS(testFiles[33], {
+		args: [ 'Una Entrada de Usuario cualquiera' ]
+	});
+	const { sendStack } = result;
+
+	expect(sendStack.length).toBe(1);
+	expect(sendStack[0]).toMatchObject(makeNumber(42));
+});
+
+test.concurrent('Cargar Condicional', async () => {
+	const result = await executePS(testFiles[34]);
+	const { sendStack } = result;
+
+	expect(sendStack.length).toBe(1);
+	expect(sendStack[0]).toMatchObject(makeNumber(42));
+});
+
+test.concurrent('Expresiones Condicionales', async () => {
+	const result = await executePS(testFiles[35]);
+	const { sendStack } = result;
+
+	expect(sendStack.length).toBe(2);
+	expect(sendStack[0]).toMatchObject(makeText('wenamechaindesama'));
+	expect(sendStack[1]).toMatchObject(makeText('burundanga'));
+});
+
+test.concurrent('tipoDe()', async () => {
+	const result = await executePS(testFiles[36]);
+	const { sendStack } = result;
+
+	expect(sendStack.length).toBe(9);
+	expect(sendStack[0]).toMatchObject(makeText('número'));
+	expect(sendStack[1]).toMatchObject(makeText('texto'));
+	expect(sendStack[2]).toMatchObject(makeText('lógico'));
+	expect(sendStack[3]).toMatchObject(makeText('lista'));
+	expect(sendStack[4]).toMatchObject(makeText('registro'));
+	expect(sendStack[5]).toMatchObject(makeText('marco'));
+	expect(sendStack[6]).toMatchObject(makeText('función'));
+	expect(sendStack[7]).toMatchObject(makeText('nada'));
+	expect(sendStack[8]).toMatchObject(makeText('función'));
+});
+
+test.concurrent('Texto->acotar() Texto->normalizar()', async () => {
+	const result = await executePS(testFiles[37]);
+	const { sendStack } = result;
+
+	expect(sendStack.length).toBe(2);
+	expect(sendStack[0]).toMatchObject(makeText('El que no disfruta de la soledad, no amará a la libertad'));
+	expect(sendStack[1]).toMatchObject(makeText('el que no disfruta de la soledad, no amara a la libertad'));
+});
+
+test.concurrent('"este"', async () => {
+	const result = await executePS(testFiles[38]);
+	const { sendStack } = result;
+
+	expect(sendStack.length).toBe(4);
+	expect(sendStack[0]).toMatchObject(makeText('Bark'));
+	expect(sendStack[1]).toMatchObject(makeText('Moo'));
+	expect(sendStack[2]).toMatchObject(makeText('BAU BAU'));
+	expect(sendStack[3]).toMatchObject(makeText('conchetumare'));
+});
