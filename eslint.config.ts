@@ -7,6 +7,7 @@ import stylistic from '@stylistic/eslint-plugin';
 export default defineConfig([
 	{
 		files: [ '**/*.ts' ],
+		ignores: [ 'dist/' ],
 		extends: [
 			js.configs.recommended,
 			tseslint.configs.recommended,
@@ -21,12 +22,10 @@ export default defineConfig([
 			'no-unused-expressions': 'off',
 			'@typescript-eslint/no-unused-expressions': 'off',
 		},
-		ignores: [
-			'**/*.bundle.js',
-		],
 	},
 	{
 		files: [ '**/*.ts' ],
+		ignores: [ 'dist/' ],
 		plugins: {
 			'@stylistic': stylistic
 		},
@@ -121,8 +120,5 @@ export default defineConfig([
 			} ],
 			'@stylistic/eol-last': 'error',
 		},
-		ignores: [
-			'**/*.bundle.js',
-		],
 	},
 ]);
