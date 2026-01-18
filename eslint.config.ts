@@ -42,10 +42,7 @@ export default defineConfig([
 			'no-trailing-spaces': 'error',
 			'no-mixed-spaces-and-tabs': [ 'error', 'smart-tabs' ],
 			'no-extra-semi': 'error',
-			'semi': [ 'error', 'always', {
-				'omitLastInOneLineBlock': true,
-				'omitLastInOneLineClassBody': true,
-			} ],
+			'semi': [ 'error', 'always' ],
 			'semi-spacing': [ 'error', {'before': false, 'after': true} ],
 			'block-spacing': 'error',
 			'@stylistic/block-spacing': 'error',
