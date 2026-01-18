@@ -38,16 +38,16 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix && prettier --write .",
-    "prepare": "lint-staged",
-    "lint-staged": {
-      ".{ts,js}": "eslint --cache --fix",
-      ".{ts,js,css,md}": "prettier --write",
-      ".js": "eslint --cache --fix",
-      ".{js,css,md}": "prettier --write"
-    }
+    "prepare": "lint-staged"
   },
   "type": "module",
   "dependencies": {
     "jiti": "^2.6.1"
+  },
+  "lint-staged": {
+    ".{ts,js}": "eslint --cache --fix",
+    ".{ts,js,css,md}": "prettier --write",
+    ".js": "eslint --cache --fix",
+    ".{js,css,md}": "prettier --write"
   }
 }
