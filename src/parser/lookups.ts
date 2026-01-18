@@ -4,7 +4,7 @@ import { BindingPowers, Associativities, BindingPower, Associativity } from '../
 import { TokenKind, TokenKinds } from '../lexer/tokens';
 import { Expression } from '../ast/expressions';
 import { Statement } from '../ast/statements';
-import { Parser } from './parser';
+import { Parser } from '.';
 
 export type StatementHandler = (parser: Parser) => Statement;
 

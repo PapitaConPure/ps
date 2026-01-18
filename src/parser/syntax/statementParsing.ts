@@ -6,7 +6,7 @@ import { makeMetadata } from '../../ast/metadata';
 import { ValueKinds, NumberValue, TextValue, BooleanValue, makeNumber, makeText, coerceValue } from '../../interpreter/values';
 import { TuberInputError } from '../../interpreter/inputReader';
 import { toLowerCaseNormalized } from '../../util/utils';
-import { Parser } from '../parser';
+import { Parser } from '..';
 
 /**
  * @description

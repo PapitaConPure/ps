@@ -5,7 +5,7 @@ import { StatementKinds } from '../../ast/statements';
 import { ArgumentExpression, ArrowExpression, BinaryExpression, CallExpression, CastExpression, ConditionalExpression, Expression, ExpressionKinds, FunctionExpression, LambdaExpression, SequenceExpression, UnaryExpression } from '../../ast/expressions';
 import { makeMetadata } from '../../ast/metadata';
 import { parseBlockBody } from './statementParsing';
-import { Parser } from '../parser';
+import { Parser } from '..';
 
 export function parsePrimaryExpression(parser: Parser): Expression {
 	const literal = parser.advance();

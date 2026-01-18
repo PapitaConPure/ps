@@ -3,7 +3,7 @@ import { RequireAtLeastOne } from './util/types';
 
 export { Token } from './lexer/tokens';
 export { Lexer } from './lexer/lexer';
-export { Parser } from './parser/parser';
+export { Parser } from './parser';
 
 export { Interpreter } from './interpreter';
 export { Scope } from './interpreter/scope';
