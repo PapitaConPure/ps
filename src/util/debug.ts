@@ -1,41 +1,37 @@
-const { shortenText } = require('./utils');
-const { EmbedData } = require('../embedData');
-const chalk = require('chalk').default;
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { shortenText } from './utils';
+import { EmbedData } from '../embedData';
+import chalk from 'chalk';
 
 const exChalk = {
 	orange: chalk.rgb(237, 171, 130),
 	ice: chalk.rgb(27, 247, 236),
 	mint: chalk.rgb(13, 222, 191),
 	peach: chalk.rgb(237, 130, 157),
-};
+} as const;
 
-/**
- * @param {*} obj
- */
-function isInstance(obj) {
+function isInstance(obj: any): boolean {
 	return obj?.constructor?.name && ![ 'Object', 'Array', 'Map', 'EmbedData' ].includes(obj.constructor.name);
 }
 
-/**
- * @param {*} value
- */
-function stringifyPlainPSAST(value) {
-	let valueStr;
+function stringifyPlainPSAST(value: any): string {
+	let valueStr: string;
 
 	switch(typeof value) {
-	case 'number': 
+	case 'number':
 		valueStr = chalk.yellowBright(value);
 		break;
-	case 'string': 
+	case 'string':
 		valueStr = chalk.greenBright(`'${value}'`);
 		break;
-	case 'boolean': 
+	case 'boolean':
 		valueStr = exChalk.orange(`${value}`);
 		break;
-	case 'bigint': 
+	case 'bigint':
 		valueStr = chalk.yellowBright(`${value}n`);
 		break;
-	case 'symbol': 
+	case 'symbol':
 		valueStr = chalk.italic.greenBright(value.toString());
 		break;
 	case 'function': {
@@ -51,18 +47,14 @@ function stringifyPlainPSAST(value) {
 		valueStr = chalk.bold.gray('undefined');
 		break;
 	default:
-		valueStr = value;
+		valueStr = `${value}`;
 		break;
 	}
 
 	return valueStr;
 }
 
-/**
- * @param {Object|Array} obj 
- * @returns {string}
- */
-function stringifySimplePSAST(obj) {
+function stringifySimplePSAST(obj: any): string {
 	const isArray = Array.isArray(obj);
 	const delims = isArray ? '[]' : '{}';
 	let name = '';
@@ -90,7 +82,7 @@ function stringifySimplePSAST(obj) {
 
 	const prefixer = isArray
 		? () => ''
-		: (/**@type {string}*/key) => `${key}: `;
+		: (key: string) => `${key}: `;
 
 	let first = true;
 
@@ -111,14 +103,7 @@ function stringifySimplePSAST(obj) {
 	return result;
 }
 
-/**
- * 
- * @param {Map} map
- * @param {number} [indentSize]
- * @param {number} [indent] 
- * @returns {string}
- */
-function stringifyPSASTMap(map, indentSize = 2, indent = indentSize) {
+function stringifyPSASTMap(map: Map<any, any>, indentSize = 2, indent = indentSize): string {
 	let spaces = ' '.repeat(indent);
 
 	let result = exChalk.orange(`Map (${exChalk.ice(map.size)})`);
@@ -133,21 +118,14 @@ function stringifyPSASTMap(map, indentSize = 2, indent = indentSize) {
 		const stringifiedValue = stringifyPSAST(value, indentSize, indent + indentSize);
 		result += `${spaces}${chalk.gray(`(${stringifiedKey})`)} ${exChalk.ice('→')} ${stringifiedValue}\n`;
 	}
-	
+
 	spaces = ' '.repeat(indent - indentSize);
 	result += `${spaces}${chalk.gray('}')}`;
 
 	return result;
 }
 
-/**
- * 
- * @param {Object|Array} obj 
- * @param {number} [indentSize]
- * @param {number} [indent] 
- * @returns {string}
- */
-function stringifyPSAST(obj, indentSize = 2, indent = indentSize) {
+export function stringifyPSAST(obj: object | any[], indentSize = 2, indent = indentSize): string {
 	if(typeof obj !== 'object')
 		return stringifyPlainPSAST(obj);
 
@@ -173,11 +151,11 @@ function stringifyPSAST(obj, indentSize = 2, indent = indentSize) {
 	if(!isArray) {
 		hasKind = Object.prototype.hasOwnProperty.call(obj, 'kind');
 		if(Object.prototype.hasOwnProperty.call(obj, 'equals')) {
-			const { equals: _, ...rest } = obj;
+			const { equals: _, ...rest } = obj as { equals: any };
 			obj = rest;
 		}
 		if(Object.prototype.hasOwnProperty.call(obj, 'compareTo')) {
-			const { compareTo: _, ...rest } = obj;
+			const { compareTo: _, ...rest } = obj as { compareTo: any };
 			obj = rest;
 		}
 		if(hasKind) {
@@ -185,7 +163,7 @@ function stringifyPSAST(obj, indentSize = 2, indent = indentSize) {
 			if(Object.prototype.hasOwnProperty.call(obj, 'line'))
 				hasPositionalData = true;
 		}
-	} else if(/**@type {Array}*/(obj).length === 0)
+	} else if((obj as any[]).length === 0)
 		return chalk.gray(delims);
 
 	const values = Object.values(obj);
@@ -197,11 +175,11 @@ function stringifyPSAST(obj, indentSize = 2, indent = indentSize) {
 
 	if(!isArray && hasKind) {
 		if(hasPositionalData) {
-			const { kind, line, column: _, start, end, ...rest } = obj;
+			const { kind, line, column: _, start, end, ...rest } = obj as { kind: any, line: any, column: any, start: any, end: any };
 			obj = rest;
 			name = chalk.cyan(`${kind} ${exChalk.peach(`(${exChalk.mint(line)}, ${exChalk.mint(`${start}~${end}`)})`)} `);
 		} else {
-			const { kind, ...rest } = obj;
+			const { kind, ...rest } = obj as { kind: any };
 			obj = rest;
 			name = chalk.cyan(`${kind} `);
 		}
@@ -230,17 +208,7 @@ function stringifyPSAST(obj, indentSize = 2, indent = indentSize) {
 	return result;
 }
 
-/**
- * @param {*} ast
- * @param {number} [indentSize]
- * @param {number} [indentSteps]
- */
-function logPSAST(ast, indentSize = 2, indentSteps = 0) {
+export function logPSAST(ast: any, indentSize = 2, indentSteps = 0): void {
 	const indent = indentSize + indentSize * indentSteps;
 	console.log(stringifyPSAST(ast, indentSize, indent));
 }
-
-module.exports = {
-	stringifyPSAST,
-	logPSAST
-};

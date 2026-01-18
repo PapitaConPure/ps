@@ -8,7 +8,7 @@ import { ExpressionStatement, ProgramStatement, StatementKinds } from '../src/as
 import { CallExpression, ExpressionKinds, Identifier } from '../src/ast/expressions.js';
 import TestEnvironmentProvider from './testEnvironmentProvider';
 import { EvaluationResult } from '../src/interpreter/interpreter.js';
-import { shortenText } from '../src/util/utils.js';
+import { shortenText } from '../src/util/utils';
 import chalk from 'chalk';
 
 const testFiles: string[] = [];
