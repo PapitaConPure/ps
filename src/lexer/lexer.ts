@@ -414,7 +414,7 @@ export class Lexer {
 	 * @returns {PatternHandler}
 	 */
 	#makeSkipHandler(): PatternHandler {
-		return function(matched) {
+		return (matched) => {
 			const len = matched.length;
 			this.advance(len, { advanceColumns: true });
 		};
@@ -425,7 +425,7 @@ export class Lexer {
 	 * @returns {PatternHandler}
 	 */
 	#makeInvalidHandler(errorMessage: string): PatternHandler {
-		return function(_, __) {
+		return (_, __) => {
 			throw this.TuberLexerError(errorMessage);
 		};
 	}

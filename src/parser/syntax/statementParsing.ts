@@ -283,9 +283,8 @@ export function parseReadStatement(parser: Parser): ReadStatement {
 	if(!parser.current.is(TokenKinds.ASSIGNMENT)) {
 		const { preModifiers, modifiers } = parseReadStmtModifiers(parser, dataKind);
 
-		if(this.hasTokens && !this.current.isStatement)
+		if(parser.hasTokens && !parser.current.isStatement)
 			throw parser.TuberParserError(`Se esperaba \`con\` y una expresión (o palabra clave \`opcional\`) luego de expresión receptora en Sentencia \`LEER\`. Sin embargo, se recibió: *${parser.current.translated}*`);
-
 
 		//Sin valor de respaldo
 		return {
