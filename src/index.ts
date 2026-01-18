@@ -33,7 +33,7 @@ export interface AdvancedTubercleData {
     files?: undefined;
     script: string;
     saved: Map<string, import('./interpreter/values.js').RuntimeValue>;
-    psVersion: Number;
+    psVersion: number;
 }
 
 export type BasicTubercle = BaseTubercle & BasicTubercleData;

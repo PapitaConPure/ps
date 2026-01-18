@@ -182,7 +182,7 @@ test.concurrent('Expresiones de flecha', async () => {
 	expect(inferredRegistry.entries.get('c')).toMatchObject(makeNumber(1));
 
 	expect(sendStack[9].kind).toBe(ValueKinds.LIST);
-	let inferredList = sendStack[9] as ListValue;
+	const inferredList = sendStack[9] as ListValue;
 	expect(inferredList.elements.length).toBe(3);
 	expect(inferredList.elements[0]).toMatchObject(makeNumber(3));
 	expect(inferredList.elements[1]).toMatchObject(makeNumber(6));
@@ -261,7 +261,7 @@ test.concurrent('Estructuras iterativas', async () => {
 	expect(sendStack).toHaveLength(17);
 
 	//REPETIR
-	let text = makeText('wjat');
+	const text = makeText('wjat');
 	for(let i = 0; i < 5; i++)
 		expect(sendStack[i]).toMatchObject(text);
 

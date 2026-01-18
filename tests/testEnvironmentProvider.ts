@@ -1,4 +1,4 @@
-import { EnvironmentProvider, ImageUrlOptions, PSChannel, PSGuild, PSMember, PSRole, PSUser } from '../src/interpreter/environment/environmentProvider.js';
+import { EnvironmentProvider, PSChannel, PSGuild, PSMember, PSRole, PSUser } from '../src/interpreter/environment/environmentProvider.js';
 
 export default class TestEnvironmentProvider implements EnvironmentProvider {
 	guild: PSGuild;
@@ -29,13 +29,13 @@ export default class TestEnvironmentProvider implements EnvironmentProvider {
 				{
 					id: '123456789012345681',
 					name: 'Rol de Prueba 1',
-					iconUrlHandler: (data) => 'https://i.imgur.com/ALNMRS6.png',
+					iconUrlHandler: () => 'https://i.imgur.com/ALNMRS6.png',
 					color: 0x608cf3,
 				},
 				{
 					id: '123456789012345682',
 					name: 'Rol de Prueba 2',
-					iconUrlHandler: (data) => null,
+					iconUrlHandler: () => null,
 				},
 			],
 			members: [
@@ -45,7 +45,7 @@ export default class TestEnvironmentProvider implements EnvironmentProvider {
 						username: 'usuario.de.prueba',
 						displayName: 'Usuario de Prueba',
 					}),
-					displayAvatarUrlHandler: (data) => 'https://i.imgur.com/P9eeVWC.png',
+					displayAvatarUrlHandler: () => 'https://i.imgur.com/P9eeVWC.png',
 					roleIds: [ '123456789012345682' ],
 				},
 				{
@@ -55,7 +55,7 @@ export default class TestEnvironmentProvider implements EnvironmentProvider {
 						displayName: 'Otro Usuario',
 					}),
 					nickname: 'Otro Usuario',
-					displayAvatarUrlHandler: (data) => 'https://i.imgur.com/P9eeVWC.png',
+					displayAvatarUrlHandler: () => 'https://i.imgur.com/P9eeVWC.png',
 					roleIds: [],
 				},
 			]
@@ -75,7 +75,7 @@ export default class TestEnvironmentProvider implements EnvironmentProvider {
 		this.member = this.guild.registerMember({
 			user: this.user,
 			nickname: 'Bot de Puré',
-			displayAvatarUrlHandler: (data) => 'https://i.imgur.com/P9eeVWC.png',
+			displayAvatarUrlHandler: () => 'https://i.imgur.com/P9eeVWC.png',
 			roleIds: [ '123456789012345681', '123456789012345682' ],
 		});
 	}
@@ -161,7 +161,7 @@ export default class TestEnvironmentProvider implements EnvironmentProvider {
 		return bestMatch;
 	}
 
-	private testUrlHandler(data: ImageUrlOptions) {
+	private testUrlHandler() {
 		return '';
 	}
 }

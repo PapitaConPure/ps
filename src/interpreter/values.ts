@@ -71,7 +71,7 @@ interface NativeFunctionValueData {
 export type NativeFunctionValue = BaseValueData<'NativeFunction'> & NativeFunctionValueData;
 
 export interface BaseFunctionValueData {
-	name: String;
+	name: string;
 	self: RuntimeValue;
 	args: Array<ArgumentExpression>;
 }
@@ -424,7 +424,7 @@ const coercions: Record<ValueKind, Partial<{ [ K in ValueKind ]: (x: any, interp
 			if(!x.size)
 				return makeText('{Rg}');
 
-			let glossaryStrings = [];
+			const glossaryStrings = [];
 			x.forEach((value, key) => {
 				const coercedValue = coerceValue(interpreter, value, 'Text').value;
 				glossaryStrings.push(`${key}: ${coercedValue}`);
