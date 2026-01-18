@@ -1,66 +1,49 @@
-/**
- * @typedef {number
- *         | readonly [ red: number, green: number, blue: number ]
- *         | 'Random'
- *         | `#${string}`
- * } ColorResolvable
- */
+export type ColorResolvable = number |
+	readonly [red: number, green: number, blue: number] |
+	'Random' |
+	`#${string}`;
 
-/**
- * @typedef {Object} AuthorData
- * @property {string} name
- * @property {string} [iconUrl]
- * @property {string} [url]
- */
+export interface AuthorData {
+	name: string;
+	iconUrl?: string;
+	url?: string;
+}
 
-/**
- * @typedef {Object} FooterData
- * @property {string} text
- * @property {string} [iconUrl]
- */
+export interface FooterData {
+	text: string;
+	iconUrl?: string;
+}
 
-/**
- * @typedef {Object} EmbedFieldData
- * 
- * @property {string} name
- * Name of the field.
- * 
- * Length limit: 256 characters
- * 
- * @property {string} value
- * Value of the field
- *
- * Length limit: 1024 characters
- * 
- * @property {boolean} [inline]
- * Whether or not this field should display inline
- */
+export interface EmbedFieldData {
+	name: string;
+	value: string;
+	inline?: boolean;
+}
 
-/**
- * @typedef {Object} EmbedResolvable
- * @property {AuthorData?} author
- * @property {ColorResolvable?} color
- * @property {string?} description
- * @property {Array<EmbedFieldData>?} fields
- * @property {FooterData?} footer
- * @property {string?} imageUrl
- * @property {string?} thumbUrl
- * @property {(Date | number)?} timestamp
- * @property {string?} title
- * @property {string?} url
- */
+export interface EmbedResolvable {
+	author: AuthorData;
+	color: ColorResolvable;
+	description: string;
+	fields: Array<EmbedFieldData>;
+	footer: FooterData;
+	imageUrl: string;
+	thumbUrl: string;
+	timestamp: (Date | number);
+	title: string;
+	url: string;
+}
 
-class EmbedData {
-	/**@type {AuthorData?}*/ #author;
-	/**@type {ColorResolvable?}*/ #color;
-	/**@type {string?}*/ #description;
-	/**@type {Array<EmbedFieldData>?}*/ #fields;
-	/**@type {FooterData?}*/ #footer;
-	/**@type {string?}*/ #imageUrl;
-	/**@type {string?}*/ #thumbUrl;
-	/**@type {(Date | number)?}*/ #timestamp;
-	/**@type {string?}*/ #title;
-	/**@type {string?}*/ #url;
+export class EmbedData {
+	#author: AuthorData | null;
+	#color: ColorResolvable | null;
+	#description: string | null;
+	#fields: Array<EmbedFieldData> | null;
+	#footer: FooterData | null;
+	#imageUrl: string | null;
+	#thumbUrl: string | null;
+	#timestamp: (Date | number) | null;
+	#title: string | null;
+	#url: string | null;
 
 	constructor() {
 		this.#author = null;
@@ -75,11 +58,8 @@ class EmbedData {
 		this.#url = null;
 	}
 
-	/**
-	 * Hard-copies the supplied data into an EmbedData instance
-	 * @param {EmbedResolvable} data 
-	 */
-	static from(data) {
+	/**@description Hard-copies the supplied data into an EmbedData instance.*/
+	static from(data: EmbedResolvable) {
 		const embed = new EmbedData();
 
 		embed.#color = data.color;
@@ -106,15 +86,12 @@ class EmbedData {
 		return embed;
 	}
 
-	/**Returns a hard-copy of this instance*/
+	/**@description Returns a hard-copy of this instance.*/
 	copy() {
 		return EmbedData.from(this.data);
 	}
 
-	/**
-	 * @param {AuthorData?} options 
-	 */
-	setAuthor(options) {
+	setAuthor(options: AuthorData | null) {
 		expectNonEmptyString(options?.name);
 		options?.url && expectUrl(options?.url);
 		options?.iconUrl && expectUrl(options?.iconUrl);
@@ -123,10 +100,7 @@ class EmbedData {
 		return this;
 	}
 
-	/**
-	 * @param {ColorResolvable?} color 
-	 */
-	setColor(color) {
+	setColor(color: ColorResolvable | null) {
 		if(color == null) {
 			this.#color = null;
 			return this;
@@ -154,28 +128,19 @@ class EmbedData {
 		return this;
 	}
 
-	/**
-	 * @param {string?} description 
-	 */
-	setDescription(description) {
+	setDescription(description: string | null) {
 		description != null && expectNonEmptyString(description);
 		this.#description = description;
 
 		return this;
 	}
 
-	/**
-	 * @param  {Array<EmbedFieldData>?} fields 
-	 */
-	setFields(fields) {
+	setFields(fields: Array<EmbedFieldData> | null) {
 		this.#fields = fields;
 		return this;
 	}
 
-	/**
-	 * @param {FooterData?} options 
-	 */
-	setFooter(options) {
+	setFooter(options: FooterData | null) {
 		if(!options) {
 			this.#footer = null;
 			return this;
@@ -188,58 +153,40 @@ class EmbedData {
 		return this;
 	}
 
-	/**
-	 * @param {string?} url 
-	 */
-	setImage(url) {
+	setImage(url: string | null) {
 		url != null && expectUrl(url);
 		this.#imageUrl = url;
 
 		return this;
 	}
 
-	/**
-	 * @param {string?} url 
-	 */
-	setThumbnail(url) {
+	setThumbnail(url: string | null) {
 		url != null && expectUrl(url);
 		this.#thumbUrl = url;
 
 		return this;
 	}
 
-	/**
-	 * @param {(Date | number)?} timestamp
-	 */
-	setTimestamp(timestamp) {
+	setTimestamp(timestamp: (Date | number) | null) {
 		this.#timestamp = timestamp;
 		return this;
 	}
 
-	/**
-	 * @param {string?} title 
-	 */
-	setTitle(title) {
+	setTitle(title: string | null) {
 		title != null && expectNonEmptyString(title);
 		this.#title = title;
 
 		return this;
 	}
 
-	/**
-	 * @param {string?} url 
-	 */
-	setUrl(url) {
+	setUrl(url: string | null) {
 		url != null && expectUrl(url);
 		this.#url = url;
 
 		return this;
 	}
 
-	/**
-	 * @param  {...EmbedFieldData} fields 
-	 */
-	addFields(...fields) {
+	addFields(...fields: EmbedFieldData[]) {
 		this.#fields ??= [];
 		this.#fields.push(...fields);
 		return this;
@@ -283,23 +230,13 @@ class EmbedData {
 	}
 }
 
-/**
- * @param {*} str
- * @throws
- */
-function expectNonEmptyString(str) {
+/**@throws {TypeError}*/
+function expectNonEmptyString(str: unknown) {
 	if(typeof str !== 'string' || str.length === 0)
-		throw `The value must be a non-empty string. Received: ${str}`;
+		throw TypeError(`The value must be a non-empty string. Received: ${str}`);
 }
 
-/**
- * @param {string} url
- * @throws
- */
-function expectUrl(url) {
+/**@throws {TypeError}*/
+function expectUrl(url: string) {
 	new URL(url.trim());
 }
-
-module.exports = {
-	EmbedData,
-};

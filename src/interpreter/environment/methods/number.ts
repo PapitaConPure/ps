@@ -1,37 +1,21 @@
-const { makeNumber, makeText, ValueKinds } = require('../../values');
-const { expectParam, getParamOrDefault } = require('../nativeUtils');
-const { improveNumber, clamp } = require('../../../util/utils');
+/* eslint-disable no-empty-pattern */
 
-/**
- * @typedef {import('../../values').NumberValue} NumberValue
- * @typedef {import('../../values').TextValue} TextValue
- * @typedef {import('../../values').BooleanValue} BooleanValue
- * @typedef {import('../../values').ListValue} ListValue
- * @typedef {import('../../values').RegistryValue} RegistryValue
- * @typedef {import('../../values').NativeFunctionValue} NativeFunctionValue
- * @typedef {import('../../values').FunctionValue} FunctionValue
- * @typedef {import('../../values').NadaValue} NadaValue
- * @typedef {import('../../values').RuntimeValue} RuntimeValue
- */
+import { RuntimeValue, NativeFunction, ValueKinds, NumberValue, TextValue, BooleanValue, makeNumber, makeText } from '../../values';
+import { expectParam, getParamOrDefault } from '../nativeUtils';
+import { improveNumber, clamp } from '../../../util/utils';
 
-/**
- * @template {Array<RuntimeValue>} [TArg=Array<RuntimeValue>]
- * @template {RuntimeValue} [TResult=RuntimeValue]
- * @typedef {import('../../values').NativeFunction<NumberValue, TArg, TResult>} NumberMethod
- */
+export type NumberMethod<TArg extends RuntimeValue[] = RuntimeValue[], TResult extends RuntimeValue = RuntimeValue>
+ 	= NativeFunction<NumberValue, TArg, TResult>;
 
-/**@type {NumberMethod<[], NumberValue>}*/
-function númeroAbsoluto(self, [], scope) {
+const númeroAbsoluto: NumberMethod<[], NumberValue> = (self, [], scope) => {
 	return makeNumber(Math.abs(self.value));
 }
 
-/**@type {NumberMethod<[], NumberValue>}*/
-function númeroAEntero(self, [], scope) {
+const númeroAEntero: NumberMethod<[], NumberValue> = (self, [], scope) => {
 	return makeNumber(Math.trunc(self.value));
 }
 
-/**@type {NumberMethod<[ NumberValue ], TextValue>}*/
-function númeroAFijo(self, [ precisión ], scope) {
+const númeroAFijo: NumberMethod<[ NumberValue ], TextValue> = (self, [ precisión ], scope) => {
 	const precisiónResult = expectParam('precisión', precisión, ValueKinds.NUMBER, scope);
 
 	if(precisiónResult.value < 0 || precisiónResult.value > 100)
@@ -41,8 +25,7 @@ function númeroAFijo(self, [ precisión ], scope) {
 	return makeText(text);
 }
 
-/**@type {NumberMethod<[ NumberValue ], TextValue>}*/
-function númeroAPrecisión(self, [ precisión ], scope) {
+const númeroAPrecisión: NumberMethod<[ NumberValue ], TextValue> = (self, [ precisión ], scope) => {
 	const precisiónResult = expectParam('precisión', precisión, ValueKinds.NUMBER, scope);
 
 	if(precisiónResult.value < 0 || precisiónResult.value > 100)
@@ -52,8 +35,7 @@ function númeroAPrecisión(self, [ precisión ], scope) {
 	return makeText(text);
 }
 
-/**@type {NumberMethod<[ NumberValue ], TextValue>}*/
-function númeroATexto(self, [ base ], scope) {
+const númeroATexto: NumberMethod<[ NumberValue ], TextValue> = (self, [ base ], scope) => {
 	const baseResult = getParamOrDefault('base', base, ValueKinds.NUMBER, scope, 10);
 
 	if(baseResult.value < 2 || baseResult.value > 36)
@@ -62,8 +44,7 @@ function númeroATexto(self, [ base ], scope) {
 	return makeText(self.value.toString(baseResult.value));
 }
 
-/**@type {NumberMethod<[ BooleanValue, NumberValue ], TextValue>}*/
-function númeroFormatear(self, [ acortar, mínimoDígitos ], scope) {
+const númeroFormatear: NumberMethod<[ BooleanValue, NumberValue ], TextValue> = (self, [ acortar, mínimoDígitos ], scope) => {
 	const acortarResult = expectParam('acortar', acortar, ValueKinds.BOOLEAN, scope);
 	const mínimoResult = expectParam('mínimoDígitos', mínimoDígitos, ValueKinds.NUMBER, scope);
 	if(mínimoResult.value < 1 || mínimoResult.value > 10)
@@ -72,8 +53,7 @@ function númeroFormatear(self, [ acortar, mínimoDígitos ], scope) {
 	return makeText(`${improveNumber(self.value, acortarResult.value, mínimoResult.value)}`);
 }
 
-/**@type {NumberMethod<[ BooleanValue, NumberValue ], NumberValue>}*/
-function númeroLimitar(self, [ mínimo, máximo ], scope) {
+const númeroLimitar: NumberMethod<[ BooleanValue, NumberValue ], NumberValue> = (self, [ mínimo, máximo ], scope) => {
 	const mínimoValue = expectParam('mínimo', mínimo, ValueKinds.NUMBER, scope).value;
 	const máximoValue = expectParam('máximo', máximo, ValueKinds.NUMBER, scope).value;
 
@@ -81,29 +61,23 @@ function númeroLimitar(self, [ mínimo, máximo ], scope) {
 	return makeNumber(clamped);
 }
 
-/**@type {NumberMethod<[], NumberValue>}*/
-function númeroSigno(self, [], scope) {
+const númeroSigno: NumberMethod<[], NumberValue> = (self, [], scope) => {
 	return makeNumber(Math.sign(self.value));
 }
 
-/**@type {NumberMethod<[], NumberValue>}*/
-function númeroSuelo(self, [], scope) {
+const númeroSuelo: NumberMethod<[], NumberValue> = (self, [], scope) => {
 	return makeNumber(Math.floor(self.value));
 }
 
-/**@type {NumberMethod<[], NumberValue>}*/
-function númeroTecho(self, [], scope) {
+const númeroTecho: NumberMethod<[], NumberValue> = (self, [], scope) => {
 	return makeNumber(Math.ceil(self.value));
 }
 
-/**@type {NumberMethod<[], NumberValue>}*/
-function númeroRedondear(self, [], scope) {
+const númeroRedondear: NumberMethod<[], NumberValue> = (self, [], scope) => {
 	return makeNumber(Math.round(self.value));
 }
 
-/**@type {Map<string, NumberMethod>}*/
-const numberMethods = new Map();
-numberMethods
+export const numberMethods = new Map<string, NumberMethod>()
 	.set('absoluto', númeroAbsoluto)
 	.set('aEntero', númeroAEntero)
 	.set('aFijo', númeroAFijo)
@@ -121,7 +95,3 @@ numberMethods
 	.set('suelo', númeroSuelo)
 	.set('techo', númeroTecho)
 	.set('truncar', númeroAEntero);
-
-module.exports = {
-	numberMethods,
-};

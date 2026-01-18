@@ -1,39 +1,23 @@
-const { ValueKinds, makeText, makeBoolean, makeList, makeRegistry, makeNada, coerceValue, makeNumber } = require('../../values');
-const { expectParam, getParamOrNada, makePredicateFn, getParamOrDefault } = require('../nativeUtils');
-const { randRange } = require('../../../util/utils');
+/* eslint-disable no-empty-pattern */
 
-/**
- * @typedef {import('../../values').NumberValue} NumberValue
- * @typedef {import('../../values').TextValue} TextValue
- * @typedef {import('../../values').BooleanValue} BooleanValue
- * @typedef {import('../../values').ListValue} ListValue
- * @typedef {import('../../values').RegistryValue} RegistryValue
- * @typedef {import('../../values').NativeFunctionValue} NativeFunctionValue
- * @typedef {import('../../values').FunctionValue} FunctionValue
- * @typedef {import('../../values').NadaValue} NadaValue
- * @typedef {import('../../values').RuntimeValue} RuntimeValue
- */
+import { RuntimeValue, NativeFunction, ValueKinds, NumberValue, TextValue, BooleanValue, ListValue, RegistryValue, FunctionValue, NadaValue, makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeNada, coerceValue } from '../../values';
+import { expectParam, getParamOrNada, makePredicateFn, getParamOrDefault } from '../nativeUtils';
+import { randRange } from '../../../util/utils';
 
-/**
- * @template {Array<RuntimeValue>} [TArg=Array<RuntimeValue>]
- * @template {RuntimeValue} [TResult=RuntimeValue]
- * @typedef {import('../../values').NativeFunction<ListValue, TArg, TResult>} ListMethod
- */
+export type ListMethod<TArg extends RuntimeValue[] = RuntimeValue[], TResult extends RuntimeValue = RuntimeValue>
+	= NativeFunction<ListValue, TArg, TResult>;
 
-/**@type {ListMethod<[], ListValue>}*/
-function listaAInvertido(self, [], scope) {
+const listaAInvertido: ListMethod<[], ListValue> = (self, [], scope) => {
 	return makeList(self.elements.toReversed());
 }
 
-/**@type {ListMethod<[ FunctionValue ], BooleanValue>}*/
-function listaAlguno(self, [ predicado ], scope) {
+const listaAlguno: ListMethod<[ FunctionValue ], BooleanValue> = (self, [ predicado ], scope) => {
 	const fn = makePredicateFn('predicado', predicado, scope);
 	const test = self.elements.some((el, i) => coerceValue(scope.interpreter, fn(el, makeNumber(i), self), ValueKinds.BOOLEAN).value);
 	return makeBoolean(test);
 }
 
-/**@type {ListMethod<[ FunctionValue ], ListValue>}*/
-function listaAOrdenada(self, [ criterio ], scope) {
+const listaAOrdenada: ListMethod<[ FunctionValue ], ListValue> = (self, [ criterio ], scope) => {
 	if(criterio == null)
 		return makeList(self.elements.toSorted((a, b) => a.compareTo(b).value));
 	
@@ -42,20 +26,17 @@ function listaAOrdenada(self, [ criterio ], scope) {
 	return makeList(processedElements);
 }
 
-/**@type {ListMethod<[], RegistryValue>}*/
-function listaARegistro(self, [], scope) {
+const listaARegistro: ListMethod<[], RegistryValue> = (self, [], scope) => {
 	const entries = new Map(self.elements.map((el, i) => [ `${i}`, el ]));
 	return makeRegistry(entries);
 }
 
-/**@type {ListMethod<[ RuntimeValue ], BooleanValue>}*/
-function listaContiene(self, [ x ], scope) {
+const listaContiene: ListMethod<[ RuntimeValue ], BooleanValue> = (self, [ x ], scope) => {
 	const test = self.elements.some(el => el.equals(x));
 	return makeBoolean(test);
 }
 
-/**@type {ListMethod<[ NumberValue, NumberValue ], ListValue>}*/
-function listaCortar(self, [ inicio, fin ], scope) {
+const listaCortar: ListMethod<[ NumberValue, NumberValue ], ListValue> = (self, [ inicio, fin ], scope) => {
 	const [ inicioExists, inicioResult ] = getParamOrNada('inicio', inicio, ValueKinds.NUMBER, scope);
 	if(!inicioExists)
 		return self;
@@ -67,64 +48,55 @@ function listaCortar(self, [ inicio, fin ], scope) {
 	return makeList(self.elements.slice(inicioResult.value, finResult.value));
 }
 
-/**@type {ListMethod<[ NumberValue, NumberValue ]>}*/
-function listaElegir(self, [ mínimo, máximo ], scope) {
+const listaElegir: ListMethod<[ NumberValue, NumberValue ]> = (self, [ mínimo, máximo ], scope) => {
 	const mínimoResult = getParamOrDefault('mínimo', mínimo, ValueKinds.NUMBER, scope, 0);
 	const máximoResult = getParamOrDefault('máximo', máximo, ValueKinds.NUMBER, scope, self.elements.length);
 
 	return self.elements[randRange(mínimoResult.value, máximoResult.value, true)];
 }
 
-/**@type {ListMethod<[ FunctionValue ]>}*/
-function listaEncontrar(self, [ predicado ], scope) {
+const listaEncontrar: ListMethod<[ FunctionValue ]> = (self, [ predicado ], scope) => {
 	const fn = makePredicateFn('predicado', predicado, scope);
 	const element = self.elements.find((el, i) => coerceValue(scope.interpreter, fn(el, makeNumber(i), self), ValueKinds.BOOLEAN).value) ?? makeNada();
 	return element;
 }
 
-/**@type {ListMethod<[ FunctionValue ]>}*/
-function listaEncontrarÚltimo(self, [ predicado ], scope) {
+const listaEncontrarÚltimo: ListMethod<[ FunctionValue ]> = (self, [ predicado ], scope) => {
 	const fn = makePredicateFn('predicado', predicado, scope);
 	const element = self.elements.findLast((el, i) => coerceValue(scope.interpreter, fn(el, makeNumber(i), self), ValueKinds.BOOLEAN).value) ?? makeNada();
 	return element;
 }
 
-/**@type {ListMethod<[ FunctionValue ], NumberValue>}*/
-function listaEncontrarId(self, [ predicado ], scope) {
+const listaEncontrarId: ListMethod<[ FunctionValue ], NumberValue> = (self, [ predicado ], scope) => {
 	const fn = makePredicateFn('predicado', predicado, scope);
 	const idx = self.elements.findIndex((el, i) => coerceValue(scope.interpreter, fn(el, makeNumber(i), self), ValueKinds.BOOLEAN).value);
 	return makeNumber(idx);
 }
 
-/**@type {ListMethod<[ FunctionValue ], NumberValue>}*/
-function listaEncontrarÚltimoId(self, [ predicado ], scope) {
+const listaEncontrarÚltimoId: ListMethod<[ FunctionValue ], NumberValue> = (self, [ predicado ], scope) => {
 	const fn = makePredicateFn('predicado', predicado, scope);
 	const idx = self.elements.findLastIndex((el, i) => coerceValue(scope.interpreter, fn(el, makeNumber(i), self), ValueKinds.BOOLEAN).value);
 	return makeNumber(idx);
 }
 
-/**@type {ListMethod<[ FunctionValue ], ListValue>}*/
-function listaFiltrar(self, [ filtro ], scope) {
+const listaFiltrar: ListMethod<[ FunctionValue ], ListValue> = (self, [ filtro ], scope) => {
 	const fn = makePredicateFn('filtro', filtro, scope);
 	const processedElements = self.elements.filter((el, i) => coerceValue(scope.interpreter, fn(el, makeNumber(i), self), ValueKinds.BOOLEAN).value);
 	return makeList(processedElements);
 }
 
-/**@type {ListMethod<[], NadaValue>}*/
-function listaInvertir(self, [], scope) {
+const listaInvertir: ListMethod<[], NadaValue> = (self, [], scope) => {
 	self.elements.reverse();
 	return makeNada();
 }
 
-/**@type {ListMethod<[ FunctionValue ], ListValue>}*/
-function listaMapear(self, [ mapeo ], scope) {
+const listaMapear: ListMethod<[ FunctionValue ], ListValue> = (self, [ mapeo ], scope) => {
 	const fn = makePredicateFn('mapeo', mapeo, scope);
 	const processedElements = self.elements.map((el, i) => fn(el, makeNumber(i), self));
 	return makeList(processedElements);
 }
 
-/**@type {ListMethod<[ FunctionValue ], NadaValue>}*/
-function listaOrdenar(self, [ criterio ], scope) {
+const listaOrdenar: ListMethod<[ FunctionValue ], NadaValue> = (self, [ criterio ], scope) => {
 	if(criterio == null) {
 		self.elements.sort((a, b) => a.compareTo(b).value);
 	} else {
@@ -135,15 +107,13 @@ function listaOrdenar(self, [ criterio ], scope) {
 	return makeNada();
 }
 
-/**@type {ListMethod<[ FunctionValue ], NadaValue>}*/
-function listaParaCada(self, [ procedimiento ], scope) {
+const listaParaCada: ListMethod<[ FunctionValue ], NadaValue> = (self, [ procedimiento ], scope) => {
 	const fn = makePredicateFn('procedimiento', procedimiento, scope);
 	self.elements.slice().forEach((el, i) => fn(el, makeNumber(i), self));
 	return makeNada();
 }
 
-/**@type {ListMethod<[ NumberValue ]>}*/
-function listaRobar(self, [ índice ], scope) {
+const listaRobar: ListMethod<[ NumberValue ]> = (self, [ índice ], scope) => {
 	const índiceResult = expectParam('índice', índice, ValueKinds.NUMBER, scope);
 
 	if(índiceResult.value < 0 || índiceResult.value >= self.elements.length)
@@ -156,25 +126,21 @@ function listaRobar(self, [ índice ], scope) {
 	return removed[0];
 }
 
-/**@type {ListMethod<[]>}*/
-function listaRobarPrimero(self, [], scope) {
+const listaRobarPrimero: ListMethod<[]> = (self, [], scope) => {
 	return self.elements.shift() ?? makeNada();
 }
 
-/**@type {ListMethod<[]>}*/
-function listaRobarÚltimo(self, [], scope) {
+const listaRobarÚltimo: ListMethod<[]> = (self, [], scope) => {
 	return self.elements.pop() ?? makeNada();
 }
 
-/**@type {ListMethod<[ FunctionValue ], BooleanValue>}*/
-function listaTodos(self, [ predicado ], scope) {
+const listaTodos: ListMethod<[ FunctionValue ], BooleanValue> = (self, [ predicado ], scope) => {
 	const fn = makePredicateFn('predicado', predicado, scope);
 	const test = self.elements.every((el, i) => coerceValue(scope.interpreter, fn(el, makeNumber(i), self), ValueKinds.BOOLEAN).value);
 	return makeBoolean(test);
 }
 
-/**@type {ListMethod<[ TextValue ], TextValue>}*/
-function listaUnir(self, [ separador ], scope) {
+const listaUnir: ListMethod<[ TextValue ], TextValue> = (self, [ separador ], scope) => {
 	if(!self.elements.length)
 		return makeText('');
 
@@ -183,19 +149,15 @@ function listaUnir(self, [ separador ], scope) {
 	return makeText(elementTextValues.join(separadorResult.value));
 }
 
-/**@type {ListMethod<[]>}*/
-function listaÚltimo(self, [], scope) {
+const listaÚltimo: ListMethod<[]> = (self, [], scope) => {
 	return self.elements[self.elements.length];
 }
 
-/**@type {ListMethod<[], BooleanValue>}*/
-function listaVacía(self, [], scope) {
+const listaVacía: ListMethod<[], BooleanValue> = (self, [], scope) => {
 	return makeBoolean(self.elements.length === 0);
 }
 
-/**@type {Map<String, ListMethod>}*/
-const listMethods = new Map();
-listMethods
+export const listMethods = new Map<string, ListMethod>()
 	.set('aleatorio', listaElegir)
 	.set('aInvertida', listaAInvertido)
 	.set('aInvertido', listaAInvertido)
@@ -235,7 +197,3 @@ listMethods
 	.set('último', listaÚltimo)
 	.set('vacia', listaVacía)
 	.set('vacía', listaVacía);
-
-module.exports = {
-	listMethods,
-};
