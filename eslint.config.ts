@@ -99,6 +99,9 @@ export default defineConfig([
 					'throw': {
 						'after': true,
 					},
+					'case': {
+						'after': true,
+					},
 				},
 			} ],
 			'@stylistic/eol-last': 'error',
