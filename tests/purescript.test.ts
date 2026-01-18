@@ -3,7 +3,7 @@ import { readdirSync } from 'node:fs';
 import { readFileSync } from 'fs';
 import { join } from 'node:path';
 import { Lexer, Parser, Interpreter, Scope, declareNatives, declareContext, Input, stringifyPSAST, Token } from '../src/index.js';
-import { makeNumber, makeText, makeBoolean, coerceValue, ValueKinds, ListValue, EmbedValue, RegistryValue, makeNada } from '../src/interpreter/values.js';
+import { makeNumber, makeText, makeBoolean, coerceValue, ValueKinds, ListValue, EmbedValue, RegistryValue, makeNada, makeList, NumberValue } from '../src/interpreter/values.js';
 import { ExpressionStatement, ProgramStatement, StatementKinds } from '../src/ast/statements.js';
 import { CallExpression, ExpressionKinds, Identifier } from '../src/ast/expressions.js';
 import TestEnvironmentProvider from './testEnvironmentProvider';
@@ -122,9 +122,7 @@ test.concurrent('Variables y Expresiones', async () => {
 	const bv = b.value;
 	const cv = coerceValue(interpreter, c, ValueKinds.TEXT).value;
 
-	expect(sendStack[0]).toMatchObject(
-		makeText(av + ' ' + bv + ' ' + cv)
-	);
+	expect(sendStack[0]).toMatchObject(makeText(`${av} ${bv} ${cv}`));
 });
 
 test.concurrent('Asignaciones complejas', async () => {
@@ -258,9 +256,34 @@ test.concurrent('Estructuras de control', async () => {
 
 test.concurrent('Estructuras iterativas', async () => {
 	const result = await executePS(testFiles[9]);
-	const {  } = result;
+	const { sendStack } = result;
 
-	
+	expect(sendStack).toHaveLength(17);
+
+	//REPETIR
+	let text = makeText('wjat');
+	for(let i = 0; i < 5; i++)
+		expect(sendStack[i]).toMatchObject(text);
+
+	//PARA CADA (Elementos de Lista)
+	expect(sendStack[5]).toMatchObject(makeText('peruano'));
+	expect(sendStack[6]).toMatchObject(makeText('chaibol'));
+	expect(sendStack[7]).toMatchObject(makeText('poni'));
+
+	//PARA CADA (Entradas de Registro)
+	expect(sendStack[8]).toMatchObject(makeList([ makeText('a'), makeNumber(3) ]));
+	expect(sendStack[9]).toMatchObject(makeList([ makeText('b'), makeNumber(2) ]));
+	expect(sendStack[10]).toMatchObject(makeList([ makeText('c'), makeNumber(1) ]));
+
+	//PARA Corto (PARA desde-hasta)
+	expect(sendStack[11]).toMatchObject(makeNumber(3));
+	expect(sendStack[12]).toMatchObject(makeNumber(4));
+	expect(sendStack[13]).toMatchObject(makeNumber(5));
+
+	//PARA Largo (PARA MIENTRAS)
+	expect(sendStack[14]).toMatchObject(makeNumber(15));
+	expect(sendStack[15]).toMatchObject(makeNumber(10));
+	expect(sendStack[16]).toMatchObject(makeNumber(5));
 });
 
 test.concurrent('EJECUTAR + expresiones de flecha y llamado', async () => {
@@ -300,29 +323,63 @@ test.concurrent('Casteos Primitivos de expresiones', async () => {
 	const result = await executePS(testFiles[12]);
 	const { sendStack } = result;
 
-	expect(sendStack.length).toBeGreaterThan(0);
-
-	for (const value of sendStack) {
-		expect(value).toHaveProperty('kind');
-	}
+	expect(sendStack[0]).toMatchObject(makeNumber(1));
+	expect(sendStack[1]).toMatchObject(makeText('22'));
+	expect(sendStack[2]).toMatchObject(makeText('4'));
+	expect(sendStack[3]).toMatchObject(makeNumber(6));
+	expect(sendStack[4]).toMatchObject(makeNumber(62));
+	expect(sendStack[5]).toMatchObject(makeBoolean(true));
 });
 
 test.concurrent('Funciones nativas', async () => {
-	const result = await executePS(testFiles[13]);
-	const { sendStack } = result;
+	Array.from({ length: 50 }, async () => {
+		const result = await executePS(testFiles[13]);
+		const { sendStack } = result;
 
-	expect(sendStack.length).toBeGreaterThan(0);
+		let inferredNumber: NumberValue;
 
-	for(const value of sendStack) {
-		expect(value.kind).not.toBe(ValueKinds.NADA);
-	}
+		expect(sendStack[0].kind).toBe('Number');
+		inferredNumber = sendStack[0] as NumberValue;
+		expect(inferredNumber.value).toBeInteger();
+		expect(inferredNumber.value).toBeWithin(1, 7);
+
+		expect(sendStack[1].kind).toBe('Number');
+		inferredNumber = sendStack[1] as NumberValue;
+		expect(inferredNumber.value).toBeInteger();
+		expect(inferredNumber.value).toBeWithin(0, 1000);
+
+		expect(sendStack[2].kind).toBe('Number');
+		inferredNumber = sendStack[2] as NumberValue;
+		expect(inferredNumber.value).toBeInteger();
+		expect(inferredNumber.value).toBeWithin(-10, -5);
+
+		expect(sendStack[3].kind).toBe('Number');
+		inferredNumber = sendStack[3] as NumberValue;
+		expect(inferredNumber.value).not.toBeInteger();
+		expect(inferredNumber.value).toBeWithin(0, 1);
+
+		expect(sendStack[4].kind).toBe('Number');
+		inferredNumber = sendStack[4] as NumberValue;
+		expect(inferredNumber.value).not.toBeInteger();
+		expect(inferredNumber.value).toBeWithin(0, 1000);
+
+		expect(sendStack[5].kind).toBe('Number');
+		inferredNumber = sendStack[5] as NumberValue;
+		expect(inferredNumber.value).not.toBeInteger();
+		expect(inferredNumber.value).toBeWithin(-100, -5);
+	});
 });
 
 test.concurrent('Métodos nativos', async () => {
 	const result = await executePS(testFiles[14]);
-	const {  } = result;
+	const { sendStack } = result;
 
-	
+	expect(sendStack[0]).toMatchObject(makeNumber(44));
+	expect(sendStack[1]).toMatchObject(makeText('HOLA MUNDO'));
+	expect(sendStack[2]).toMatchObject(makeText('100 ponis, 200 ponis, 300'));
+	expect(sendStack[3]).toMatchObject(makeText('a... b... c'));
+	expect(sendStack[4]).toMatchObject(makeText('3... 2... 1'));
+	expect(sendStack[5]).toMatchObject(makeText('[a: 3] - - [b: 2] - - [c: 1]'));
 });
 
 test.concurrent('Secuencias y Lambdas', async () => {
