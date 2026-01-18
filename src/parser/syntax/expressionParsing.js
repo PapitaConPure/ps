@@ -90,7 +90,7 @@ function parsePrimaryExpression(parser) {
 
 /**
  * @param {import('../parser.js').Parser} parser
- * @returns {Boolean}
+ * @returns {boolean}
  */
 function canFollowUp(parser) {
 	return parser.hasTokens
@@ -104,7 +104,7 @@ function canFollowUp(parser) {
 /**
  * @param {import('../parser.js').Parser} parser
  * @param {import('../../ast/expressions').Expression} expr
- * @returns {String}
+ * @returns {string}
  */
 function makeStoredKey(parser, expr) {
 	let value;
@@ -171,7 +171,7 @@ function parseListElements(parser) {
 
 /**
  * @param {import('../parser.js').Parser} parser
- * @returns {Map<String, import('../../ast/expressions').Expression>}
+ * @returns {Map<string, import('../../ast/expressions').Expression>}
  */
 function parseRegistryMembers(parser) {
 	const members = new Map();
@@ -195,7 +195,7 @@ function parseRegistryMembers(parser) {
 
 /**
  * @param {import('../parser.js').Parser} parser
- * @returns {{ key: String, value: import('../../ast/expressions').Expression }}
+ * @returns {{ key: string, value: import('../../ast/expressions').Expression }}
  */
 function parseRegistryMember(parser) {
 	const key = parser.expectAny(TokenKinds.LIT_NUMBER, TokenKinds.LIT_TEXT, TokenKinds.IDENTIFIER).orFail(`Se esperaba un identificador, una cadena o un número en lado izquierdo de expresión literal de miembro para expresión literal de glosario. Sin embargo, se recibió: ${parser.current.translated}`);

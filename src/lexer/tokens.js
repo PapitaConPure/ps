@@ -1,9 +1,9 @@
 /**Contiene tipos de token de lexer*/
 const TokenKinds = /**@type {const}*/({
 	//Valores
-	LIT_NUMBER: 'Number',
-	LIT_TEXT: 'String',
-	LIT_BOOLEAN: 'Boolean',
+	LIT_NUMBER: 'number',
+	LIT_TEXT: 'string',
+	LIT_BOOLEAN: 'boolean',
 	IDENTIFIER: 'Identifier',
 	NADA: 'Nada',
 
@@ -101,7 +101,7 @@ const TokenKinds = /**@type {const}*/({
  * @typedef {import('../util/types').ValuesOf<typeof TokenKinds>} TokenKind
  */
 
-/**@type {Map<TokenKind, String>}*/
+/**@type {Map<TokenKind, string>}*/
 const TokenKindTranslations = new Map();
 TokenKindTranslations
 	.set(TokenKinds.LIT_NUMBER, 'Literal de Número')
@@ -262,7 +262,7 @@ class Token {
 	#value;
 	/**
 	 * La línea del token
-	 * @type {Number}
+	 * @type {number}
 	 */
 	#line;
 	/**
@@ -271,17 +271,17 @@ class Token {
 	#column;
 	/**
 	 * La posición del primer caracter del token en el código 
-	 * @type {Number}
+	 * @type {number}
 	 */
 	#start;
 	/**
 	 * El largo del token
-	 * @type {Number}
+	 * @type {number}
 	 */
 	#length;
 	/**
 	 * Si es un indicador de sentencia (true) o no (false)
-	 * @type {Boolean}
+	 * @type {boolean}
 	 */
 	isStatement;
 

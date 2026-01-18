@@ -3,23 +3,23 @@ const { shortenText, toLowerCaseNormalized } = require('../util/utils.js');
 
 /**Representa un Analizador Léxico de PuréScript*/
 class Lexer {
-	/**@type {Array<{ match: String, kind: import('./tokens.js').TokenKind, value?: * }>}*/
+	/**@type {Array<{ match: string, kind: import('./tokens.js').TokenKind, value?: * }>}*/
 	#keywords;
 	/**@type {Pattern[]}*/
 	#patterns;
 	/**@type {Token[]}*/
 	#tokens;
-	/**@type {String}*/
+	/**@type {string}*/
 	#source;
-	/**@type {String[]}*/
+	/**@type {string[]}*/
 	#sourceLines;
-	/**@type {Number}*/
+	/**@type {number}*/
 	#pos;
-	/**@type {Number}*/
+	/**@type {number}*/
 	#col;
-	/**@type {Number}*/
+	/**@type {number}*/
 	#line;
-	/**@type {Boolean}*/
+	/**@type {boolean}*/
 	handleCommentStatement;
 
 	/**
@@ -217,12 +217,12 @@ class Lexer {
 
 	/**
 	 * Tokeniza el string indicado, basándose en PuréScript
-	 * @param {String} source 
+	 * @param {string} source 
 	 * @returns {Token[]}
 	 */
 	tokenize(source) {
 		if(typeof source !== 'string')
-			throw this.TuberLexerError('Se esperaba un String válido para tokenizar');
+			throw this.TuberLexerError('Se esperaba un string válido para tokenizar');
 
 		this.#tokens = [];
 		this.#source = source.replace(/(^\s+)|(\s+$)/g, '');
@@ -230,9 +230,9 @@ class Lexer {
 		this.#pos = this.#col = this.#line = 1;
 		this.handleCommentStatement = false;
 
-		/**@type {String}*/
+		/**@type {string}*/
 		let match;
-		/**@type {String}*/
+		/**@type {string}*/
 		let normalizedRemainder;
 
 		while(!this.atEOF) {
@@ -261,12 +261,12 @@ class Lexer {
 
 	/**
 	 * @typedef {Object} LexerAdvanceOptions
-	 * @property {Boolean} [advanceColumns=false]
-	 * @property {Boolean} [newLine=false]
-	 * @property {{ col: Number, line: Number, }} [override=null]
+	 * @property {boolean} [advanceColumns=false]
+	 * @property {boolean} [newLine=false]
+	 * @property {{ col: number, line: number, }} [override=null]
 	 * 
 	 * Avanza la posición del Lexer
-	 * @param {Number} [steps=1] 
+	 * @param {number} [steps=1] 
 	 * @param {LexerAdvanceOptions} [options={}]
 	 */
 	advance(steps = 1, options = {}) {
@@ -437,7 +437,7 @@ class Lexer {
 	}
 
 	/**
-	 * @param {String} errorMessage
+	 * @param {string} errorMessage
 	 * @returns {PatternHandler}
 	 */
 	#makeInvalidHandler(errorMessage) {
@@ -452,13 +452,13 @@ class Lexer {
 /**
  * @typedef {(match: string, rawMatch: string) => void} PatternHandler
  * @typedef {Object} Pattern
- * @property {String|RegExp} match
+ * @property {string|RegExp} match
  * @property {PatternHandler} handler
  */
 
 /**
  * @param {Pattern} pattern
- * @param {String} source
+ * @param {string} source
  */
 function matchPattern(pattern, source) {
 	if(typeof pattern.match === 'string')
@@ -468,8 +468,8 @@ function matchPattern(pattern, source) {
 }
 
 /**
- * @param {String} matcher
- * @param {String} source
+ * @param {string} matcher
+ * @param {string} source
  */
 function stringPatternMatch(matcher, source) {
 	const slicedSource = source.slice(0, matcher.length);
@@ -479,7 +479,7 @@ function stringPatternMatch(matcher, source) {
 
 /**
  * @param {RegExp} matcher
- * @param {String} source
+ * @param {string} source
  */
 function regexPatternMatch(matcher, source) {
 	const match = matcher.exec(source);

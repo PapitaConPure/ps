@@ -213,8 +213,8 @@ test.concurrent('Varias Entradas de Usuario I', async () => {
 	expect(inputStack.length).toBe(4);
 
 	expect(inputStack[0]).toMatchObject(new Input('a', 'Text', false));
-	expect(inputStack[1]).toMatchObject(new Input('b', 'Boolean', true));
-	expect(inputStack[2]).toMatchObject(new Input('c', 'Number', false));
+	expect(inputStack[1]).toMatchObject(new Input('b', 'boolean', true));
+	expect(inputStack[2]).toMatchObject(new Input('c', 'number', false));
 	expect(inputStack[3]).toMatchObject(new Input('d', 'Text', true));
 
 	expect(sendStack.length).toBe(1);

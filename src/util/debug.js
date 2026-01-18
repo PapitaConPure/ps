@@ -60,7 +60,7 @@ function stringifyPlainPSAST(value) {
 
 /**
  * @param {Object|Array} obj 
- * @returns {String}
+ * @returns {string}
  */
 function stringifySimplePSAST(obj) {
 	const isArray = Array.isArray(obj);
@@ -90,7 +90,7 @@ function stringifySimplePSAST(obj) {
 
 	const prefixer = isArray
 		? () => ''
-		: (/**@type {String}*/key) => `${key}: `;
+		: (/**@type {string}*/key) => `${key}: `;
 
 	let first = true;
 
@@ -114,9 +114,9 @@ function stringifySimplePSAST(obj) {
 /**
  * 
  * @param {Map} map
- * @param {Number} [indentSize]
- * @param {Number} [indent] 
- * @returns {String}
+ * @param {number} [indentSize]
+ * @param {number} [indent] 
+ * @returns {string}
  */
 function stringifyPSASTMap(map, indentSize = 2, indent = indentSize) {
 	let spaces = ' '.repeat(indent);
@@ -143,9 +143,9 @@ function stringifyPSASTMap(map, indentSize = 2, indent = indentSize) {
 /**
  * 
  * @param {Object|Array} obj 
- * @param {Number} [indentSize]
- * @param {Number} [indent] 
- * @returns {String}
+ * @param {number} [indentSize]
+ * @param {number} [indent] 
+ * @returns {string}
  */
 function stringifyPSAST(obj, indentSize = 2, indent = indentSize) {
 	if(typeof obj !== 'object')
@@ -215,7 +215,7 @@ function stringifyPSAST(obj, indentSize = 2, indent = indentSize) {
 
 	const prefixer = isArray
 		? () => `${spaces}`
-		: (/**@type {String}*/key) => `${spaces}${key}: `;
+		: (/**@type {string}*/key) => `${spaces}${key}: `;
 
 	for(const key in obj) {
 		if(Object.prototype.hasOwnProperty.call(obj, key)) {
@@ -232,8 +232,8 @@ function stringifyPSAST(obj, indentSize = 2, indent = indentSize) {
 
 /**
  * @param {*} ast
- * @param {Number} [indentSize]
- * @param {Number} [indentSteps]
+ * @param {number} [indentSize]
+ * @param {number} [indentSteps]
  */
 function logPSAST(ast, indentSize = 2, indentSteps = 0) {
 	const indent = indentSize + indentSize * indentSteps;

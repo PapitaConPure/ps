@@ -224,7 +224,7 @@ function parseForEachLoopStatement(parser) {
  */
 function parseForLoopStatement(parser) {
 	const openToken = parser.advance();
-	const identifier = /**@type {String}*/(parser.expect(TokenKinds.IDENTIFIER, `Se esperaba un literal de identificador en Sentencia \`PARA\`, pero se recibió: *${parser.current.value}*`).value);
+	const identifier = /**@type {string}*/(parser.expect(TokenKinds.IDENTIFIER, `Se esperaba un literal de identificador en Sentencia \`PARA\`, pero se recibió: *${parser.current.value}*`).value);
 	let full = false;
 
 	if(parser.current.is(TokenKinds.FROM)) {

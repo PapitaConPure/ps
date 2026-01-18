@@ -11,7 +11,7 @@ class Parser {
 	errorStack;
 	/**@type {Token[]}*/
 	tokens;
-	/**@type {Number}*/
+	/**@type {number}*/
 	#pos;
 
 	constructor() {
@@ -22,7 +22,7 @@ class Parser {
 	}
 
 	/**
-	 * @param {String} message 
+	 * @param {string} message 
 	 * @param {Token} [token]
 	 */
 	TuberParserError(message, token = null) {
@@ -102,7 +102,7 @@ class Parser {
 
 	/**
 	 * Verifica si todavía quedan tokens a analizar
-	 * @returns {Boolean}
+	 * @returns {boolean}
 	 */
 	get hasTokens() {
 		return this.#pos < this.tokens.length && !this.current.is(TokenKinds.EOF);
@@ -119,7 +119,7 @@ class Parser {
 	/**
 	 * Se asegura de que el token actual sea del tipo indicado. Si lo es, lo consume y devuelve; si no, alza un error.
 	 * @param {import('../lexer/tokens').TokenKind} tokenKind
-	 * @param {String} [errorMessage]
+	 * @param {string} [errorMessage]
 	 * @returns {Token}
 	 */
 	expect(tokenKind, errorMessage = null) {
@@ -140,7 +140,7 @@ class Parser {
 	 * 
 	 * Al momento de arrojar un error, si se usa un mensaje personalizado en el método orFail, `this.current` será el token que lo ocasionó (caso especial)
 	 * @param {...import('../lexer/tokens').TokenKind} tokenKinds
-	 * @returns {{ orFail: (errorMessage?: String, token?: Token) => Token }}
+	 * @returns {{ orFail: (errorMessage?: string, token?: Token) => Token }}
 	 */
 	expectAny(...tokenKinds) {
 		const expectedToken = this.advance();
@@ -166,7 +166,7 @@ class Parser {
 	/**
 	 * Se asegura de que el token actual sea del tipo indicado. Si lo es, lo devuelve sin consumirlo; si no, alza un error
 	 * @param {import('../lexer/tokens').TokenKind} tokenKind
-	 * @param {String} [errorMessage]
+	 * @param {string} [errorMessage]
 	 * @returns {Token}
 	 */
 	ensure(tokenKind, errorMessage = null) {
@@ -184,7 +184,7 @@ class Parser {
 	 * Se asegura de que el token actual sea de alguno de los tipos indicados y devuelve un objeto con el método "orFail", sin consumir el token.
 	 * Si el token era del tipo indicado, "orFail" devuelve el mismo; si no, "orFail" alza un error
 	 * @param {...import('../lexer/tokens').TokenKind} tokenKinds
-	 * @returns {{ orFail: (errorMessage?: String) => Token }}
+	 * @returns {{ orFail: (errorMessage?: string) => Token }}
 	 */
 	ensureAny(...tokenKinds) {
 		const token = this.current;
@@ -207,7 +207,7 @@ class Parser {
 
 	/**
 	 * Tira un error si el Token actual no representa una expresión (no es un indicador de Sentencia)
-	 * @param {String} errorMessage
+	 * @param {string} errorMessage
 	 * @param {Token} [token]
 	 */
 	ensureExpression(errorMessage, token = null) {
@@ -217,7 +217,7 @@ class Parser {
 
 	/**
 	 * Tira un error si el Token actual no es un indicador de Sentencia
-	 * @param {String} errorMessage
+	 * @param {string} errorMessage
 	 * @param {Token} [token]
 	 */
 	ensureStatement(errorMessage, token = null) {

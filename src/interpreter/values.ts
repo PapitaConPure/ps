@@ -8,9 +8,9 @@ import { Scope } from './scope';
 
 /**@description Contiene los tipos de valores de PuréScript.*/
 export const ValueKinds = ({
-	NUMBER: 'Number',
+	NUMBER: 'number',
 	TEXT: 'Text',
-	BOOLEAN: 'Boolean',
+	BOOLEAN: 'boolean',
 	LIST: 'List',
 	REGISTRY: 'Registry',
 	EMBED: 'Embed',
@@ -32,11 +32,11 @@ interface BasePrimitiveValueData<U = undefined> {
 
 export interface PrimitiveValueData<T extends ValueKind, U = undefined> extends BaseValueData<T>, BasePrimitiveValueData<U> {}
 
-export type NumberValue = PrimitiveValueData<'Number', number>;
+export type NumberValue = PrimitiveValueData<'number', number>;
 
 export type TextValue = PrimitiveValueData<'Text', string>;
 
-export type BooleanValue = PrimitiveValueData<'Boolean', boolean>;
+export type BooleanValue = PrimitiveValueData<'boolean', boolean>;
 
 export type NadaValue = PrimitiveValueData<'Nada', null>;
 
@@ -112,9 +112,9 @@ export type RuntimeValue =
 	| ComplexValue;
 
 type RuntimeInternalValueMap = {
-	Number: number;
+	number: number;
 	Text: string;
-	Boolean: boolean;
+	boolean: boolean;
 	Nada: null;
 
 	List: RuntimeValue[];

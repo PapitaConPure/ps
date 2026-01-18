@@ -204,7 +204,7 @@ export class Interpreter {
 			throw `Se esperaba AST válido para interpretar`;
 
 		if(typeof source !== 'string')
-			throw new Error('Se esperaba un String válido para proveer información de errores de evaluación');
+			throw new Error('Se esperaba un string válido para proveer información de errores de evaluación');
 
 		this.#saveTable = new Map();
 		this.#errorStack = [];

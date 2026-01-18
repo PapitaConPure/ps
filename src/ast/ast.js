@@ -44,10 +44,10 @@ const Associativities = /**@type {const}*/({
 
 /**
  * @typedef {Object} NodeMetadata
- * @property {Number} line
- * @property {Number} column
- * @property {Number} start
- * @property {Number} end
+ * @property {number} line
+ * @property {number} column
+ * @property {number} start
+ * @property {number} end
  */
 
 module.exports = {

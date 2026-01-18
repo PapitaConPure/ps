@@ -36,19 +36,19 @@ const ExpressionKinds = /**@type {const}*/({
 //#region Literales
 /**
  * @typedef {Object} NumberLiteralExpressionData
- * @property {Number} value
+ * @property {number} value
  * @typedef {BaseExpressionData<'NumberLiteralExpression'> & NumberLiteralExpressionData} NumberLiteralExpression
  */
 
 /**
  * @typedef {Object} TextLiteralExpressionData
- * @property {String} value
+ * @property {string} value
  * @typedef {BaseExpressionData<'TextLiteralExpression'> & TextLiteralExpressionData} TextLiteralExpression
  */
 
 /**
  * @typedef {Object} BooleanLiteralExpressionData
- * @property {Boolean} value
+ * @property {boolean} value
  * @typedef {BaseExpressionData<'BooleanLiteralExpression'> & BooleanLiteralExpressionData} BooleanLiteralExpression
  */
 
@@ -60,7 +60,7 @@ const ExpressionKinds = /**@type {const}*/({
 
 /**
  * @typedef {Object} RegistryLiteralExpressionData
- * @property {Map<String, Expression>} entries
+ * @property {Map<string, Expression>} entries
  * @typedef {BaseExpressionData<'RegistryLiteralExpression'> & RegistryLiteralExpressionData} RegistryLiteralExpression
  */
 
@@ -76,7 +76,7 @@ const ExpressionKinds = /**@type {const}*/({
 
 /**
  * @typedef {Object} IdentifierData
- * @property {String} name
+ * @property {string} name
  * @typedef {BaseExpressionData<'Identifier'> & IdentifierData} Identifier
  */
 //#endregion
@@ -107,12 +107,12 @@ const ExpressionKinds = /**@type {const}*/({
 /**
  * @typedef {Object} BaseArrowExpressionData
  * @property {Expression} holder
- * @property {Boolean} computed
+ * @property {boolean} computed
  * @typedef {BaseExpressionData<'ArrowExpression'> & BaseArrowExpressionData} BaseArrowExpression
  * 
  * @typedef {Object} StoredArrowExpressionData
  * @property {false} computed
- * @property {String} key
+ * @property {string} key
  * @typedef {BaseArrowExpression & StoredArrowExpressionData} StoredArrowExpression
  * 
  * @typedef {Object} ComputedArrowExpressionData
@@ -142,7 +142,7 @@ const ExpressionKinds = /**@type {const}*/({
 
 /**
  * @typedef {Object} BaseArgumentExpressionData
- * @property {String} identifier
+ * @property {string} identifier
  * 
  * @typedef {Object} RequiredArgumentData
  * @property {false} optional

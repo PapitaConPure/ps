@@ -236,9 +236,9 @@ const tipoDe: NativeFunction<null, [RuntimeValue], TextValue> = (_self, [ valor 
 		);
 
 	const mappings = {
-		Number: 'número',
+		number: 'número',
 		Text: 'texto',
-		Boolean: 'lógico',
+		boolean: 'lógico',
 		List: 'lista',
 		Registry: 'registro',
 		Embed: 'marco',
