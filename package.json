@@ -12,6 +12,8 @@
     "esbuild-plugin-tsc": "^0.5.0",
     "eslint": "^9.39.2",
     "globals": "^17.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "prettier": "^3.8.0",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "sizeof": "^1.0.0",
@@ -33,7 +35,17 @@
     "printWidth": 100
   },
   "private": true,
-  "scripts": {},
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix && prettier --write .",
+    "prepare": "lint-staged",
+    "lint-staged": {
+      ".{ts,js}": "eslint --cache --fix",
+      ".{ts,js,css,md}": "prettier --write",
+      ".js": "eslint --cache --fix",
+      ".{js,css,md}": "prettier --write"
+    }
+  },
   "type": "module",
   "dependencies": {
     "jiti": "^2.6.1"
