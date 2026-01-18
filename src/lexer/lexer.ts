@@ -1,30 +1,40 @@
-const { TokenKinds, Token } = require('./tokens.js');
-const { shortenText, toLowerCaseNormalized } = require('../util/utils.js');
+import { TokenKinds, TokenKind, Token } from './tokens.js';
+import { shortenText, toLowerCaseNormalized } from '../util/utils.js';
 
-/**Representa un Analizador Léxico de PuréScript*/
-class Lexer {
-	/**@type {Array<{ match: string, kind: import('./tokens.js').TokenKind, value?: * }>}*/
-	#keywords;
-	/**@type {Pattern[]}*/
-	#patterns;
-	/**@type {Token[]}*/
-	#tokens;
-	/**@type {string}*/
-	#source;
-	/**@type {string[]}*/
-	#sourceLines;
-	/**@type {number}*/
-	#pos;
-	/**@type {number}*/
-	#col;
-	/**@type {number}*/
-	#line;
-	/**@type {boolean}*/
-	handleCommentStatement;
+interface Keyword {
+	match: string;
+	kind: TokenKind;
+	value?: unknown;
+}
 
-	/**
-	 * Crea un nuevo Lexer con el source indicado
-	 */
+interface LexerAdvanceOptions {
+	advanceColumns?: boolean;
+	newLine?: boolean;
+	override?: { col: number; line: number; };
+}
+
+interface PatternHandler {
+	(match: string, rawMatch: string): void;
+}
+
+interface Pattern {
+	match: string | RegExp;
+	handler: PatternHandler;
+}
+
+/**@description Representa un Analizador Léxico de PuréScript.*/
+export class Lexer {
+	#keywords: Keyword[];
+	#patterns: Pattern[];
+	#tokens: Token[];
+	#source: string;
+	#sourceLines: string[];
+	#pos: number;
+	#col: number;
+	#line: number;
+	handleCommentStatement: boolean;
+
+	/**@description Crea un nuevo Lexer con el source indicado.*/
 	constructor() {
 		this.#tokens = [];
 		this.#source = null;
@@ -113,20 +123,20 @@ class Lexer {
 			{ match: '/', handler: this.#makeDefaultHandler(TokenKinds.SLASH) },
 			{ match: '%', handler: this.#makeDefaultHandler(TokenKinds.PERCENT) },
 			{ match: '^', handler: this.#makeDefaultHandler(TokenKinds.CARET) },
-			
+
 			{ match: '<=', handler: this.#makeDefaultHandler(TokenKinds.LESS_EQUALS) },
 			{ match: '<', handler: this.#makeDefaultHandler(TokenKinds.LESS) },
 			{ match: '>=', handler: this.#makeDefaultHandler(TokenKinds.GREATER_EQUALS) },
 			{ match: '>', handler: this.#makeDefaultHandler(TokenKinds.GREATER) },
 			{ match: '!=', handler: this.#makeDefaultHandler(TokenKinds.NOT_EQUALS) },
 			{ match: '==', handler: this.#makeDefaultHandler(TokenKinds.EQUALS) },
-			
+
 			{ match: '=', handler: this.#makeDefaultHandler(TokenKinds.ASSIGNMENT) },
 
 			{ match: '||', handler: this.#makeDefaultHandler(TokenKinds.OR) },
 			{ match: '&&', handler: this.#makeDefaultHandler(TokenKinds.AND) },
 			{ match: '!', handler: this.#makeDefaultHandler(TokenKinds.NOT) },
-			
+
 			{ match: 'no excede', handler: this.#makeDefaultHandler(TokenKinds.LESS_EQUALS) },
 			{ match: 'no precede', handler: this.#makeDefaultHandler(TokenKinds.GREATER_EQUALS) },
 			{ match: 'no es', handler: this.#makeDefaultHandler(TokenKinds.NOT_EQUALS) },
@@ -138,7 +148,7 @@ class Lexer {
 
 			{ match: /^(?!_)(([0-9_]+([.][0-9]*)?)|([.][0-9]+))/, handler: this.#makeNumberHandler() },
 			{ match: '.', handler: this.#makeDefaultHandler(TokenKinds.DOT) },
-			
+
 			{ match: /^"(\\"|[^"])*"/, handler: this.#makeStringHandler() },
 			{ match: /^'(\\'|[^'])*'/, handler: this.#makeStringHandler() },
 
@@ -147,11 +157,7 @@ class Lexer {
 		];
 	}
 
-	/**
-	 * @param {string} message
-	 */
-	TuberLexerError(message, errorOptions) {
-		errorOptions ??= {};
+	TuberLexerError(message: string, errorOptions: {  col?: number, line?: number, lineString?: string } = {}) {
 		errorOptions.col ??= this.#col;
 		errorOptions.line ??= this.#line;
 		const lineString = this.lineString;
@@ -197,16 +203,12 @@ class Lexer {
 		return this.#sourceLines[this.#line - 1];
 	}
 
-	/**
-	 * Devuelve el caracter de source en la posición actual
-	 */
+	/**@description Devuelve el caracter de source en la posición actual.*/
 	get current() {
 		return this.#source[this.#pos - 1];
 	}
 
-	/**
-	 * Devuelve el resto del source desde la posición actual
-	 */
+	/**@description Devuelve el resto del source desde la posición actual.*/
 	get remainder() {
 		return this.#source.slice(this.#pos - 1);
 	}
@@ -215,12 +217,8 @@ class Lexer {
 		return (this.#pos - 1) >= this.#source.length;
 	}
 
-	/**
-	 * Tokeniza el string indicado, basándose en PuréScript
-	 * @param {string} source 
-	 * @returns {Token[]}
-	 */
-	tokenize(source) {
+	/**@description Tokeniza el string indicado, basándose en PuréScript.*/
+	tokenize(source: string): Token[] {
 		if(typeof source !== 'string')
 			throw this.TuberLexerError('Se esperaba un string válido para tokenizar');
 
@@ -231,9 +229,9 @@ class Lexer {
 		this.handleCommentStatement = false;
 
 		/**@type {string}*/
-		let match;
+		let match: string;
 		/**@type {string}*/
-		let normalizedRemainder;
+		let normalizedRemainder: string;
 
 		while(!this.atEOF) {
 			match = null;
@@ -260,16 +258,11 @@ class Lexer {
 	}
 
 	/**
-	 * @typedef {Object} LexerAdvanceOptions
-	 * @property {boolean} [advanceColumns=false]
-	 * @property {boolean} [newLine=false]
-	 * @property {{ col: number, line: number, }} [override=null]
-	 * 
 	 * Avanza la posición del Lexer
-	 * @param {number} [steps=1] 
+	 * @param {number} [steps=1]
 	 * @param {LexerAdvanceOptions} [options={}]
 	 */
-	advance(steps = 1, options = {}) {
+	advance(steps: number = 1, options: LexerAdvanceOptions = {}) {
 		options.advanceColumns ??= false;
 		options.newLine ??= false;
 		this.#pos += steps;
@@ -291,58 +284,55 @@ class Lexer {
 	 * Añade un token al Lexer
 	 * @param {Token} token
 	 */
-	addToken(token) {
+	addToken(token: Token) {
 		if(!this.handleCommentStatement)
 			this.#tokens.push(token);
 	}
 
 	//#region Handlers
 	/**
-	 * 
+	 *
 	 * @param {import('./tokens').TokenKind} kind
 	 * @returns {PatternHandler}
 	 */
-	#makeDefaultHandler(kind) {
-		const lexer = this;
-		return function(_, rawMatch) {
+	#makeDefaultHandler(kind: import('./tokens').TokenKind): PatternHandler {
+		return (_, rawMatch) => {
 			const len = `${rawMatch}`.length;
-			lexer.addToken(new Token(lexer, kind, rawMatch, lexer.line, lexer.col, lexer.pos - 1, len));
-			lexer.advance(len, { advanceColumns: true });
+			this.addToken(new Token(this, kind, rawMatch, this.line, this.col, this.pos - 1, len));
+			this.advance(len, { advanceColumns: true });
 		};
 	}
 
 	/**
-	 * 
+	 *
 	 * @returns {PatternHandler}
 	 */
-	#makeNumberHandler() {
-		const lexer = this;
-		return function(matched) {
+	#makeNumberHandler(): PatternHandler {
+		return (matched) => {
 			const len = matched.length;
 			const num = +matched.replace(/_/g, '');
 
 			if(isNaN(num))
-				throw lexer.TuberLexerError('Valor inválido en tokenización de número');
+				throw this.TuberLexerError('Valor inválido en tokenización de número');
 
-			lexer.addToken(new Token(lexer, TokenKinds.LIT_NUMBER, num, lexer.line, lexer.col, lexer.pos - 1, len));
-			lexer.advance(len, { advanceColumns: true });
+			this.addToken(new Token(this, TokenKinds.LIT_NUMBER, num, this.line, this.col, this.pos - 1, len));
+			this.advance(len, { advanceColumns: true });
 		};
 	}
 
 	/**
-	 * 
+	 *
 	 * @returns {PatternHandler}
 	 */
-	#makeStringHandler() {
-		const lexer = this;
-		return function(match, rawMatch) {
+	#makeStringHandler(): PatternHandler {
+		return (match, rawMatch) => {
 			const len = match.length;
 
 			//Arreglo de caracteres sin los ""
 			const chars = rawMatch.slice(1, -1).split('');
 
-			let col = lexer.col + 1; //Sumar los "" removidos
-			let line = lexer.line;
+			let col = this.col + 1; //Sumar los "" removidos
+			let line = this.line;
 			let rePos = -1;
 
 			for(const c of chars) {
@@ -353,7 +343,7 @@ class Lexer {
 					if(c === '\\') {
 						rePos = chars.indexOf('\\', rePos + 1);
 						chars.splice(rePos, 1);
-						
+
 						switch(chars[rePos]) {
 						case 'N':
 						case 'n':
@@ -364,15 +354,16 @@ class Lexer {
 						case 't':
 							chars[rePos] = '\t';
 							break;
-	
+
 						case '"': break;
 						case '`': break;
 						case "'": break;
 						case '\\': break;
-	
-						default:
-							const lineString = lexer.source.split(/\r?\n/g)[line - 1];
-							throw lexer.TuberLexerError(`Caracter de escape inválido en literal de Texto: \`${c}\``, { col, line, lineString });
+
+						default: {
+							const lineString = this.source.split(/\r?\n/g)[line - 1];
+							throw this.TuberLexerError(`Caracter de escape inválido en literal de Texto: \`${c}\``, { col, line, lineString });
+						}
 						}
 					}
 
@@ -383,56 +374,49 @@ class Lexer {
 			col++; //Sumar los "" removidos
 			rawMatch = chars.join('');
 
-			lexer.addToken(new Token(lexer, TokenKinds.LIT_TEXT, rawMatch, lexer.line, lexer.col, lexer.pos - 1, len));
-			lexer.advance(len, { override: { col, line } }); //Aplicar cambios de columna y línea locales
-			lexer.handleCommentStatement = false;
+			this.addToken(new Token(this, TokenKinds.LIT_TEXT, rawMatch, this.line, this.col, this.pos - 1, len));
+			this.advance(len, { override: { col, line } }); //Aplicar cambios de columna y línea locales
+			this.handleCommentStatement = false;
 		};
 	}
 
-	/**
-	 * 
-	 * @returns {PatternHandler}
-	 */
-	#makeSymbolHandler() {
-		const lexer = this;
-		return function(match, rawMatch) {
+	#makeSymbolHandler(): PatternHandler {
+		return (match, rawMatch) => {
 			const len = match.length;
-			const keyword = lexer.lookupTable.find(k => k.match === match);
-			
+			const keyword = this.lookupTable.find(k => k.match === match);
+
 			if(keyword) {
 				if(keyword.kind !== TokenKinds.COMMENT)
-					lexer.addToken(new Token(lexer, keyword.kind, rawMatch, lexer.line, lexer.col, lexer.pos - 1, len));
+					this.addToken(new Token(this, keyword.kind, rawMatch, this.line, this.col, this.pos - 1, len));
 				else
-					lexer.handleCommentStatement = true;
+					this.handleCommentStatement = true;
 			} else {
-				lexer.addToken(new Token(lexer, TokenKinds.IDENTIFIER, rawMatch, lexer.line, lexer.col, lexer.pos - 1, len));
+				this.addToken(new Token(this, TokenKinds.IDENTIFIER, rawMatch, this.line, this.col, this.pos - 1, len));
 			}
 
-			lexer.advance(len, { advanceColumns: true });
+			this.advance(len, { advanceColumns: true });
 		};
 	}
 
 	/**
-	 * 
+	 *
 	 * @returns {PatternHandler}
 	 */
-	#makeNewlineHandler() {
-		const lexer = this;
-		return function(match, _) {
+	#makeNewlineHandler(): PatternHandler {
+		return (match, _) => {
 			const len = match.length;
-			lexer.advance(len, { newLine: true });
-			lexer.handleCommentStatement = false;
+			this.advance(len, { newLine: true });
+			this.handleCommentStatement = false;
 		};
 	}
 
 	/**
 	 * @returns {PatternHandler}
 	 */
-	#makeSkipHandler() {
-		const lexer = this;
+	#makeSkipHandler(): PatternHandler {
 		return function(matched) {
 			const len = matched.length;
-			lexer.advance(len, { advanceColumns: true });
+			this.advance(len, { advanceColumns: true });
 		};
 	}
 
@@ -440,48 +424,28 @@ class Lexer {
 	 * @param {string} errorMessage
 	 * @returns {PatternHandler}
 	 */
-	#makeInvalidHandler(errorMessage) {
-		const lexer = this;
+	#makeInvalidHandler(errorMessage: string): PatternHandler {
 		return function(_, __) {
-			throw lexer.TuberLexerError(errorMessage);
-		}
+			throw this.TuberLexerError(errorMessage);
+		};
 	}
 	//#endregion
 }
 
-/**
- * @typedef {(match: string, rawMatch: string) => void} PatternHandler
- * @typedef {Object} Pattern
- * @property {string|RegExp} match
- * @property {PatternHandler} handler
- */
-
-/**
- * @param {Pattern} pattern
- * @param {string} source
- */
-function matchPattern(pattern, source) {
+function matchPattern(pattern: Pattern, source: string) {
 	if(typeof pattern.match === 'string')
 		return stringPatternMatch(pattern.match, source);
 	else
 		return regexPatternMatch(pattern.match, source);
 }
 
-/**
- * @param {string} matcher
- * @param {string} source
- */
-function stringPatternMatch(matcher, source) {
+function stringPatternMatch(matcher: string, source: string) {
 	const slicedSource = source.slice(0, matcher.length);
 
 	return (slicedSource === matcher) ? slicedSource : null;
 }
 
-/**
- * @param {RegExp} matcher
- * @param {string} source
- */
-function regexPatternMatch(matcher, source) {
+function regexPatternMatch(matcher: RegExp, source: string) {
 	const match = matcher.exec(source);
 
 	if(match == null)
@@ -492,7 +456,3 @@ function regexPatternMatch(matcher, source) {
 
 	return match[0];
 }
-
-module.exports = {
-	Lexer,
-};
