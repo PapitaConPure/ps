@@ -39,7 +39,7 @@ export interface EmptyStatement<T extends StatementKind> {
 	kind: Readonly<NonNullable<T>>;
 }
 
-export type BaseStatementData<T extends StatementKind> = EmptyStatement<T> & NodeMetadata;
+export interface BaseStatementData<T extends StatementKind> extends EmptyStatement<T>, NodeMetadata {}
 
 export type BlockBody = Statement[];
 
@@ -47,8 +47,8 @@ export interface BlockStatementData {
 	body: BlockBody;
 }
 
-export type ProgramStatement = BaseStatementData<'ProgramStatement'> & BlockStatementData;
-export type BlockStatement = BaseStatementData<'BlockStatement'> & BlockStatementData;
+export interface ProgramStatement extends BaseStatementData<'ProgramStatement'>, BlockStatementData {}
+export interface BlockStatement extends BaseStatementData<'BlockStatement'>, BlockStatementData {}
 
 export interface ConditionalStatementData {
 	test: Expression;
@@ -56,23 +56,23 @@ export interface ConditionalStatementData {
 	alternate?: Statement;
 }
 
-export type ConditionalStatement = BaseStatementData<'ConditionalStatement'> & ConditionalStatementData;
+export interface ConditionalStatement extends BaseStatementData<'ConditionalStatement'>, ConditionalStatementData {}
 
 export interface WhileStatementData {
 	test: Expression;
 	body: BlockStatement;
 }
 
-export type WhileStatement = BaseStatementData<'WhileStatement'> & WhileStatementData;
+export interface WhileStatement extends BaseStatementData<'WhileStatement'>, WhileStatementData {}
 
-export type DoUntilStatement = BaseStatementData<'DoUntilStatement'> & WhileStatementData;
+export interface DoUntilStatement extends BaseStatementData<'DoUntilStatement'>, WhileStatementData {}
 
 export interface RepeatStatementData {
 	times: Expression;
 	body: BlockStatement;
 }
 
-export type RepeatStatement = BaseStatementData<'RepeatStatement'> & RepeatStatementData;
+export interface RepeatStatement extends BaseStatementData<'RepeatStatement'>, RepeatStatementData {}
 
 export interface ForEachStatementData {
 	identifier: string;
@@ -80,14 +80,14 @@ export interface ForEachStatementData {
 	body: BlockStatement;
 }
 
-export type ForEachStatement = BaseStatementData<'ForEachStatement'> & ForEachStatementData;
+export interface ForEachStatement extends BaseStatementData<'ForEachStatement'>, ForEachStatementData {}
 
 export interface BaseForStatementData {
 	identifier: string;
 	body: BlockStatement;
 }
 
-export type BaseForStatement = BaseStatementData<'ForStatement'> & BaseForStatementData;
+export interface BaseForStatement extends BaseStatementData<'ForStatement'>, BaseForStatementData {}
 
 export interface FullForStatementData {
 	full: true;
@@ -96,7 +96,7 @@ export interface FullForStatementData {
 	step: Statement;
 }
 
-export type FullForStatement = BaseForStatement & FullForStatementData;
+export interface FullForStatement extends BaseForStatement, FullForStatementData {}
 
 export interface ShortForStatementData {
 	full: false;
@@ -104,7 +104,7 @@ export interface ShortForStatementData {
 	to: Expression;
 }
 
-export type ShortForStatement = BaseForStatement & ShortForStatementData;
+export interface ShortForStatement extends BaseForStatement, ShortForStatementData {}
 
 export type ForStatement = FullForStatement | ShortForStatement;
 
@@ -112,7 +112,7 @@ export interface ExpressionStatementData {
 	expression: Expression;
 }
 
-export type ExpressionStatement = BaseStatementData<'ExpressionStatement'> & ExpressionStatementData;
+export interface ExpressionStatement extends BaseStatementData<'ExpressionStatement'>, ExpressionStatementData {}
 
 export type ReadStatementPreModifier = (arg: string, it: import('../interpreter/interpreter').Interpreter, scope: import('../interpreter/scope').Scope) => string;
 
