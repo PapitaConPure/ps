@@ -4,9 +4,9 @@ import { Lexer } from './lexer';
 /**Contiene tipos de token de lexer*/
 export const TokenKinds = ({
 	//Valores
-	LIT_NUMBER: 'number',
-	LIT_TEXT: 'string',
-	LIT_BOOLEAN: 'boolean',
+	LIT_NUMBER: 'Number',
+	LIT_TEXT: 'String',
+	LIT_BOOLEAN: 'Boolean',
 	IDENTIFIER: 'Identifier',
 	NADA: 'Nada',
 
@@ -237,6 +237,8 @@ export const DataKindValues = ({
 /**@description Representa un tipo de Token Léxico de PuréScript.*/
 export type DataKindValue = ValuesOf<typeof DataKindValues>;
 
+export type TokenInternalValue = number | string | boolean | null | undefined;
+
 /**Representa un Token Léxico de PuréScript*/
 export class Token {
 	/**@description El texto fuente de la línea original del token.*/
@@ -244,7 +246,7 @@ export class Token {
 	/**@description El tipo del token.*/
 	#kind: TokenKind;
 	/**@description El valor del token.*/
-	#value: unknown;
+	#value: TokenInternalValue;
 	/**@description La línea del token.*/
 	#line: number;
 	/**@description La columna inicial del token.*/
@@ -265,7 +267,7 @@ export class Token {
 	 * @param start La posición del primer caracter del token en el código.
 	 * @param length El largo del token.
 	 */
-	constructor(lexer: import('./lexer').Lexer, kind: TokenKind, value: unknown, line: number, column: number, start: number, length: number) {
+	constructor(lexer: import('./lexer').Lexer, kind: TokenKind, value: TokenInternalValue, line: number, column: number, start: number, length: number) {
 		if(!Object.values(TokenKinds).includes(kind))
 			throw `Tipo de token inválido: ${kind}`;
 		if(line < 1)
@@ -337,13 +339,13 @@ export class Token {
 	}
 
 	/**@description Devuelve `true` si el token es del tipo indicado, `false` de lo contrario.*/
-	is(tokenKind: TokenKind) {
+	is<TInfer extends TokenKind>(tokenKind: TInfer): this is Token & { kind: TInfer } {
 		return this.#kind === tokenKind;
 	}
 
 	/**@description Devuelve `true` si el token es de alguno de los tipos indicados, `false` de lo contrario.*/
-	isAny(...tokenKinds: TokenKind[]) {
-		return tokenKinds.includes(this.#kind);
+	isAny<TInfer extends TokenKind[]>(...tokenKinds: TInfer): this is Token & { kind: TInfer[number] } {
+		return (tokenKinds).includes(this.#kind);
 	}
 
 	get [Symbol.toStringTag]() {
