@@ -384,16 +384,25 @@ test.concurrent('Métodos nativos', async () => {
 
 test.concurrent('Secuencias y Lambdas', async () => {
 	const result = await executePS(testFiles[15]);
-	const {  } = result;
+	const { sendStack } = result;
 
-	
+	expect(sendStack[0]).toMatchObject(makeText('2, 4, 6, 8, 10, 12, 14, 16, 18, 20, '));
+	expect(sendStack[1]).toMatchObject(makeText('4, 8, 12, 16, 20, 24, 28, 32, 36, 40, '));
+	expect(sendStack[2].kind).toBe('Function');
+	expect(sendStack[3]).toMatchObject(makeNumber(15));
+	expect(sendStack[4].kind).toBe('Function');
+	expect(sendStack[5]).toMatchObject(makeNumber(3));
 });
 
 test.concurrent('Creación, modificación y envío de Marco', async () => {
 	const result = await executePS(testFiles[16]);
-	const {  } = result;
+	const { sendStack } = result;
 
-	
+	expect(sendStack[0].kind).toBe('Embed');
+	const inferredEmbed = sendStack[0] as EmbedValue;
+	expect(inferredEmbed.value.data.author.name).toBe('Papita');
+	expect(inferredEmbed.value.data.fields[0].name).toBe('Hola');
+	expect(inferredEmbed.value.data.fields[0].value).toBe('Mundo');
 });
 
 test.concurrent('Funciones impuras', async () => {

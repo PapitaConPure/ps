@@ -13,3 +13,4 @@ ENVIAR multp
 ENVIAR multp(5, 3)
 
 ENVIAR () => 3
+ENVIAR (() => 3)()
