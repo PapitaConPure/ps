@@ -363,12 +363,3 @@ export abstract class EnvironmentProvider {
 	// 	throw 'No implementado';
 	// }
 }
-
-module.exports = {
-	PSGuild,
-	PSChannel,
-	PSRole,
-	PSUser,
-	PSMember,
-	EnvironmentProvider,
-};
