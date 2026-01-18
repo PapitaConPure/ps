@@ -39,7 +39,7 @@ function shortenText(text, max = 200, suspensor = '...') {
 	return `${text.slice(0, max - suspensor.length)}${suspensor}`;
 }
 
-/**@type {Readonly<Array<String>>}*/
+/**@type {Readonly<String[]>}*/
 const shortNumberNames = [
 	'millones', 'miles de millones', 'billones', 'miles de billones', 'trillones', 'miles de trillones', 'cuatrillones', 'miles de cuatrillones',
 	'quintillones', 'miles de quintillones', 'sextillones', 'miles de sextillones', 'septillones', 'miles de septillones',

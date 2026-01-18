@@ -5,13 +5,13 @@ const { shortenText, toLowerCaseNormalized } = require('../util/utils.js');
 class Lexer {
 	/**@type {Array<{ match: String, kind: import('./tokens.js').TokenKind, value?: * }>}*/
 	#keywords;
-	/**@type {Array<Pattern>}*/
+	/**@type {Pattern[]}*/
 	#patterns;
-	/**@type {Array<Token>}*/
+	/**@type {Token[]}*/
 	#tokens;
 	/**@type {String}*/
 	#source;
-	/**@type {Array<String>}*/
+	/**@type {String[]}*/
 	#sourceLines;
 	/**@type {Number}*/
 	#pos;
@@ -218,7 +218,7 @@ class Lexer {
 	/**
 	 * Tokeniza el string indicado, basándose en PuréScript
 	 * @param {String} source 
-	 * @returns {Array<Token>}
+	 * @returns {Token[]}
 	 */
 	tokenize(source) {
 		if(typeof source !== 'string')

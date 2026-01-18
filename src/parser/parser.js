@@ -7,9 +7,9 @@ const { stmtLookup, nudLookup, ledLookup, bpLookup, createLookups, assLookup } =
 
 /**Representa un Analizador Sintáctico de PuréScript*/
 class Parser {
-	/**@type {Array<Error>}*/
+	/**@type {Error[]}*/
 	errorStack;
-	/**@type {Array<Token>}*/
+	/**@type {Token[]}*/
 	tokens;
 	/**@type {Number}*/
 	#pos;
@@ -227,7 +227,7 @@ class Parser {
 
 	/**
 	 * Analiza sintácticamente un conjunto de Tokens previamente extraídos de un análisis léxico por medio de un {@link Lexer}
-	 * @param {Array<Token>} tokens Los tokens extraídos del análisis léxico de PuréScript
+	 * @param {Token[]} tokens Los tokens extraídos del análisis léxico de PuréScript
 	 * @returns {import('../ast/statements').ProgramStatement}
 	 */
 	parse(tokens) {

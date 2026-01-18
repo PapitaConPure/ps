@@ -73,7 +73,7 @@ export type NativeFunctionValue = BaseValueData<'NativeFunction'> & NativeFuncti
 export interface BaseFunctionValueData {
 	name: string;
 	self: RuntimeValue;
-	args: Array<ArgumentExpression>;
+	args: ArgumentExpression[];
 }
 
 export interface StandardFunctionValueData {

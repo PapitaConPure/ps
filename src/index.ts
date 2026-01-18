@@ -43,7 +43,7 @@ export interface BaseTubercle {
 export interface PartialBasicTubercleData {
 	advanced: false;
 	content?: string;
-	files?: Array<string>;
+	files?: string[];
 }
 
 export type BasicTubercleData = RequireAtLeastOne<PartialBasicTubercleData>;

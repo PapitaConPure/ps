@@ -24,7 +24,7 @@ export interface EmbedResolvable {
 	author: AuthorData;
 	color: ColorResolvable;
 	description: string;
-	fields: Array<EmbedFieldData>;
+	fields: EmbedFieldData[];
 	footer: FooterData;
 	imageUrl: string;
 	thumbUrl: string;
@@ -37,7 +37,7 @@ export class EmbedData {
 	#author: AuthorData | null;
 	#color: ColorResolvable | null;
 	#description: string | null;
-	#fields: Array<EmbedFieldData> | null;
+	#fields: EmbedFieldData[] | null;
 	#footer: FooterData | null;
 	#imageUrl: string | null;
 	#thumbUrl: string | null;
@@ -135,7 +135,7 @@ export class EmbedData {
 		return this;
 	}
 
-	setFields(fields: Array<EmbedFieldData> | null) {
+	setFields(fields: EmbedFieldData[] | null) {
 		this.#fields = fields;
 		return this;
 	}

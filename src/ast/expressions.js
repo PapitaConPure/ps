@@ -54,7 +54,7 @@ const ExpressionKinds = /**@type {const}*/({
 
 /**
  * @typedef {Object} ListLiteralExpressionData
- * @property {Array<Expression>} elements
+ * @property {Expression[]} elements
  * @typedef {BaseExpressionData<'ListLiteralExpression'> & ListLiteralExpressionData} ListLiteralExpression
  */
 
@@ -128,7 +128,7 @@ const ExpressionKinds = /**@type {const}*/({
 /**
  * @typedef {Object} CallExpressionData
  * @property {Expression} fn
- * @property {Array<Expression>} args
+ * @property {Expression[]} args
  * @typedef {BaseExpressionData<'CallExpression'> & CallExpressionData} CallExpression
  */
 
@@ -157,7 +157,7 @@ const ExpressionKinds = /**@type {const}*/({
 
 /**
  * @typedef {Object} BaseFunctionExpressionData
- * @property {Array<ArgumentExpression>} args
+ * @property {ArgumentExpression[]} args
  * @typedef {BaseExpressionData<'FunctionExpression'> & BaseFunctionExpressionData} BaseFunctionExpression
  * 
  * @typedef {Object} StandardFunctionExpressionData
@@ -175,7 +175,7 @@ const ExpressionKinds = /**@type {const}*/({
 
 /**
  * @typedef {Object} SequenceExpressionData
- * @property {Array<Expression>} expressions
+ * @property {Expression[]} expressions
  * @typedef {BaseExpressionData<'SequenceExpression'> & SequenceExpressionData} SequenceExpression
  */
 

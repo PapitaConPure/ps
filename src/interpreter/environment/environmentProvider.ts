@@ -46,7 +46,7 @@ export interface PSMemberCreationData {
 	guild: PSGuild;
 	user: PSUser;
 	nickname?: string;
-	roleIds: Array<string>;
+	roleIds: string[];
 	displayAvatarUrlHandler: (options?: ImageUrlOptions) => string;
 }
 

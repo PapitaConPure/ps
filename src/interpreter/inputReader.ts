@@ -138,7 +138,7 @@ export class Input {
 export abstract class InputReader {
 	interpreter: Interpreter;
 	#args: string[];
-	#inputStack: Array<Input>;
+	#inputStack: Input[];
 	#inputLookup: Map<string, Input>;
 	#spreadInput: Input | null;
 

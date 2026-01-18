@@ -29,8 +29,8 @@ export interface EvaluationResult {
 /**@description Representa un Intérprete de PuréScript.*/
 export class Interpreter {
 	#inputReader: InputReader;
-	#errorStack: Array<Error>;
-	#sendStack: Array<RuntimeValue>;
+	#errorStack: Error[];
+	#sendStack: RuntimeValue[];
 	#saveTable: Map<string, RuntimeValue>;
 	#source: string;
 	#provider: EnvironmentProvider;
@@ -199,7 +199,7 @@ export class Interpreter {
 	}
 
 	/**@description Evalúa un nodo programa.*/
-	evaluateProgram(ast: ProgramStatement, scope: Scope, source: string, provider: EnvironmentProvider, args: Array<string> | null = undefined, isTestDrive: boolean = false): EvaluationResult {
+	evaluateProgram(ast: ProgramStatement, scope: Scope, source: string, provider: EnvironmentProvider, args: string[] | null = undefined, isTestDrive: boolean = false): EvaluationResult {
 		if(ast == null || ast.kind !== StatementKinds.PROGRAM || ast.body == null)
 			throw `Se esperaba AST válido para interpretar`;
 
@@ -1067,7 +1067,7 @@ export class Interpreter {
 	 *
 	 * Es irrelevante si la Función es nativa o de usuario. Superficialmente, se ejecutarán de forma similar.
 	 */
-	callFunction(fnValue: AnyFunctionValue, argValues: Array<RuntimeValue>, scope: Scope) {
+	callFunction(fnValue: AnyFunctionValue, argValues: RuntimeValue[], scope: Scope) {
 		let returnedValue;
 
 		if(this.is(fnValue, ValueKinds.NATIVE_FN)) {

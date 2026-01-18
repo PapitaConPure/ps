@@ -191,13 +191,13 @@ function translateTokenKind(tokenKind) {
 	return TokenKindTranslations.get(tokenKind);
 }
 
-/**@param {Array<TokenKind>} tokenKinds*/
+/**@param {TokenKind[]} tokenKinds*/
 function translateTokenKinds(...tokenKinds) {
 	return tokenKinds.map(tokenKind => TokenKindTranslations.get(tokenKind));
 }
 
 /**Contiene tipos de indicador de sentencia de lexer*/
-/**@type {Readonly<Array<TokenKind>>}*/
+/**@type {Readonly<TokenKind[]>}*/
 const StatementVerbs = /**@type {const}*/([
 	TokenKinds.BLOCK_OPEN,
 	TokenKinds.BLOCK_CLOSE,
