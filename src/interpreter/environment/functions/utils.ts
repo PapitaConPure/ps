@@ -17,7 +17,7 @@ import {
 import { getParamOrNada, expectParam } from '../nativeUtils';
 import { rand, randRange } from '../../../util/utils';
 import { rgb2hex, hsl2hex, hsv2hex } from '../../../util/colorUtils';
-import { NativeFunctionEntry } from './functions';
+import { NativeFunctionEntry } from '.';
 
 const aleatorio: NativeFunction<null, [NumberValue, NumberValue], NumberValue> = (
 	_self,

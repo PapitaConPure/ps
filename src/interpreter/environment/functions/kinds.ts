@@ -14,7 +14,7 @@ import {
 	isNada,
 } from '../../values';
 import { expectParam, psFileRegex, psLinkRegex, psImageRegex } from '../nativeUtils';
-import { NativeFunctionEntry } from './functions';
+import { NativeFunctionEntry } from '.';
 
 const esNúmero: NativeFunction<null, [RuntimeValue], BooleanValue> = (_self, [ x ]) => {
 	const test = isOperable(x);

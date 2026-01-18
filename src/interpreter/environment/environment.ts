@@ -10,12 +10,12 @@ import {
 	makeNativeFunction,
 } from '../values';
 import { NativeColorsLookup } from './variables/colors';
-import { NativeFunctions } from './functions/functions';
+import { NativeFunctions } from './functions';
 import { makeDiscordMember, makeDiscordChannel, makeDiscordGuild } from './registryPrefabs';
 import { makeKindFromValue } from './nativeUtils';
 import { EnvironmentProvider } from './environmentProvider';
 
-export { NativeMethodsLookup } from './methods/methods';
+export { NativeMethodsLookup } from './methods';
 
 export function declareNatives(scope: Scope) {
 	scope.global = true;

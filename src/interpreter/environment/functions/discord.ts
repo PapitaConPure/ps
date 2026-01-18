@@ -9,7 +9,7 @@ import {
 } from '../../values';
 import { expectParam } from '../nativeUtils';
 import { makeDiscordChannel, makeDiscordMember, makeDiscordRole } from '../registryPrefabs';
-import { NativeFunctionEntry } from './functions';
+import { NativeFunctionEntry } from '.';
 
 const buscarCanal: NativeFunction<RuntimeValue, [TextValue], RegistryValue | NadaValue> = (
 	_self,
