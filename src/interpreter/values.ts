@@ -319,7 +319,7 @@ export function makeNada(): NadaValue {
 
 export type AssertedRuntimeValue<T extends ValueKind> = Extract<RuntimeValue, { kind: T; }>;
 
-const valueMakers: Partial<{ [ K in ValueKind ]: (x?: RuntimeInternalValue<K>) => AssertedRuntimeValue<K> }> = ({
+export const valueMakers: Partial<{ [ K in ValueKind ]: (x?: RuntimeInternalValue<K>) => AssertedRuntimeValue<K> }> = ({
 	[ValueKinds.NUMBER]: makeNumber,
 	[ValueKinds.TEXT]: makeText,
 	[ValueKinds.BOOLEAN]: makeBoolean,

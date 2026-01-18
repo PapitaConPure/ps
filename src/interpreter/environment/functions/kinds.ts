@@ -13,7 +13,7 @@ import {
 	isEmbed,
 	isNada,
 } from '../../values';
-import { expectParam, fileRegex, linkRegex, imageRegex } from '../nativeUtils';
+import { expectParam, psFileRegex, psLinkRegex, psImageRegex } from '../nativeUtils';
 import { NativeFunctionEntry } from './functions';
 
 const esNúmero: NativeFunction<null, [RuntimeValue], BooleanValue> = (_self, [x]) => {
@@ -57,7 +57,7 @@ const esEnlace: NativeFunction<null, [RuntimeValue], BooleanValue> = (
 	scope,
 ) => {
 	const xResult = expectParam('x', x, ValueKinds.TEXT, scope);
-	const test = !linkRegex.test(xResult.value);
+	const test = !psLinkRegex.test(xResult.value);
 	return makeBoolean(test);
 };
 
@@ -67,7 +67,7 @@ const esArchivo: NativeFunction<null, [RuntimeValue], BooleanValue> = (
 	scope,
 ) => {
 	const xResult = expectParam('x', x, ValueKinds.TEXT, scope);
-	const test = !fileRegex.test(xResult.value);
+	const test = !psFileRegex.test(xResult.value);
 	return makeBoolean(test);
 };
 
@@ -77,7 +77,7 @@ const esImagen: NativeFunction<null, [RuntimeValue], BooleanValue> = (
 	scope,
 ) => {
 	const xResult = expectParam('x', x, ValueKinds.TEXT, scope);
-	const test = !imageRegex.test(xResult.value);
+	const test = !psImageRegex.test(xResult.value);
 	return makeBoolean(test);
 };
 

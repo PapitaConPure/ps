@@ -1,7 +1,7 @@
 /* eslint-disable no-empty-pattern */
 
 import { RuntimeValue, NativeFunction, ValueKinds, TextValue, BooleanValue, RegistryValue, EmbedValue } from '../../values';
-import { fileRegex, expectParam, getParamOrNada, getParamOrDefault, linkRegex } from '../nativeUtils';
+import { psFileRegex, expectParam, getParamOrNada, getParamOrDefault, psLinkRegex } from '../nativeUtils';
 import { stringHexToNumber } from '../../../util/utils';
 
 export type EmbedMethod<TArg extends RuntimeValue[] = RuntimeValue[], TResult extends RuntimeValue = RuntimeValue>
@@ -43,7 +43,7 @@ const marcoAsignarAutor: EmbedMethod<[ TextValue, TextValue ], EmbedValue> = (se
 		return self;
 	}
 
-	if(!fileRegex.test(imagenResult.value))
+	if(!psFileRegex.test(imagenResult.value))
 		throw scope.interpreter.TuberInterpreterError('Se esperaba un enlace válido para el ícono del autor del Marco');
 
 	self.value.setAuthor({
@@ -83,7 +83,7 @@ const marcoAsignarDescripción: EmbedMethod<[ TextValue ], EmbedValue> = (self, 
 const marcoAsignarEnlace: EmbedMethod<[ TextValue ], EmbedValue> = (self, [ enlace ], scope) => {
 	const enlaceResult = expectParam('enlace', enlace, ValueKinds.TEXT, scope);
 
-	if(!linkRegex.test(enlaceResult.value))
+	if(!psLinkRegex.test(enlaceResult.value))
 		throw scope.interpreter.TuberInterpreterError('Se esperaba un enlace válido para el Marco');
 
 	self.value.setUrl(enlaceResult.value);
@@ -93,7 +93,7 @@ const marcoAsignarEnlace: EmbedMethod<[ TextValue ], EmbedValue> = (self, [ enla
 const marcoAsignarImagen: EmbedMethod<[ TextValue ], EmbedValue> = (self, [ imagen ], scope) => {
 	const imagenResult = expectParam('imagen', imagen, ValueKinds.TEXT, scope);
 
-	if(!fileRegex.test(imagenResult.value))
+	if(!psFileRegex.test(imagenResult.value))
 		throw scope.interpreter.TuberInterpreterError('Se esperaba un enlace válido para la imagen del Marco');
 
 	self.value.setImage(imagenResult.value);
@@ -103,7 +103,7 @@ const marcoAsignarImagen: EmbedMethod<[ TextValue ], EmbedValue> = (self, [ imag
 const marcoAsignarMiniatura: EmbedMethod<[ TextValue ], EmbedValue> = (self, [ imagen ], scope) => {
 	const imagenResult = expectParam('imagen', imagen, ValueKinds.TEXT, scope);
 
-	if(!fileRegex.test(imagenResult.value))
+	if(!psFileRegex.test(imagenResult.value))
 		throw scope.interpreter.TuberInterpreterError('Se esperaba un enlace válido para la miniatura del Marco');
 
 	self.value.setThumbnail(imagenResult.value);
@@ -122,7 +122,7 @@ const marcoAsignarPie: EmbedMethod<[ TextValue, TextValue ], EmbedValue> = (self
 		return self;
 	}
 
-	if(!fileRegex.test(íconoResult.value))
+	if(!psFileRegex.test(íconoResult.value))
 		throw scope.interpreter.TuberInterpreterError('Se esperaba un enlace válido para el ícono del pie del Marco');
 
 	self.value.setFooter({
