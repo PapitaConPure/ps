@@ -1,7 +1,7 @@
 {
 	"compilerOptions": {
-		"target": "ES2023",
-        "module": "CommonJS",
+		"target": "esnext",
+        "module": "es2022",
         "moduleResolution": "node",
         "allowSyntheticDefaultImports": true,
 		"esModuleInterop": true,
