@@ -1,6 +1,6 @@
 import { parsePrimaryExpression, parseUnaryExpression, parseBinaryExpression, parseCastExpression, parseArrowExpression, parseCallExpression, parseFunctionExpression, parseSequenceExpression, parseConditionalExpression, parseLambdaExpression, parseGroupExpression } from './syntax/expressionParsing';
 import { parseBlockStatement, parseConditionalStatement, parseWhileLoopStatement, parseDoWhileLoopStatement, parseRepeatLoopStatement, parseForEachLoopStatement, parseForLoopStatement, parseExpressionStatement, parseReadStatement, parseDeclarationStatement, parseSaveStatement, parseAssignmentStatement, parseExtendStatement, parseDeleteStatement, parseReturnStatement, parseEndStatement, parseStopStatement, parseSendStatement } from './syntax/statementParsing';
-import { BindingPowers, Associativities, BindingPower, Associativity } from '../ast/ast';
+import { BindingPowers, Associativities, BindingPower, Associativity } from '../ast';
 import { TokenKind, TokenKinds } from '../lexer/tokens';
 import { Expression } from '../ast/expressions';
 import { Statement } from '../ast/statements';

@@ -1,7 +1,7 @@
 import { Token, TokenKind, TokenKinds, translateTokenKind, translateTokenKinds } from '../lexer/tokens';
 import { stmtLookup, nudLookup, ledLookup, bpLookup, createLookups, assLookup } from './lookups';
 import { ProgramStatement, Statement, StatementKinds } from '../ast/statements';
-import { Associativities, Associativity, BindingPower } from '../ast/ast';
+import { Associativities, Associativity, BindingPower } from '../ast';
 import { parseBlockBody } from './syntax/statementParsing';
 import { Expression } from '../ast/expressions';
 

@@ -1,6 +1,6 @@
 import { toLowerCaseNormalized } from '../../util/utils';
 import { TokenKinds } from '../../lexer/tokens';
-import { Associativity, BindingPower, BindingPowers } from '../../ast/ast';
+import { Associativity, BindingPower, BindingPowers } from '../../ast';
 import { StatementKinds } from '../../ast/statements';
 import { ArgumentExpression, ArrowExpression, BinaryExpression, CallExpression, CastExpression, ConditionalExpression, Expression, ExpressionKinds, FunctionExpression, LambdaExpression, SequenceExpression, UnaryExpression } from '../../ast/expressions';
 import { makeMetadata } from '../../ast/metadata';

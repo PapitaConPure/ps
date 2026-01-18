@@ -1,6 +1,6 @@
 import { Token } from '../lexer/tokens';
 import { ValuesOf } from '../util/types';
-import { NodeMetadata } from './ast';
+import { NodeMetadata } from '.';
 import { Expression } from './expressions';
 import { Interpreter } from '../interpreter';
 import { RuntimeValue } from '../interpreter/values';

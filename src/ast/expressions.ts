@@ -1,6 +1,6 @@
 import { Token } from '../lexer/tokens';
 import { ValuesOf } from '../util/types';
-import { NodeMetadata } from './ast';
+import { NodeMetadata } from '.';
 import { BlockStatement } from './statements';
 
 export const ExpressionKinds = ({
