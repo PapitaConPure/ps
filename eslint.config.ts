@@ -26,8 +26,8 @@ export default defineConfig([
           args: 'all',
           argsIgnorePattern: '^_',
           varsIgnorePattern: '^_',
-        }
-      ]
+        },
+      ],
     },
   },
 ]);
