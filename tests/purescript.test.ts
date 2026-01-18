@@ -7,7 +7,7 @@ import { ValueKinds, RuntimeValue, NumberValue, ListValue, RegistryValue, EmbedV
 import { ExpressionStatement, ProgramStatement, StatementKinds } from '../src/ast/statements.js';
 import { CallExpression, ExpressionKinds, Identifier } from '../src/ast/expressions.js';
 import TestEnvironmentProvider from './testEnvironmentProvider';
-import { EvaluationResult } from '../src/interpreter/interpreter.js';
+import { EvaluationResult } from '../src/interpreter';
 import { shortenText } from '../src/util/utils';
 import chalk from 'chalk';
 

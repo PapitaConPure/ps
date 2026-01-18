@@ -6,7 +6,7 @@ import {
 	ValueKind,
 	FunctionValue,
 } from './values';
-import { Interpreter } from './interpreter';
+import { Interpreter } from '.';
 
 /**@description Representa un ámbito de variables en un contexto de ejecución de PuréScript.*/
 export class Scope {

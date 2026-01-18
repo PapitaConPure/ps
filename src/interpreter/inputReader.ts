@@ -12,7 +12,7 @@ import {
 	RuntimeValue,
 } from './values';
 import { ValueKindLookups } from './lookups';
-import { Interpreter } from './interpreter';
+import { Interpreter } from '.';
 import { ReadStatement, ReadStatementPreModifier } from '../ast/statements';
 
 const boolWords = {

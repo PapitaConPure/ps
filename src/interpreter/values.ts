@@ -3,7 +3,7 @@ import { BlockStatement } from '../ast/statements';
 import { EmbedData } from '../embedData';
 import { ValuesOf } from '../util/types';
 import { makeEmbedRegistry } from './environment/registryPrefabs';
-import { Interpreter } from './interpreter';
+import { Interpreter } from '.';
 import { Scope } from './scope';
 
 /**@description Contiene los tipos de valores de PuréScript.*/

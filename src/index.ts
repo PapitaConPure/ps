@@ -5,7 +5,7 @@ export { Token } from './lexer/tokens';
 export { Lexer } from './lexer/lexer';
 export { Parser } from './parser/parser';
 
-export { Interpreter } from './interpreter/interpreter';
+export { Interpreter } from './interpreter';
 export { Scope } from './interpreter/scope';
 export { Input } from './interpreter/inputReader';
 export {

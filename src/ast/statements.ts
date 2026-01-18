@@ -2,7 +2,7 @@ import { Token } from '../lexer/tokens';
 import { ValuesOf } from '../util/types';
 import { NodeMetadata } from './ast';
 import { Expression } from './expressions';
-import { Interpreter } from '../interpreter/interpreter';
+import { Interpreter } from '../interpreter';
 import { RuntimeValue } from '../interpreter/values';
 import { Scope } from '../interpreter/scope';
 

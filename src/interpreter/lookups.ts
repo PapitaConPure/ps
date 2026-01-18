@@ -1,6 +1,6 @@
 import { Expression } from '../ast/expressions';
 import { TokenKind, TokenKinds } from '../lexer/tokens';
-import { Interpreter } from './interpreter';
+import { Interpreter } from '.';
 import {
 	ValueKinds,
 	coerceValue,
