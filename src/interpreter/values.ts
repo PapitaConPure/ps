@@ -111,6 +111,20 @@ export type RuntimeValue =
 	| PrimitiveValue
 	| ComplexValue;
 
+type RuntimeInternalValueMap = {
+	Number: number;
+	Text: string;
+	Boolean: boolean;
+	Nada: null;
+
+	List: RuntimeValue[];
+	Registry: Map<string, RuntimeValue>;
+	Embed: EmbedData;
+	NativeFunction: NativeFunction;
+	Function: (x?: unknown) => unknown;
+};
+export type RuntimeInternalValue<TValue extends ValueKind> = RuntimeInternalValueMap[TValue];
+
 export function basicCompareTo(other: NumberValue | TextValue | BooleanValue) {
 	if(this.kind !== other.kind)
 		return makeNumber(-1);
@@ -121,7 +135,7 @@ export function basicCompareTo(other: NumberValue | TextValue | BooleanValue) {
 	return makeNumber(this.value < other.value ? -1 : 1);
 }
 
-export function invalidCompareTo(other: NumberValue | TextValue | BooleanValue) {
+export function invalidCompareTo(_other: NumberValue | TextValue | BooleanValue) {
 	return makeNumber(-1);
 }
 
@@ -224,11 +238,17 @@ export function makeList(elements: RuntimeValue[]): ListValue {
 	};
 }
 
-export function makeRegistry(entries: Map<string, RuntimeValue>): RegistryValue {
+export function makeRegistry(entries: { [ K in string]: RuntimeValue }): RegistryValue;
+export function makeRegistry(entries: Map<string, RuntimeValue>): RegistryValue;
+export function makeRegistry(entries: Map<string, RuntimeValue> | Record<string, RuntimeValue>): RegistryValue {
 	const kind = ValueKinds.REGISTRY;
+	const actualEntries = entries instanceof Map
+		? entries
+		: new Map(Object.entries(entries));
+
 	return {
 		kind,
-		entries,
+		entries: actualEntries,
 		equals: EqualsMethodLookups.get(kind),
 		compareTo: CompareToMethodLookups.get(kind),
 	};
@@ -299,7 +319,7 @@ export function makeNada(): NadaValue {
 
 export type AssertedRuntimeValue<T extends ValueKind> = Extract<RuntimeValue, { kind: T; }>;
 
-const valueMakers: Partial<{ [ K in ValueKind ]: (x?: unknown) => AssertedRuntimeValue<K> }> = ({
+const valueMakers: Partial<{ [ K in ValueKind ]: (x?: RuntimeInternalValue<K>) => AssertedRuntimeValue<K> }> = ({
 	[ValueKinds.NUMBER]: makeNumber,
 	[ValueKinds.TEXT]: makeText,
 	[ValueKinds.BOOLEAN]: makeBoolean,
@@ -314,7 +334,7 @@ const valueMakers: Partial<{ [ K in ValueKind ]: (x?: unknown) => AssertedRuntim
  * Crea un valor a partir de un tipo y un valor.
  * Esta función no convierte {@link RuntimeValue}s. Para convertir un {@link RuntimeValue} de tipo X a tipo Y, usa {@linkcode coerceValue}.
  */
-export function makeValue<T extends ValueKind>(valueKind: T, value: any): AssertedRuntimeValue<T> {
+export function makeValue<T extends ValueKind>(valueKind: T, value: RuntimeInternalValue<T>): AssertedRuntimeValue<T> {
 	const makerFunction = valueMakers[valueKind];
 	if(!makerFunction) throw `No Maker Function for ${valueKind}::${value}`;
 	return makerFunction(value);
@@ -349,10 +369,10 @@ export function isOperable(runtimeValue: RuntimeValue): runtimeValue is NumberVa
 }
 
 /**@description Comprueba si un valor existe y es numéricamente operable.*/
-export function isInternalOperable(value: any): value is number {
+export function isInternalOperable(value: unknown): value is number {
 	return value != null
-	    && !isNaN(value)
-		&& isFinite(value);
+	    && !isNaN(+value)
+		&& isFinite(+value);
 }
 
 /**@description Comprueba si un RuntimeValue es de tipo Texto.*/
@@ -389,7 +409,7 @@ export function extendList(list: ListValue, item: RuntimeValue, position: number
 	list.elements.splice(position ?? list.elements.length, 0, item);
 }
 
-const coercions: Record<ValueKind, Partial<{ [ K in ValueKind ]: (x: any, interpreter: Interpreter) => AssertedRuntimeValue<K> }>> = {
+const coercions: Record<ValueKind, Partial<{ [ KTarget in ValueKind ]: (x: RuntimeInternalValue<ValueKind>, interpreter: Interpreter) => AssertedRuntimeValue<KTarget> }>> = {
 	[ValueKinds.NUMBER]: {
 		[ValueKinds.TEXT]: (x) => makeText(`${x ?? 'Nada'}`),
 		[ValueKinds.BOOLEAN]: (x) => makeBoolean(x ? true : false),
@@ -397,7 +417,7 @@ const coercions: Record<ValueKind, Partial<{ [ K in ValueKind ]: (x: any, interp
 	[ValueKinds.TEXT]: {
 		[ValueKinds.NUMBER]: (x) => makeNumber(isInternalOperable(+x) ? +x : 0),
 		[ValueKinds.BOOLEAN]: (x) => makeBoolean(x ? true : false),
-		[ValueKinds.LIST]: (x) => makeList([ ...x ]),
+		[ValueKinds.LIST]: (x: string) => makeList(x.split('').map(makeText)),
 	},
 	[ValueKinds.BOOLEAN]: {
 		[ValueKinds.NUMBER]: (x) => makeNumber(x ? 1 : 0),
@@ -409,7 +429,7 @@ const coercions: Record<ValueKind, Partial<{ [ K in ValueKind ]: (x: any, interp
 			const listString = coercedElementValues.join('');
 			return makeText(`(${listString})`);
 		},
-		[ValueKinds.BOOLEAN]: (x) => makeBoolean(x?.length ? true : false),
+		[ValueKinds.BOOLEAN]: (x: RuntimeValue[]) => makeBoolean(x?.length ? true : false),
 		[ValueKinds.REGISTRY]: (x) => {
 			if(!Array.isArray(x))
 				return null;
@@ -431,12 +451,12 @@ const coercions: Record<ValueKind, Partial<{ [ K in ValueKind ]: (x: any, interp
 			});
 			return makeText(`{Rg ${glossaryStrings.join(', ')} }`);
 		},
-		[ValueKinds.BOOLEAN]: (x) => makeBoolean(x?.size ? true : false),
+		[ValueKinds.BOOLEAN]: (x: Map<string, RuntimeValue>) => makeBoolean(x?.size ? true : false),
 	},
 	[ValueKinds.EMBED]: {
 		[ValueKinds.TEXT]: () => makeText('[Marco]'),
 		[ValueKinds.BOOLEAN]: () => makeBoolean(true),
-		[ValueKinds.REGISTRY]: (x) => {
+		[ValueKinds.REGISTRY]: (x: EmbedData) => {
 			if(x == null || x.data == null)
 				return null;
 
