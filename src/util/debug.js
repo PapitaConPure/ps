@@ -38,7 +38,7 @@ function stringifyPlainPSAST(value) {
 	case 'symbol': 
 		valueStr = chalk.italic.greenBright(value.toString());
 		break;
-	case 'function':
+	case 'function': {
 		const fnString = value
 			.toString()
 			.slice(9 + value.name.length)
@@ -46,6 +46,7 @@ function stringifyPlainPSAST(value) {
 			.replace(/[\t ]+/g, ' ');
 		valueStr = exChalk.peach(`fn ${value.name != null ? exChalk.ice(value.name) : exChalk.mint.italic('<anon>')}${chalk.gray(shortenText(fnString, 48))}`);
 		break;
+	}
 	case 'undefined':
 		valueStr = chalk.bold.gray('undefined');
 		break;
@@ -67,15 +68,15 @@ function stringifySimplePSAST(obj) {
 	let name = '';
 
 	if(!isArray) {
-		if(obj.hasOwnProperty('equals')) {
-			const { equals, ...rest } = obj;
+		if(Object.prototype.hasOwnProperty.call(obj, 'equals')) {
+			const { equals: _, ...rest } = obj;
 			obj = rest;
 		}
-		if(obj.hasOwnProperty('compareTo')) {
-			const { compareTo, ...rest } = obj;
+		if(Object.prototype.hasOwnProperty.call(obj, 'compareTo')) {
+			const { compareTo: _, ...rest } = obj;
 			obj = rest;
 		}
-		if(obj.hasOwnProperty('kind')) {
+		if(Object.prototype.hasOwnProperty.call(obj, 'kind')) {
 			const { kind, ...rest } = obj;
 			obj = rest;
 			name = chalk.cyan(`${kind} `);
@@ -88,7 +89,7 @@ function stringifySimplePSAST(obj) {
 	let result = `${name}${chalk.gray(delims[0])} `;
 
 	const prefixer = isArray
-		? (/**@type {String}*/key) => ''
+		? () => ''
 		: (/**@type {String}*/key) => `${key}: `;
 
 	let first = true;
@@ -99,7 +100,7 @@ function stringifySimplePSAST(obj) {
 		else
 			result += chalk.gray(', ');
 
-		if(obj.hasOwnProperty(key)) {
+		if(Object.prototype.hasOwnProperty.call(obj, key)) {
 			const value = obj[key];
 			result += `${prefixer(key)}${stringifyPSAST(value)}`;
 		}
@@ -170,18 +171,18 @@ function stringifyPSAST(obj, indentSize = 2, indent = indentSize) {
 	let threshold = 2;
 
 	if(!isArray) {
-		hasKind = obj.hasOwnProperty('kind');
-		if(obj.hasOwnProperty('equals')) {
-			const { equals, ...rest } = obj;
+		hasKind = Object.prototype.hasOwnProperty.call(obj, 'kind');
+		if(Object.prototype.hasOwnProperty.call(obj, 'equals')) {
+			const { equals: _, ...rest } = obj;
 			obj = rest;
 		}
-		if(obj.hasOwnProperty('compareTo')) {
-			const { compareTo, ...rest } = obj;
+		if(Object.prototype.hasOwnProperty.call(obj, 'compareTo')) {
+			const { compareTo: _, ...rest } = obj;
 			obj = rest;
 		}
 		if(hasKind) {
 			threshold = 3;
-			if(obj.hasOwnProperty('line'))
+			if(Object.prototype.hasOwnProperty.call(obj, 'line'))
 				hasPositionalData = true;
 		}
 	} else if(/**@type {Array}*/(obj).length === 0)
@@ -196,7 +197,7 @@ function stringifyPSAST(obj, indentSize = 2, indent = indentSize) {
 
 	if(!isArray && hasKind) {
 		if(hasPositionalData) {
-			const { kind, line, column, start, end, ...rest } = obj;
+			const { kind, line, column: _, start, end, ...rest } = obj;
 			obj = rest;
 			name = chalk.cyan(`${kind} ${exChalk.peach(`(${exChalk.mint(line)}, ${exChalk.mint(`${start}~${end}`)})`)} `);
 		} else {
@@ -213,11 +214,11 @@ function stringifyPSAST(obj, indentSize = 2, indent = indentSize) {
 	let result = `${name}${chalk.gray(delims[0])}\n`;
 
 	const prefixer = isArray
-		? (/**@type {String}*/key) => `${spaces}`
+		? () => `${spaces}`
 		: (/**@type {String}*/key) => `${spaces}${key}: `;
 
 	for(const key in obj) {
-		if(obj.hasOwnProperty(key)) {
+		if(Object.prototype.hasOwnProperty.call(obj, key)) {
 			const value = obj[key];
 			result += `${prefixer(key)}${stringifyPSAST(value, indentSize, indent + indentSize)}\n`;
 		}
