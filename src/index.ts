@@ -2,7 +2,7 @@ import { RuntimeValue } from './interpreter/values';
 import { RequireAtLeastOne } from './util/types';
 
 export { Token } from './lexer/tokens';
-export { Lexer } from './lexer/lexer';
+export { Lexer } from './lexer';
 export { Parser } from './parser';
 
 export { Interpreter } from './interpreter';
