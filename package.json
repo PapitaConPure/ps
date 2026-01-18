@@ -45,9 +45,9 @@
     "jiti": "^2.6.1"
   },
   "lint-staged": {
-    ".{ts,js}": "eslint --cache --fix",
-    ".{ts,js,css,md}": "prettier --write",
-    ".js": "eslint --cache --fix",
-    ".{js,css,md}": "prettier --write"
+    "./src/**/*.{ts,js}": "eslint --cache --fix",
+    "./src/**/*.{ts,js,css,md}": "prettier --write",
+    "./src/**/*.js": "eslint --cache --fix",
+    "./src/**/*.{js,css,md}": "prettier --write"
   }
 }
