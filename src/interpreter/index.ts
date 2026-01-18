@@ -2,7 +2,7 @@ import { Input, InputReader, ProductionInputReader, TestDriveInputReader } from 
 import { RuntimeValue, AssertedRuntimeValue, ValueKinds, ValueKindTranslationLookups, makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeEmbed, makeFunction, makeLambda, makeNativeFunction, makeNada, coerceValue, isInternalOperable, ValueKind, AnyFunctionValue } from './values';
 import { UnaryOperationLookups, BinaryOperationLookups, ValueKindLookups } from './lookups';
 import { EnvironmentProvider } from './environment/environmentProvider';
-import { NativeMethodsLookup } from './environment/environment';
+import { NativeMethodsLookup } from './environment';
 import { Scope } from './scope';
 import { Token, TokenKinds } from '../lexer/tokens';
 import { AssignmentStatement, BlockStatement, ConditionalStatement, DeclarationStatement, DeleteStatement, DoUntilStatement, ExpressionStatement, ForEachStatement, ForStatement, FullForStatement, InsertionStatement, LoadStatement, ProgramStatement, ReadStatement, RepeatStatement, ReturnStatement, SaveStatement, SendStatement, ShortForStatement, Statement, StatementKinds, StopStatement, WhileStatement } from '../ast/statements';

@@ -24,7 +24,7 @@ export {
 	makeNada,
 } from './interpreter/values';
 
-export { declareNatives, declareContext } from './interpreter/environment/environment';
+export { declareNatives, declareContext } from './interpreter/environment';
 export {
 	EnvironmentProvider,
 	PSGuild,
