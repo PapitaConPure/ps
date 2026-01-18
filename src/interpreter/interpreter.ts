@@ -1,80 +1,42 @@
-const { ProductionInputReader, TestDriveInputReader } = require('./inputReader');
-const { Scope } = require('./scope');
-const { TokenKinds } = require('../lexer/tokens');
-const { ExpressionKinds } = require('../ast/expressions');
-const { StatementKinds } = require('../ast/statements');
-const { ValueKinds, makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeNada, coerceValue, isInternalOperable, makeNativeFunction, makeFunction, makeLambda, ValueKindTranslationLookups, makeEmbed } = require('./values');
-const { UnaryOperationLookups, BinaryOperationLookups, ValueKindLookups } = require('./lookups');
-const { NativeMethodsLookup } = require('./environment/environment');
-const { iota, shortenText } = require('../util/utils.js');
-const { EnvironmentProvider } = require('./environment/environmentProvider.js');
+import { Input, InputReader, ProductionInputReader, TestDriveInputReader } from './inputReader';
+import { RuntimeValue, AssertedRuntimeValue, ValueKinds, ValueKindTranslationLookups, makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeEmbed, makeFunction, makeLambda, makeNativeFunction, makeNada, coerceValue, isInternalOperable, ValueKind, AnyFunctionValue } from './values';
+import { UnaryOperationLookups, BinaryOperationLookups, ValueKindLookups } from './lookups';
+import { EnvironmentProvider } from './environment/environmentProvider';
+import { NativeMethodsLookup } from './environment/environment';
+import { Scope } from './scope';
+import { Token, TokenKinds } from '../lexer/tokens';
+import { AssignmentStatement, BlockStatement, ConditionalStatement, DeclarationStatement, DeleteStatement, DoUntilStatement, ExpressionStatement, ForEachStatement, ForStatement, FullForStatement, InsertionStatement, LoadStatement, ProgramStatement, ReadStatement, RepeatStatement, ReturnStatement, SaveStatement, SendStatement, ShortForStatement, Statement, StatementKinds, StopStatement, WhileStatement } from '../ast/statements';
+import { Expression, ExpressionKinds } from '../ast/expressions';
+import { iota, shortenText } from '../util/utils';
+import { ValuesOf } from '../util/types';
 
-const Stops = /**@type {const}*/({
+export const Stops = ({
 	NONE: iota(0),
 	BREAK: iota(),
 	RETURN: iota(),
 	ABORT: iota(),
-});
-/**@typedef {import('../util/types.js').ValuesOf<Stops>} StopKind*/
+}) as const;
+export type StopKind = ValuesOf<typeof Stops>;
 
-//#region Atajos de Tipado
-/**
- * @typedef {import('../lexer/tokens').Token} Token
- * @typedef {import('../ast/statements').Statement} Statement
- * @typedef {import('../ast/expressions').Expression} Expression
- * 
- * @typedef {import('../ast/statements').ProgramStatement} ProgramStatement
- * 
- * @typedef {import('./values').RuntimeValue} RuntimeValue
- * @typedef {import('./values').ValueKind} ValueKind
- * @typedef {import('./values').NumberValue} NumberValue
- * @typedef {import('./values').TextValue} TextValue
- * @typedef {import('./values').BooleanValue} BooleanValue
- * @typedef {import('./values').ListValue} ListValue
- * @typedef {import('./values').RegistryValue} RegistryValue
- * @typedef {import('./values').EmbedValue} EmbedValue
- * @typedef {import('./values').FunctionValue} FunctionValue
- * @typedef {import('./values').NativeFunctionValue} NativeFunctionValue
- * @typedef {import('./values').AnyFunctionValue} AnyFunctionValue
- * @typedef {import('./values').NadaValue} NadaValue
- * @typedef {import('./inputReader').InputReader} InputReader
- * @typedef {import('./inputReader').Input} Input
- */
-/**
- * @template {ValueKind} T
- * @typedef {Extract<RuntimeValue, { kind: T }>} AssertedRuntimeValue
- */
-/**
- * @typedef {Object} EvaluationResult
- * @prop {RuntimeValue} returned 
- * @prop {Array<import('./inputReader').Input>} inputStack 
- * @prop {Array<RuntimeValue>} sendStack 
- * @prop {Map<String, RuntimeValue>} saveTable 
- * @prop {Array<RuntimeValue>} sendStack 
- * @prop {Array<Error>} errorStack 
- */
-//#endregion
+export interface EvaluationResult {
+	returned: RuntimeValue;
+	inputStack: Input[];
+	sendStack: RuntimeValue[];
+	saveTable: Map<string, RuntimeValue>;
+	errorStack: Error[];
+}
 
-/**Representa un Intérprete de PuréScript*/
-class Interpreter {
-	/**@type {InputReader}*/
-	#inputReader;
-	/**@type {Array<Error>}*/
-	#errorStack;
-	/**@type {Array<RuntimeValue>}*/
-	#sendStack;
-	/**@type {Map<String, RuntimeValue>}*/
-	#saveTable;
-	/**@type {String}*/
-	#source;
-	/**@type {EnvironmentProvider}*/
-	#provider;
-	/**@type {StopKind}*/
-	#stop;
-	/**@type {Number}*/
-	#quota;
-	/**@type {Array<Statement | Expression>}*/
-	#lastNodes;
+/**@description Representa un Intérprete de PuréScript.*/
+export class Interpreter {
+	#inputReader: InputReader;
+	#errorStack: Array<Error>;
+	#sendStack: Array<RuntimeValue>;
+	#saveTable: Map<string, RuntimeValue>;
+	#source: string;
+	#provider: EnvironmentProvider;
+	#stop: StopKind;
+	#quota: number;
+	#lastNodes: Array<Statement | Expression>;
 
 	constructor() {
 		this.#errorStack = [];
@@ -94,11 +56,7 @@ class Interpreter {
 		return this.#inputReader.hasArgs;
 	}
 
-	/**
-	 * @param {string} message
-	 * @param {Expression | Statement | Token | null} [node]
-	 */
-	TuberInterpreterError(message, node = null) {
+	TuberInterpreterError(message: string, node: Expression | Statement | Token | null = null) {
 		node ??= this.#lastNodes[0];
 
 		const { lineString, offset, markLength } = this.#setupInterpreterErrorDisplay(node);
@@ -111,11 +69,7 @@ class Interpreter {
 		return err;
 	}
 
-	/**
-	 * @param {string} message
-	 * @param {Expression | Statement | Token | null} [node]
-	 */
-	TuberSendError(message, node = null) {
+	TuberSendError(message: string, node: Expression | Statement | Token | null = null) {
 		node ??= this.#lastNodes[0];
 
 		const { lineString, offset, markLength } = this.#setupInterpreterErrorDisplay(node);
@@ -126,12 +80,7 @@ class Interpreter {
 		return err;
 	}
 
-	/**
-	 * 
-	 * @param {Expression | Statement | Token} node
-	 * @returns {{ lineString: string?, offset: number, markLength: number }}
-	 */
-	#setupInterpreterErrorDisplay(node) {
+	#setupInterpreterErrorDisplay(node: Expression | Statement | Token): { lineString: string | null; offset: number; markLength: number; } {
 		if(node == null) {
 			return {
 				lineString: null,
@@ -180,14 +129,7 @@ class Interpreter {
 		};
 	}
 
-	/**
-	 * 
-	 * @param {Expression | Statement | Token} node
-	 * @param {string?} lineString 
-	 * @param {number} offset 
-	 * @param {number} markLength 
-	 */
-	#formatInterpreterErrorDisplay(node, lineString, offset, markLength) {
+	#formatInterpreterErrorDisplay(node: Expression | Statement | Token, lineString: string | null, offset: number, markLength: number) {
 		if(node == null)
 			return '```arm\n//No hay información adicional para mostrar...\n```';
 
@@ -221,37 +163,19 @@ class Interpreter {
 		return this.#inputReader.isTestDrive();
 	}
 
-	/**
-	 * @template {import('./values').ValueKind} T
-	 * @param {RuntimeValue | null | undefined} value
-	 * @param {T} valueKind
-	 * @returns {value is AssertedRuntimeValue<T>}
-	 */
-	is(value, valueKind) {
+	is<TKind extends ValueKind>(value: RuntimeValue | null | undefined, valueKind: TKind): value is AssertedRuntimeValue<TKind> {
 		return value?.kind === valueKind;
 	}
 
-	/**
-	 * @template {import('./values').ValueKind} T
-	 * @param {RuntimeValue} value
-	 * @param {...T} valueKinds
-	 * @returns {value is AssertedRuntimeValue<T>}
-	 */
-	isAnyOf(value, ...valueKinds) {
+	isAnyOf<TKind extends ValueKind>(value: RuntimeValue, ...valueKinds: TKind[]): value is AssertedRuntimeValue<TKind> {
 		return valueKinds.some(valueKind => value.kind === valueKind);
 	}
 
-	/**
-	 * @param {StopKind} stopKind
-	 */
-	checkStop(stopKind) {
+	checkStop(stopKind: StopKind) {
 		return this.#stop >= stopKind;
 	}
 
-	/**
-	 * @param {StopKind} stopKind 
-	 */
-	eatStop(stopKind) {
+	eatStop(stopKind: StopKind) {
 		const test = this.#stop >= stopKind;
 
 		if(this.#stop <= stopKind)
@@ -260,43 +184,22 @@ class Interpreter {
 		return test;
 	}
 
-	/**
-	 * Agrega el nodo indicado a una pila de nodos para diagnóstico de errores
-	 * @param {Expression | Statement} node 
-	 */
-	rememberNode(node) {
+	/**@description Agrega el nodo indicado a una pila de nodos para diagnóstico de errores.*/
+	rememberNode(node: Expression | Statement) {
 		this.#lastNodes.unshift(node);
 	}
 
-	/**
-	 * Elimina el último nodo recordado de la pila para diagnóstico de errores y lo devuelve
-	 */
+	/**@description Elimina el último nodo recordado de la pila para diagnóstico de errores y lo devuelve.*/
 	forgetLastNode() {
 		return this.#lastNodes.shift();
 	}
 
-	/**
-	 * @template {import('./values').ValueKind} T
-	 * @param {import('../ast/expressions').Expression} node
-	 * @param {Scope} scope
-	 * @param {T} as
-	 * @returns {AssertedRuntimeValue<T>}
-	 */
-	evaluateAs(node, scope, as, mustBeDeclared = true) {
-		return /**@type {AssertedRuntimeValue<T>}*/(coerceValue(this, this.evaluate(node, scope, mustBeDeclared), as));
+	evaluateAs<TKind extends ValueKind>(node: Expression, scope: Scope, as: TKind, mustBeDeclared = true): AssertedRuntimeValue<TKind> {
+		return coerceValue(this, this.evaluate(node, scope, mustBeDeclared), as);
 	}
 
-	/**
-	 * Evalúa un nodo programa
-	 * @param {ProgramStatement} ast
-	 * @param {Scope} scope
-	 * @param {string} source
-	 * @param {EnvironmentProvider} provider
-	 * @param {Array<string>?} [args]
-	 * @param {boolean} [isTestDrive]
-	 * @returns {EvaluationResult}
-	 */
-	evaluateProgram(ast, scope, source, provider, args = undefined, isTestDrive = false) {
+	/**@description Evalúa un nodo programa.*/
+	evaluateProgram(ast: ProgramStatement, scope: Scope, source: string, provider: EnvironmentProvider, args: Array<string> | null = undefined, isTestDrive: boolean = false): EvaluationResult {
 		if(ast == null || ast.kind !== StatementKinds.PROGRAM || ast.body == null)
 			throw `Se esperaba AST válido para interpretar`;
 
@@ -315,7 +218,7 @@ class Interpreter {
 		this.#inputReader = isTestDrive
 			? new TestDriveInputReader(this, args)
 			: new ProductionInputReader(this, args);
-			
+
 		const returned = this.#evaluateBlock(ast, scope);
 		const inputStack = this.#inputReader.inputStack;
 		const sendStack = this.#sendStack.slice();
@@ -331,16 +234,11 @@ class Interpreter {
 		};
 	}
 
-	/**
-	 * Evalúa una sentencia y devuelve el valor Nada
-	 * @param {Statement} node
-	 * @param {Scope} scope
-	 * @returns {RuntimeValue}
-	 */
-	evaluateStatement(node, scope) {
+	/**@description Evalúa una sentencia y devuelve el valor Nada.*/
+	evaluateStatement(node: Statement, scope: Scope): RuntimeValue {
 		if(this.#quota-- <= 0)
 			throw this.TuberInterpreterError(`Límite de ejecución de sentencias agotado. Esto puede deberse a un bucle infinito, abuso de estructuras iterativas o código poco eficiente`, node);
-		
+
 		this.rememberNode(node);
 
 		let returnValue;
@@ -402,7 +300,7 @@ class Interpreter {
 		case StatementKinds.INSERTION:
 			returnValue = this.#evaluateInsertionStatement(node, scope);
 			break;
-			
+
 		case StatementKinds.DELETE:
 			returnValue = this.#evaluateDeleteStatement(node, scope);
 			break;
@@ -431,19 +329,13 @@ class Interpreter {
 		return returnValue;
 	}
 
-	/**
-	 * Evalúa una sentencia o expresión y devuelve un valor extraído de las mismas
-	 * @param {Expression} node
-	 * @param {Scope} scope
-	 * @param {boolean} [mustBeDeclared]
-	 * @returns {RuntimeValue}
-	 */
-	evaluate(node, scope, mustBeDeclared = true) {
+	/**@description Evalúa una sentencia o expresión y devuelve un valor extraído de las mismas.*/
+	evaluate(node: Expression, scope: Scope, mustBeDeclared: boolean = true): RuntimeValue {
 		this.rememberNode(node)
 
 		if(this.#quota <= 0)
 			throw this.TuberInterpreterError(`Límite de ejecución de sentencias agotado. Esto puede deberse a un bucle infinito, abuso de estructuras iterativas o código poco eficiente`, node);
-		
+
 		this.#quota -= 0.1;
 
 		let returnValue;
@@ -495,7 +387,7 @@ class Interpreter {
 		case ExpressionKinds.CONDITIONAL:
 			returnValue = this.#evaluateConditionalExpr(node, scope, mustBeDeclared);
 			break;
-			
+
 		case ExpressionKinds.CAST:
 			returnValue = this.#evaluateCast(node, scope);
 			break;
@@ -520,14 +412,8 @@ class Interpreter {
 		return returnValue;
 	}
 
-	/**
-	 * 
-	 * @param {ProgramStatement | import('../ast/statements').BlockStatement} node 
-	 * @param {Scope} scope
-	 */
-	#evaluateBlock(node, scope) {
-		/**@type {import('./values').RuntimeValue}*/
-		let returned = makeNada();
+	#evaluateBlock(node: ProgramStatement | BlockStatement, scope: Scope) {
+		let returned: RuntimeValue = makeNada();
 
 		const blockScope = new Scope(this, scope);
 		for(const statement of node.body) {
@@ -538,34 +424,23 @@ class Interpreter {
 		return returned;
 	}
 
-	/**
-	 * 
-	 * @param {import('../ast/statements').ConditionalStatement} node 
-	 * @param {Scope} scope
-	 */
-	#evaluateConditionalStmt(node, scope) {
+	#evaluateConditionalStmt(node: ConditionalStatement, scope: Scope) {
 		const { test, consequent, alternate } = node;
 
 		const testValue = this.evaluateAs(test, scope, ValueKinds.BOOLEAN, false);
 		if(testValue.value)
 			return this.#evaluateBlock(consequent, scope);
-		
+
 		if(alternate != null)
 			return this.evaluateStatement(alternate, scope);
 
 		return makeNada();
 	}
 
-	/**
-	 * 
-	 * @param {import('../ast/statements').WhileStatement} node 
-	 * @param {Scope} scope
-	 */
-	#evaluateWhile(node, scope) {
+	#evaluateWhile(node: WhileStatement, scope: Scope) {
 		const { test, body } = node;
 
-		/**@type {import('./values').RuntimeValue}*/
-		let evaluated = makeNada();
+		let evaluated: RuntimeValue = makeNada();
 
 		while(this.evaluateAs(test, scope, ValueKinds.BOOLEAN).value === true) {
 			evaluated = this.#evaluateBlock(body, scope);
@@ -575,16 +450,10 @@ class Interpreter {
 		return evaluated;
 	}
 
-	/**
-	 * 
-	 * @param {import('../ast/statements').DoUntilStatement} node 
-	 * @param {Scope} scope
-	 */
-	#evaluateDoUntil(node, scope) {
+	#evaluateDoUntil(node: DoUntilStatement, scope: Scope) {
 		const { test, body } = node;
 
-		/**@type {import('./values').RuntimeValue}*/
-		let evaluated = makeNada();
+		let evaluated: RuntimeValue = makeNada();
 
 		do {
 			evaluated = this.#evaluateBlock(body, scope);
@@ -594,16 +463,10 @@ class Interpreter {
 		return evaluated;
 	}
 
-	/**
-	 * 
-	 * @param {import('../ast/statements').RepeatStatement} node 
-	 * @param {Scope} scope
-	 */
-	#evaluateRepeat(node, scope) {
+	#evaluateRepeat(node: RepeatStatement, scope: Scope) {
 		const { times, body } = node;
 
-		/**@type {import('./values').RuntimeValue}*/
-		let evaluated = makeNada();
+		let evaluated: RuntimeValue = makeNada();
 
 		const timesValue = this.evaluateAs(times, scope, ValueKinds.NUMBER).value;
 		for(let i = 0; i < timesValue; i++) {
@@ -614,16 +477,10 @@ class Interpreter {
 		return evaluated;
 	}
 
-	/**
-	 * 
-	 * @param {import('../ast/statements').ForEachStatement} node 
-	 * @param {Scope} scope
-	 */
-	#evaluateForEach(node, scope) {
+	#evaluateForEach(node: ForEachStatement, scope: Scope) {
 		const { identifier, container, body } = node;
 
-		/**@type {import('./values').RuntimeValue}*/
-		let evaluated = makeNada();
+		let evaluated: RuntimeValue = makeNada();
 
 		const containerValue = this.evaluate(container, scope);
 		if(!this.isAnyOf(containerValue, ValueKinds.LIST, ValueKinds.REGISTRY))
@@ -633,7 +490,7 @@ class Interpreter {
 		const forEachScope = new Scope(this, scope);
 		const getFn = this.is(containerValue, ValueKinds.LIST)
 			? (idx => containerValue.elements[idx])
-			: (name => makeList([ makeText(name), /**@type {RuntimeValue}*/(containerValue.entries.get(name)) ]));
+			: (name => makeList([ makeText(name), containerValue.entries.get(name) ]));
 
 		for(const entryName of entryNames) {
 			forEachScope.assignVariable(identifier, getFn(entryName));
@@ -644,27 +501,16 @@ class Interpreter {
 		return evaluated;
 	}
 
-	/**
-	 * 
-	 * @param {import('../ast/statements').ForStatement} node 
-	 * @param {Scope} scope
-	 */
-	#evaluateFor(node, scope) {
+	#evaluateFor(node: ForStatement, scope: Scope) {
 		return (node.full === true)
 			? this.#evaluateFullFor(node, scope)
 			: this.#evaluateShortFor(node, scope);
 	}
 
-	/**
-	 * 
-	 * @param {import('../ast/statements').FullForStatement} node 
-	 * @param {Scope} scope
-	 */
-	#evaluateFullFor(node, scope) {
+	#evaluateFullFor(node: FullForStatement, scope: Scope) {
 		const { init, test, step, identifier, body } = node;
 
-		/**@type {import('./values').RuntimeValue}*/
-		let evaluated = makeNada();
+		let evaluated: RuntimeValue = makeNada();
 
 		const forScope = new Scope(this, scope);
 		const startValue = this.evaluate(init, forScope);
@@ -683,16 +529,10 @@ class Interpreter {
 		return evaluated;
 	}
 
-	/**
-	 * 
-	 * @param {import('../ast/statements').ShortForStatement} node 
-	 * @param {Scope} scope
-	 */
-	#evaluateShortFor(node, scope) {
+	#evaluateShortFor(node: ShortForStatement, scope: Scope) {
 		const { from, to, identifier, body } = node;
 
-		/**@type {import('./values').RuntimeValue}*/
-		let evaluated = makeNada();
+		let evaluated: RuntimeValue = makeNada();
 
 		const fromValue = this.evaluateAs(from, scope, ValueKinds.NUMBER).value;
 		const toValue = this.evaluateAs(to, scope, ValueKinds.NUMBER).value;
@@ -711,47 +551,40 @@ class Interpreter {
 
 		return evaluated;
 	}
-	
-	/**
-	 * 
-	 * @param {import('../ast/statements').ExpressionStatement} node 
-	 * @param {Scope} scope 
-	 */
-	#evaluateExpressionStatement(node, scope) {
+
+	#evaluateExpressionStatement(node: ExpressionStatement, scope: Scope) {
 		this.evaluate(node.expression, scope);
 		return makeNada();
 	}
 
 	/**
+	 * @description
 	 * Evalúa una sentencia de lectura de Entrada de Usuario.
-	 * 
+	 *
 	 * El comportamiento exacto depende de si el programa actual se evalúa en modo prueba o no.
 	 * * Si es una ejecución de prueba, ocurre el primer punto que aplique entre los siguientes:
-	 *   1. Si la Entrada tiene valor de falla, se asume el valor de falla especificado por el programador
-	 *   2. Se asume el valor por defecto del tipo esperado de la Entrada
+	 *   1. Si la Entrada tiene valor de falla, se asume el valor de falla especificado por el programador.
+	 *   2. Se asume el valor por defecto del tipo esperado de la Entrada.
 	 * * Si es una ejecución ordinaria, ocurre el primer punto que aplique entre los siguientes:
-	 *   1. Si quien ejecuta el script da un valor, se asume ese valor
-	 *   2. Si la Entrada es opcional y tiene valor de falla, se asume el valor de falla especificado por el programador
-	 *   3. Si la Entrada es opcional y no tiene valor de falla, se asume el valor por defecto del tipo esperado de la Entrada
-	 *   4. Se lanza un error
-	 * @param {import('../ast/statements').ReadStatement} node 
-	 * @param {Scope} scope
+	 *   1. Si quien ejecuta el script da un valor, se asume ese valor.
+	 *   2. Si la Entrada es opcional y tiene valor de falla, se asume el valor de falla especificado por el programador.
+	 *   3. Si la Entrada es opcional y no tiene valor de falla, se asume el valor por defecto del tipo esperado de la Entrada.
+	 *   4. Se lanza un error.
 	 */
-	#evaluateReadStatement(node, scope) {
+	#evaluateReadStatement(node: ReadStatement, scope: Scope) {
 		const coercedValue = this.#inputReader.readInput(node, scope);
 		this.#assignValueToExpression(node.receptor, coercedValue, scope);
 		return makeNada();
 	}
 
 	/**
+	 * @description
 	 * Evalúa una sentencia de declaración de variable.
-	 * 
+	 *
 	 * La variable no debe estar ya declarada en el mismo ámbito.
-	 * Si la variable existía en un ámbito padre, se declara otra en el ámbito actual que opaca la del ámbito padre
-	 * @param {import('../ast/statements').DeclarationStatement} node 
-	 * @param {Scope} scope
+	 * Si la variable existía en un ámbito padre, se declara otra en el ámbito actual que opaca la del ámbito padre.
 	 */
-	#evaluateDeclarationStatement(node, scope) {
+	#evaluateDeclarationStatement(node: DeclarationStatement, scope: Scope) {
 		const { dataKind, declarations } = node;
 
 		const valueKind = dataKind != null ? (ValueKindLookups.get(dataKind.kind) ?? ValueKinds.NADA) : ValueKinds.NADA;
@@ -762,17 +595,16 @@ class Interpreter {
 	}
 
 	/**
+	 * @description
 	 * Evalúa una sentencia de guardado de variable.
-	 * 
+	 *
 	 * La variable se guarda en la base de datos para recuperarla en ejecuciones subsecuentes.
-	 * @param {import('../ast/statements').SaveStatement} node 
-	 * @param {Scope} scope 
 	 */
-	#evaluateSaveStatement(node, scope) {
+	#evaluateSaveStatement(node: SaveStatement, scope: Scope) {
 		const { identifier, expression } = node;
 
 		const value = this.evaluate(expression, scope);
-		
+
 		if(!this.isAnyOf(value, ValueKinds.NUMBER, ValueKinds.TEXT, ValueKinds.BOOLEAN, ValueKinds.LIST, ValueKinds.REGISTRY)) {
 			const kindStr = ValueKindTranslationLookups.get(value.kind) ?? 'Desconocido';
 			throw this.TuberInterpreterError(`Tipo de dato inválido al intentar guardar un valor bajo el nombre: \`${identifier}\`. El tipo del valor recibido fue: _${kindStr}_`, expression);
@@ -784,37 +616,35 @@ class Interpreter {
 	}
 
 	/**
+	 * @description
 	 * Evalúa una sentencia de borrado de variable guardada.
-	 * 
-	 * La variable se borra de la base de datos para no recuperarla en ejecuciones subsecuentes
-	 * @param {import('../ast/statements').DeleteStatement} node 
-	 * @param {Scope} scope 
+	 *
+	 * La variable se borra de la base de datos para no recuperarla en ejecuciones subsecuentes.
 	 */
-	#evaluateDeleteStatement(node, scope) {
+	#evaluateDeleteStatement(node: DeleteStatement, _scope: Scope) {
 		const { identifier } = node;
 		this.#saveTable.set(identifier, makeNada());
 		return makeNada();
 	}
 
 	/**
+	 * @description
 	 * Evalúa una sentencia de guardado de variable.
-	 * 
+	 *
 	 * La variable se guarda en la base de datos para recuperarla en ejecuciones subsecuentes.
-	 * @param {import('../ast/statements').LoadStatement} node 
-	 * @param {Scope} scope 
 	 */
-	#evaluateLoadStatement(node, scope) {
+	#evaluateLoadStatement(node: LoadStatement, scope: Scope) {
 		const { identifier, conditional } = node;
 
 		if(conditional) {
 			const assignment = node.expressions
 				.map(expr => this.evaluate(expr, scope, false))
 				.find(value => coerceValue(this, value, ValueKinds.BOOLEAN).value);
-			
+
 			scope.assignVariable(identifier, assignment);
 		} else {
 			const value = scope.lookup(identifier, false);
-	
+
 			if(value.kind === ValueKinds.NADA)
 				scope.assignVariable(identifier, value);
 		}
@@ -823,28 +653,26 @@ class Interpreter {
 	}
 
 	/**
+	 * @description
 	 * Evalúa una sentencia de asignación de variable.
-	 * 
-	 * Si la variable no está declarada en este ámbito o los ámbitos padre y la sentencia es CARGAR, se la declara en este ámbito
-	 * @param {import('../ast/statements').AssignmentStatement} node 
-	 * @param {Scope} scope
+	 *
+	 * Si la variable no está declarada en este ámbito o los ámbitos padre y la sentencia es CARGAR, se la declara en este ámbito.
 	 */
-	#evaluateAssignmentStatement(node, scope) {
+	#evaluateAssignmentStatement(node: AssignmentStatement, scope: Scope) {
 		const { operator, receptor, reception } = node;
 
-		/**@type {import('./values').RuntimeValue}*/
-		let receptionValue;
+		let receptionValue: RuntimeValue;
 		let implicit = false;
-		
+
 		if(reception == null) {
 			if(!operator.isAny(TokenKinds.ADD, TokenKinds.SUBTRACT))
-				throw this.TuberInterpreterError('La omisión del valor de recepción en una sentencia de asignación solo puede hacerse con los indicadores de Sentencia \`SUMAR\` y \`RESTAR\`', operator);
+				throw this.TuberInterpreterError('La omisión del valor de recepción en una sentencia de asignación solo puede hacerse con los indicadores de Sentencia `SUMAR` y `RESTAR`', operator);
 
 			receptionValue = makeNumber(1);
 			implicit = true;
 		} else {
 			receptionValue = this.evaluate(reception, scope, false);
-			
+
 			if(this.is(receptionValue, ValueKinds.FUNCTION))
 				receptionValue.name = shortenText(this.astString(receptor), 96);
 		}
@@ -861,7 +689,7 @@ class Interpreter {
 		//SUMAR, RESTAR, etc...
 		if(BinaryOperationLookups.has(operator.kind)) {
 			const receptorValue = this.evaluate(receptor, scope, false);
-			
+
 			if(receptorValue.kind === ValueKinds.TEXT) {
 				if(implicit)
 					throw this.TuberInterpreterError('La omisión del valor de recepción en una sentencia de asignación solo puede hacerse con Números', operator);
@@ -872,7 +700,7 @@ class Interpreter {
 
 			const operation = BinaryOperationLookups.get(operator.kind);
 			if(!operation) throw 'Operación binaria desconocida';
-			receptionValue = operation(this, receptorValue, receptionValue, receptor, /**@type {Expression}*/(reception));
+			receptionValue = operation(this, receptorValue, receptionValue, receptor, reception);
 		}
 
 		this.#assignValueToExpression(receptor, receptionValue, scope);
@@ -881,19 +709,18 @@ class Interpreter {
 	}
 
 	/**
+	 * @description
 	 * Evalúa una sentencia de inserción de variable de Lista.
-	 * 
-	 * La variable debe estar declarada y debe ser una Lista
-	 * @param {import('../ast/statements').InsertionStatement} node 
-	 * @param {Scope} scope
+	 *
+	 * La variable debe estar declarada y debe ser una Lista.
 	 */
-	#evaluateInsertionStatement(node, scope) {
+	#evaluateInsertionStatement(node: InsertionStatement, scope: Scope) {
 		const { receptor, reception, index } = node;
-		
+
 		const receptorValue = this.evaluate(receptor, scope, false);
 		if(receptorValue.kind !== ValueKinds.LIST)
 			throw this.TuberInterpreterError(`El receptor en Sentencia \`EXTENDER\` debe ser una Lista, y \`${this.astString(receptor)}\` no lo era`, receptor);
-		
+
 		const receptionValue = this.evaluate(reception, scope, false);
 		const indexValue = this.evaluateAs(index, scope, ValueKinds.NUMBER, true);
 
@@ -903,40 +730,39 @@ class Interpreter {
 	}
 
 	/**
+	 * @description
 	 * Evalúa una sentencia de retorno de valor.
-	 * 
+	 *
 	 * Devuelve el valor de la expresión indicada.
-	 * Todas las sentencias luego de esta se ignoran hasta que finaliza un ámbito de Función o el Programa
-	 * @param {import('../ast/statements').ReturnStatement} node 
-	 * @param {Scope} scope
+	 * Todas las sentencias luego de esta se ignoran hasta que finaliza un ámbito de Función o el Programa.
 	 */
-	#evaluateReturnStatement(node, scope) {
+	#evaluateReturnStatement(node: ReturnStatement, scope: Scope) {
 		const returned = this.evaluate(node.expression, scope, false);
 		this.#stop = Stops.RETURN;
 		return returned;
 	}
 
 	/**
+	 * @description
 	 * Evalúa una sentencia de corte de Función o Programa.
-	 * 
-	 * Todas las sentencias luego de esta se ignoran hasta que finaliza un ámbito de Función o el Programa
+	 *
+	 * Todas las sentencias luego de esta se ignoran hasta que finaliza un ámbito de Función o el Programa.
 	 */
 	#evaluateEndStatement() {
 		this.#stop = Stops.BREAK;
 		return makeNada();
 	}
-	
+
 	/**
+	 * @description
 	 * Evalúa una sentencia de finalización condicional.
-	 * 
+	 *
 	 * Si la condición se cumple, se envía Y devuelve el mensaje de finalización indicado.
 	 * Todas las sentencias luego de esta se ignoran hasta que finaliza el Programa (no aplica a Programas que ejecutan Programas).
-	 * 
-	 * Los ámbitos de Función son irrelevantes para esta sentencia
-	 * @param {import('../ast/statements').StopStatement} node
-	 * @param {Scope} scope
+	 *
+	 * Los ámbitos de Función son irrelevantes para esta sentencia.
 	 */
-	#evaluateStopStatement(node, scope) {
+	#evaluateStopStatement(node: StopStatement, scope: Scope) {
 		const { condition, stopMessage } = node;
 
 		const conditionValue = condition ? coerceValue(this, this.evaluate(condition, scope, false), ValueKinds.BOOLEAN) : makeBoolean(true);
@@ -952,14 +778,13 @@ class Interpreter {
 	}
 
 	/**
+	 * @description
 	 * Evalúa una sentencia de envío de valor.
-	 * 
+	 *
 	 * Añade un valor a la pila de valores enviados.
 	 * Dichos valores serían enviados en conjunto al finalizar el Programa.
-	 * @param {import('../ast/statements').SendStatement} node 
-	 * @param {Scope} scope
 	 */
-	#evaluateSendStatement(node, scope) {
+	#evaluateSendStatement(node: SendStatement, scope: Scope) {
 		let sendValue = this.evaluate(node.expression, scope, false);
 
 		switch(sendValue.kind) {
@@ -969,7 +794,7 @@ class Interpreter {
 		case ValueKinds.REGISTRY:
 			sendValue = makeRegistry(new Map([ ...sendValue.entries.entries() ]));
 			break;
-		case ValueKinds.EMBED:
+		case ValueKinds.EMBED: {
 			if(sendValue.value.empty)
 				throw this.TuberInterpreterError('No se puede enviar un valor de Marco vacío', node);
 
@@ -978,32 +803,25 @@ class Interpreter {
 			sendValue.value = embedDataCopy;
 			break;
 		}
+		}
 
 		this.#sendStack.push(sendValue);
 		return makeNada();
 	}
 
-	/**
-	 * Evalúa una expresión de Lista y retorna un valor de Lista
-	 * @param {import('../ast/expressions').ListLiteralExpression} node 
-	 * @param {Scope} scope
-	 */
-	#evaluateList(node, scope) {
+	/**@description Evalúa una expresión de Lista y retorna un valor de Lista.*/
+	#evaluateList(node: import('../ast/expressions').ListLiteralExpression, scope: Scope) {
 		const { elements } = node;
 		const evaluatedElements = elements.map(e => this.evaluate(e, scope));
 		return makeList(evaluatedElements);
 	}
 
-	/**
-	 * Evalúa una expresión de Registro y retorna un valor de Registro
-	 * @param {import('../ast/expressions').RegistryLiteralExpression} node 
-	 * @param {Scope} scope
-	 */
-	#evaluateRegistry(node, scope) {
+	/**@description  Evalúa una expresión de Registro y retorna un valor de Registro.*/
+	#evaluateRegistry(node: import('../ast/expressions').RegistryLiteralExpression, scope: Scope) {
 		const { entries } = node;
 
 		const registryValue = makeRegistry(new Map());
-		
+
 		for(const [ key, value ] of entries.entries()) {
 			let evaluated = this.evaluate(value, scope);
 
@@ -1016,12 +834,8 @@ class Interpreter {
 		return registryValue;
 	}
 
-	/**
-	 * Evalúa una expresión de Función de usuario y devuelve un valor de Función de usuario
-	 * @param {import('../ast/expressions').FunctionExpression} node 
-	 * @param {Scope} scope
-	 */
-	#evaluateFunction(node, scope) {
+	/**@description Evalúa una expresión de Función de usuario y devuelve un valor de Función de usuario.*/
+	#evaluateFunction(node: import('../ast/expressions').FunctionExpression, scope: Scope) {
 		if(node.expression === true)
 			return makeLambda(node.body, node.args);
 
@@ -1030,12 +844,8 @@ class Interpreter {
 		return fnValue;
 	}
 
-	/**
-	 * Evalúa una expresión unaria y devuelve el valor resultante de la operación
-	 * @param {import('../ast/expressions').UnaryExpression} node 
-	 * @param {Scope} scope
-	 */
-	#evaluateUnary(node, scope, mustBeDeclared = true) {
+	/**@description Evalúa una expresión unaria y devuelve el valor resultante de la operación.*/
+	#evaluateUnary(node: import('../ast/expressions').UnaryExpression, scope: Scope, mustBeDeclared = true) {
 		const { operator, argument } = node;
 
 		const argumentValue = this.evaluate(argument, scope, mustBeDeclared);
@@ -1047,12 +857,8 @@ class Interpreter {
 		return operation(this, argumentValue, argument);
 	}
 
-	/**
-	 * Evalúa una expresión binaria y devuelve el valor resultante de la operación
-	 * @param {import('../ast/expressions').BinaryExpression} node 
-	 * @param {Scope} scope
-	 */
-	#evaluateBinary(node, scope, mustBeDeclared = true) {
+	/**@description Evalúa una expresión binaria y devuelve el valor resultante de la operación.*/
+	#evaluateBinary(node: import('../ast/expressions').BinaryExpression, scope: Scope, mustBeDeclared = true) {
 		const { operator, left, right } = node;
 
 		if(operator.is(TokenKinds.AFTER))
@@ -1073,12 +879,8 @@ class Interpreter {
 		return operation(this, leftValue, rightValue, left, right);
 	}
 
-	/**
-	 * Evalúa una expresión ternaria condicional y devuelve el valor resultante de la operación
-	 * @param {import('../ast/expressions').ConditionalExpression} node 
-	 * @param {Scope} scope
-	 */
-	#evaluateConditionalExpr(node, scope, mustBeDeclared = true) {
+	/**@description Evalúa una expresión ternaria condicional y devuelve el valor resultante de la operación.*/
+	#evaluateConditionalExpr(node: import('../ast/expressions').ConditionalExpression, scope: Scope, mustBeDeclared = true) {
 		const { test, consequent, alternate } = node;
 
 		const testValue = this.evaluateAs(test, scope, ValueKinds.BOOLEAN, false);
@@ -1088,12 +890,8 @@ class Interpreter {
 		return testValue.value ? consequentValue : alternateValue;
 	}
 
-	/**
-	 * Evalúa una expresión binaria "luego" y devuelve el valor resultante de la operación
-	 * @param {import('../ast/expressions').BinaryExpression} node 
-	 * @param {Scope} scope
-	 */
-	#evaluateAfter(node, scope, mustBeDeclared = true) {
+	/**@description Evalúa una expresión binaria "luego" y devuelve el valor resultante de la operación.*/
+	#evaluateAfter(node: import('../ast/expressions').BinaryExpression, scope: Scope, mustBeDeclared = true) {
 		const { left, right } = node;
 
 		if(this.isTestDrive())
@@ -1102,12 +900,8 @@ class Interpreter {
 			return this.evaluate(right, scope, mustBeDeclared);
 	}
 
-	/**
-	 * Evalúa una expresión binaria lógica y devuelve el valor resultante de la operación
-	 * @param {import('../ast/expressions').BinaryExpression} node 
-	 * @param {Scope} scope
-	 */
-	#evaluateLogical(node, scope, mustBeDeclared = true) {
+	/**@description Evalúa una expresión binaria lógica y devuelve el valor resultante de la operación.*/
+	#evaluateLogical(node: import('../ast/expressions').BinaryExpression, scope: Scope, mustBeDeclared = true) {
 		const { operator, left, right } = node;
 
 		const leftValue = this.evaluate(left, scope, mustBeDeclared);
@@ -1123,30 +917,27 @@ class Interpreter {
 	}
 
 	/**
+	 * @description
 	 * Evalúa una expresión de conversión de valor.
-	 * 
-	 * Si es posible, convierte un valor de un cierto tipo al tipo indicado
-	 * @param {import('../ast/expressions').CastExpression} node 
-	 * @param {Scope} scope
+	 *
+	 * Si es posible, convierte un valor de un cierto tipo al tipo indicado.
 	 */
-	#evaluateCast(node, scope) {
+	#evaluateCast(node: import('../ast/expressions').CastExpression, scope: Scope) {
 		const { argument, as } = node;
 		const value = this.evaluate(argument, scope, false);
 		const valueKind = ValueKindLookups.get(as.kind);
 		if(!valueKind) throw 'Tipo de valor inválido al castear';
-		return /**@type {RuntimeValue}*/(coerceValue(this, value, valueKind));
+		return coerceValue(this, value, valueKind);
 	}
 
 	/**
+	 * @description
 	 * Evalúa una expresión de secuencia de expresiones.
-	 * 
-	 * Evalúa todas las expresiones en orden de izquierda a derecha y devuelve el valor de la última expresión evaluada
-	 * @param {import('../ast/expressions').SequenceExpression} node 
-	 * @param {Scope} scope
+	 *
+	 * Evalúa todas las expresiones en orden de izquierda a derecha y devuelve el valor de la última expresión evaluada.
 	 */
-	#evaluateSequence(node, scope) {
-		/**@type {import('./values').RuntimeValue}*/
-		let lastEvaluation = makeNada();
+	#evaluateSequence(node: import('../ast/expressions').SequenceExpression, scope: Scope) {
+		let lastEvaluation: RuntimeValue = makeNada();
 
 		for(const expression of node.expressions)
 			lastEvaluation = this.evaluate(expression, scope);
@@ -1154,12 +945,8 @@ class Interpreter {
 		return lastEvaluation;
 	}
 
-	/**
-	 * Satanás está DIRECTAMENTE INVOLUCRADO en esta función
-	 * @param {import('../ast/expressions').ArrowExpression} node 
-	 * @param {Scope} scope
-	 */
-	#evaluateArrow(node, scope) {
+	/**@description Satanás está DIRECTAMENTE INVOLUCRADO en esta función.*/
+	#evaluateArrow(node: import('../ast/expressions').ArrowExpression, scope: Scope) {
 		const { holder } = node;
 
 		const holderValue = this.evaluate(holder, scope);
@@ -1210,10 +997,10 @@ class Interpreter {
 
 				if(this.is(entryValue, ValueKinds.FUNCTION))
 					entryValue.self = holderValue;
-	
+
 				return entryValue;
 			}
-			
+
 			if(keyString === 'largo' || keyString === 'tamaño')
 				return makeNumber(holderValue.entries.size);
 
@@ -1253,15 +1040,14 @@ class Interpreter {
 	}
 
 	/**
+	 * @description
 	 * Evalúa una expresión de llamado de Función o Método.
-	 * 
+	 *
 	 * Ejecuta la Función especificada, si existe, con los argumentos indicados, si aplica.
-	 * 
-	 * Es irrelevante si la Función es nativa o de usuario. Superficialmente, se ejecutarán de forma similar
-	 * @param {import('../ast/expressions').CallExpression} node 
-	 * @param {Scope} scope
+	 *
+	 * Es irrelevante si la Función es nativa o de usuario. Superficialmente, se ejecutarán de forma similar.
 	 */
-	#evaluateCall(node, scope) {
+	#evaluateCall(node: import('../ast/expressions').CallExpression, scope: Scope) {
 		const { fn, args } = node;
 
 		const fnValue = this.evaluate(fn, scope);
@@ -1269,21 +1055,19 @@ class Interpreter {
 			throw this.TuberInterpreterError(`No se pudo llamar ${this.astString(fn)} porque no era una Función. En cambio, era de tipo ${ValueKindTranslationLookups.get(fnValue.kind)}`, fn);
 
 		const argValues = args.map(arg => this.evaluate(arg, scope, false));
-		
+
 		return this.callFunction(fnValue, argValues, scope);
 	}
 
 	/**
+	 * @description
 	 * Evalúa un llamado de valor de Función o Método.
-	 * 
+	 *
 	 * Ejecuta el valor de Función especificado, con los argumentos indicados, si aplica.
-	 * 
-	 * Es irrelevante si la Función es nativa o de usuario. Superficialmente, se ejecutarán de forma similar
-	 * @param {AnyFunctionValue} fnValue
-	 * @param {Array<RuntimeValue>} argValues
-	 * @param {Scope} scope
+	 *
+	 * Es irrelevante si la Función es nativa o de usuario. Superficialmente, se ejecutarán de forma similar.
 	 */
-	callFunction(fnValue, argValues, scope) {
+	callFunction(fnValue: AnyFunctionValue, argValues: Array<RuntimeValue>, scope: Scope) {
 		let returnedValue;
 
 		if(this.is(fnValue, ValueKinds.NATIVE_FN)) {
@@ -1303,13 +1087,12 @@ class Interpreter {
 	}
 
 	/**
+	 * @description
 	 * Función de utilidad para intentar encontrar un método nativo y enlazarlo a un valor correspondiente.
-	 * 
+	 *
 	 * Si no se encuentra un método con el nombre solicitado para el tipo del valor indicado, se devuelve `null`
-	 * @param {RuntimeValue} value 
-	 * @param {String} key 
 	 */
-	#tryFindNativeMethod(value, key) {
+	#tryFindNativeMethod(value: RuntimeValue, key: string) {
 		const lookup = NativeMethodsLookup.get(value.kind);
 		if(!lookup) throw 'Tipo de valor inválido al intentar encontrar método nativo para el mismo';
 
@@ -1320,39 +1103,34 @@ class Interpreter {
 		return null;
 	}
 
-	/**
-	 * Asigna un valor concreto a un valor receptor. La expresión receptora DEBE evaluar a una referencia asignable
-	 * @param {Expression} receptor
-	 * @param {RuntimeValue} receptionValue
-	 * @param {Scope} scope
-	 */
-	#assignValueToExpression(receptor, receptionValue, scope) {
-		/**@type {String}*/
-		let identifier;
+	/**@description Asigna un valor concreto a un valor receptor. La expresión receptora DEBE evaluar a una referencia asignable.*/
+	#assignValueToExpression(receptor: Expression, receptionValue: RuntimeValue, scope: Scope) {
+		let identifier: string;
 		switch(receptor.kind) {
 		case ExpressionKinds.IDENTIFIER: {
 			identifier = receptor.name;
 			scope.assignVariable(identifier, receptionValue);
 			break;
 		}
-		
-		case ExpressionKinds.ARROW:
+
+		case ExpressionKinds.ARROW: {
 			if(receptor.computed === true) {
 				const evaluated = this.evaluate(receptor.key, scope);
 				identifier = coerceValue(this, evaluated, ValueKinds.TEXT).value;
 			} else
 				identifier = receptor.key;
-			
+
 			//Modificar por referencia
 			const holderValue = this.evaluate(receptor.holder, scope);
 			switch(holderValue.kind) {
-			case ValueKinds.LIST:
+			case ValueKinds.LIST: {
 				const index = +identifier;
 				if(!isInternalOperable(index))
 					throw this.TuberInterpreterError(`Se esperaba un índice válido en lado derecho de expresión de flecha "->" para la Lista \`${this.astString(receptor.holder)}\` en expresión receptora de sentencia de asignación. Sin embargo, se recibió: ${identifier}`, receptor);
 
 				holderValue.elements[index] = receptionValue;
 				break;
+			}
 
 			case ValueKinds.REGISTRY:
 				if(receptionValue.kind === ValueKinds.NATIVE_FN)
@@ -1364,22 +1142,15 @@ class Interpreter {
 				throw this.TuberInterpreterError(`Expresión de flecha inválida como receptora de sentencia de asignación. El tipo de \`${this.astString(receptor.holder)}\` no tiene miembros asignables`, receptor);
 			}
 			break;
+		}
 
 		default:
 			throw this.TuberInterpreterError(`La expresión ${this.astString(receptor)} es inválida como receptora de una sentencia de asignación`, receptor);
 		}
 	}
 
-	/**
-	 * Devuelve el fragmento de código fuento del cual se originó el nodo AST indicado
-	 * @param {Expression | Statement | Token} node
-	 * @returns {String} 
-	 */
-	astString(node) {
+	/**@description Devuelve el fragmento de código fuento del cual se originó el nodo AST indicado.*/
+	astString(node: Expression | Statement | Token): string {
 		return this.#source.slice(node.start, node.end);
 	}
 }
-
-module.exports = {
-	Interpreter,
-};
