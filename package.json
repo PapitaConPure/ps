@@ -34,5 +34,8 @@
   },
   "private": true,
   "scripts": {},
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "jiti": "^2.6.1"
+  }
 }
