@@ -14,7 +14,6 @@
     "globals": "^17.0.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
-    "prettier": "^3.8.0",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "sizeof": "^1.0.0",
     "tailwindcss": "^4.1.18",
@@ -46,8 +45,6 @@
   },
   "lint-staged": {
     "./src/**/*.{ts,js}": "eslint --cache --fix",
-    "./src/**/*.{ts,js,css,md}": "prettier --write",
-    "./src/**/*.js": "eslint --cache --fix",
-    "./src/**/*.{js,css,md}": "prettier --write"
+    "./src/**/*.js": "eslint --cache --fix"
   }
 }
