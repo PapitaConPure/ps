@@ -27,7 +27,7 @@ const marcoAgregarCampo: EmbedMethod<[ TextValue, TextValue, BooleanValue ], Emb
 	return self;
 };
 
-const marcoARegistro: EmbedMethod<[], RegistryValue> = (self, [], scope) => {
+const marcoARegistro: EmbedMethod<[], RegistryValue> = (self, []) => {
 	return require('../registryPrefabs').makeEmbedRegistry(self.value);
 };
 
@@ -63,7 +63,7 @@ const marcoAsignarColor: EmbedMethod<[ TextValue ], EmbedValue> = (self, [ color
 	try {
 		const targetColor = stringHexToNumber(colorResult.value);
 		self.value.setColor(targetColor);
-	} catch(e) {
+	} catch {
 		throw scope.interpreter.TuberInterpreterError(`Se recibió un código de color inválido: "${colorResult.value}", en asignación de color de Marco`);
 	}
 

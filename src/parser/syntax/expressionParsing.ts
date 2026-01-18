@@ -1,11 +1,11 @@
-import { toLowerCaseNormalized } from '../../util/utils.js';
+import { toLowerCaseNormalized } from '../../util/utils';
 import { TokenKinds } from '../../lexer/tokens';
 import { Associativity, BindingPower, BindingPowers } from '../../ast/ast';
 import { StatementKinds } from '../../ast/statements';
 import { ArgumentExpression, ArrowExpression, BinaryExpression, CallExpression, CastExpression, ConditionalExpression, Expression, ExpressionKinds, FunctionExpression, LambdaExpression, SequenceExpression, UnaryExpression } from '../../ast/expressions';
 import { makeMetadata } from '../../ast/metadata';
 import { parseBlockBody } from './statementParsing';
-import { Parser } from '../parser.js';
+import { Parser } from '../parser';
 
 export function parsePrimaryExpression(parser: Parser): Expression {
 	const literal = parser.advance();

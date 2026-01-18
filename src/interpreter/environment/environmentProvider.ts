@@ -328,38 +328,19 @@ export class PSMember {
 export abstract class EnvironmentProvider {
 	constructor() {}
 
-	getGuild(): PSGuild {
-		throw 'No implementado';
-	}
+	abstract getGuild(): PSGuild;
 
-	getChannel(): PSChannel {
-		throw 'No implementado';
-	}
+	abstract getChannel(): PSChannel;
 
-	getUser(): PSUser {
-		throw 'No implementado';
-	}
+	abstract getUser(): PSUser;
 
-	getMember(): PSMember {
-		throw 'No implementado';
-	}
+	abstract getMember(): PSMember;
 
-	fetchChannel(query: string): PSChannel | null {
-		query;
-		throw 'No implementado';
-	}
+	abstract fetchChannel(query: string): PSChannel | null;
 
-	fetchRole(query: string): PSRole | null {
-		query;
-		throw 'No implementado';
-	}
+	abstract fetchRole(query: string): PSRole | null;
 
-	fetchMember(query: string): PSMember | null {
-		query;
-		throw 'No implementado';
-	}
+	abstract fetchMember(query: string): PSMember | null;
 
-	// EnvironmentProvider.prototype.makeEmbedBuilder = function(embedData: EmbedData) {
-	// 	throw 'No implementado';
-	// }
+	// abstract makeEmbedBuilder(embedData: EmbedData);
 }

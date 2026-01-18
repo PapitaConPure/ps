@@ -1,5 +1,13 @@
-import { RequireAtLeastOne } from './util/types.js';
+import { RuntimeValue } from './interpreter/values';
+import { RequireAtLeastOne } from './util/types';
 
+export { Token } from './lexer/tokens';
+export { Lexer } from './lexer/lexer';
+export { Parser } from './parser/parser';
+
+export { Interpreter } from './interpreter/interpreter';
+export { Scope } from './interpreter/scope';
+export { Input } from './interpreter/inputReader';
 export {
 	ValueKinds,
 	coerceValue,
@@ -15,14 +23,8 @@ export {
 	makeEmbed,
 	makeNada,
 } from './interpreter/values';
-export { stringifyPSAST, logPSAST } from './util/debug';
-export { Token } from './lexer/tokens';
-export { Lexer } from './lexer/lexer';
-export { Parser } from './parser/parser';
-export { Interpreter } from './interpreter/interpreter';
-export { Scope } from './interpreter/scope.js';
-export { Input } from './interpreter/inputReader';
-export { declareNatives, declareContext } from './interpreter/environment/environment.js';
+
+export { declareNatives, declareContext } from './interpreter/environment/environment';
 export {
 	EnvironmentProvider,
 	PSGuild,
@@ -30,7 +32,9 @@ export {
 	PSRole,
 	PSUser,
 	PSMember,
-} from './interpreter/environment/environmentProvider.js';
+} from './interpreter/environment/environmentProvider';
+
+export { stringifyPSAST, logPSAST } from './util/debug';
 
 export const PS_VERSION = 1.1;
 
@@ -53,7 +57,7 @@ export interface AdvancedTubercleData {
 	content?: undefined;
 	files?: undefined;
 	script: string;
-	saved: Map<string, import('./interpreter/values.js').RuntimeValue>;
+	saved: Map<string, RuntimeValue>;
 	psVersion: number;
 }
 

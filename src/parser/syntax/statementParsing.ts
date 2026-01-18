@@ -1,12 +1,12 @@
-import { TokenKinds, translateTokenKind, Token, TokenKind } from '../../lexer/tokens.js';
-import { BindingPowers, Associativities } from '../../ast/ast.js';
-import { StatementKinds, ScopeAbortKinds, BlockBody, BlockStatement, ConditionalStatement, WhileStatement, DoUntilStatement, RepeatStatement, ForEachStatement, ForStatement, ExpressionStatement, ReadStatement, ReadStatementPreModifier, ReadStatementModifier, DeclarationStatement, SaveStatement, AssignmentStatement, LoadStatement, InsertionStatement, DeleteStatement, ReturnStatement, EndStatement, StopStatement, SendStatement } from '../../ast/statements.js';
-import { Expression, ExpressionKinds } from '../../ast/expressions.js';
-import { makeMetadata } from '../../ast/metadata.js';
-import { ValueKinds, NumberValue, TextValue, BooleanValue, makeNumber, makeText, coerceValue } from '../../interpreter/values.js';
-import { TuberInputError } from '../../interpreter/inputReader.js';
-import { toLowerCaseNormalized } from '../../util/utils.js';
-import { Parser } from '../parser.js';
+import { TokenKinds, translateTokenKind, Token, TokenKind } from '../../lexer/tokens';
+import { BindingPowers, Associativities } from '../../ast/ast';
+import { StatementKinds, ScopeAbortKinds, BlockBody, BlockStatement, ConditionalStatement, WhileStatement, DoUntilStatement, RepeatStatement, ForEachStatement, ForStatement, ExpressionStatement, ReadStatement, ReadStatementPreModifier, ReadStatementModifier, DeclarationStatement, SaveStatement, AssignmentStatement, LoadStatement, InsertionStatement, DeleteStatement, ReturnStatement, EndStatement, StopStatement, SendStatement } from '../../ast/statements';
+import { Expression, ExpressionKinds } from '../../ast/expressions';
+import { makeMetadata } from '../../ast/metadata';
+import { ValueKinds, NumberValue, TextValue, BooleanValue, makeNumber, makeText, coerceValue } from '../../interpreter/values';
+import { TuberInputError } from '../../interpreter/inputReader';
+import { toLowerCaseNormalized } from '../../util/utils';
+import { Parser } from '../parser';
 
 /**
  * @description
@@ -388,7 +388,7 @@ function parseReadStmtNumberModifier(preModifiers: ReadStatementPreModifier[], m
 			absoluto: () => modifiers.push((v: NumberValue) => makeNumber(Math.abs(v.value))),
 			opcion: () => {
 				const first = parser.parseExpression(BindingPowers.COMMA);
-				const sequence = require('./expressionParsing.js').parseSequenceExpression(parser, first, BindingPowers.COMMA, Associativities.LEFT);
+				const sequence = require('./expressionParsing').parseSequenceExpression(parser, first, BindingPowers.COMMA, Associativities.LEFT);
 				modifiers.push((v: NumberValue, it, scope) => {
 					const i = v.value - 1;
 

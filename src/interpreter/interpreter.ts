@@ -455,7 +455,7 @@ export class Interpreter {
 
 		let evaluated: RuntimeValue = makeNada();
 
-		do{
+		do {
 			evaluated = this.#evaluateBlock(body, scope);
 			if(this.eatStop(Stops.BREAK)) break;
 		} while(this.evaluateAs(test, scope, ValueKinds.BOOLEAN).value === false);

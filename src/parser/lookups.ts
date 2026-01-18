@@ -1,19 +1,22 @@
+import { parsePrimaryExpression, parseUnaryExpression, parseBinaryExpression, parseCastExpression, parseArrowExpression, parseCallExpression, parseFunctionExpression, parseSequenceExpression, parseConditionalExpression, parseLambdaExpression, parseGroupExpression } from './syntax/expressionParsing';
+import { parseBlockStatement, parseConditionalStatement, parseWhileLoopStatement, parseDoWhileLoopStatement, parseRepeatLoopStatement, parseForEachLoopStatement, parseForLoopStatement, parseExpressionStatement, parseReadStatement, parseDeclarationStatement, parseSaveStatement, parseAssignmentStatement, parseExtendStatement, parseDeleteStatement, parseReturnStatement, parseEndStatement, parseStopStatement, parseSendStatement } from './syntax/statementParsing';
+import { BindingPowers, Associativities, BindingPower, Associativity } from '../ast/ast';
 import { TokenKind, TokenKinds } from '../lexer/tokens';
-import { BindingPowers, Associativities } from '../ast/ast';
-import { parsePrimaryExpression, parseUnaryExpression, parseBinaryExpression, parseCastExpression, parseArrowExpression, parseCallExpression, parseFunctionExpression, parseSequenceExpression, parseConditionalExpression, parseLambdaExpression, parseGroupExpression } from './syntax/expressionParsing.js';
-import { parseBlockStatement, parseConditionalStatement, parseWhileLoopStatement, parseDoWhileLoopStatement, parseRepeatLoopStatement, parseForEachLoopStatement, parseForLoopStatement, parseExpressionStatement, parseReadStatement, parseDeclarationStatement, parseSaveStatement, parseAssignmentStatement, parseExtendStatement, parseDeleteStatement, parseReturnStatement, parseEndStatement, parseStopStatement, parseSendStatement } from './syntax/statementParsing.js';
+import { Expression } from '../ast/expressions';
+import { Statement } from '../ast/statements';
+import { Parser } from './parser';
 
-export type StatementHandler = (parser: import('./parser.js').Parser) => import('../ast/statements').Statement;
+export type StatementHandler = (parser: Parser) => Statement;
 
-export type NuDHandler = (parser: import('./parser.js').Parser) => import('../ast/expressions').Expression;
+export type NuDHandler = (parser: Parser) => Expression;
 
-export type LeDHandler = (parser: import('./parser.js').Parser, left: import('../ast/expressions').Expression, bp: import('../ast/ast').BindingPower, ass: import('../ast/ast').Associativity) => import('../ast/expressions').Expression;
+export type LeDHandler = (parser: Parser, left: Expression, bp: BindingPower, ass: Associativity) => Expression;
 
 export const stmtLookup = new Map<TokenKind, StatementHandler>();
 export const nudLookup = new Map<TokenKind, NuDHandler>();
 export const ledLookup = new Map<TokenKind, LeDHandler>();
-export const bpLookup = new Map<TokenKind, import('../ast/ast').BindingPower>();
-export const assLookup = new Map<TokenKind, import('../ast/ast').Associativity>();
+export const bpLookup = new Map<TokenKind, BindingPower>();
+export const assLookup = new Map<TokenKind, Associativity>();
 
 function stmt(kind: TokenKind, handler: StatementHandler) {
 	stmtLookup.set(kind, handler);
@@ -23,7 +26,7 @@ function nud(kind: TokenKind, handler: NuDHandler) {
 	nudLookup.set(kind, handler);
 }
 
-function led(kind: TokenKind, bp: import('../ast/ast').BindingPower, ass: import('../ast/ast').Associativity, handler: LeDHandler) {
+function led(kind: TokenKind, bp: BindingPower, ass: Associativity, handler: LeDHandler) {
 	bpLookup.set(kind, bp);
 	assLookup.set(kind, ass);
 	ledLookup.set(kind, handler);

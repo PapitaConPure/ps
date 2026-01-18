@@ -1,5 +1,5 @@
-import { TokenKinds, TokenKind, Token } from './tokens.js';
-import { shortenText, toLowerCaseNormalized } from '../util/utils.js';
+import { TokenKinds, TokenKind, Token } from './tokens';
+import { shortenText, toLowerCaseNormalized } from '../util/utils';
 
 interface Keyword {
 	match: string;

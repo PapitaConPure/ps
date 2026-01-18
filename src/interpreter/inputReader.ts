@@ -2,7 +2,6 @@ import { Token, TokenKinds } from '../lexer/tokens';
 import { Scope } from './scope';
 import {
 	makeText,
-	makeNada,
 	coerceValue,
 	defaultValueOf,
 	ValueKinds,
@@ -185,11 +184,7 @@ export abstract class InputReader {
 	/**@description Comprueba si este {@link InputReader} es de ejecuciones ordinarias (`true`) o no (`false`).*/
 	abstract isOrdinary(): this is ProductionInputReader;
 
-	readInput(node: ReadStatement, scope: Scope): RuntimeValue {
-		node;
-		scope;
-		return makeNada();
-	}
+	abstract readInput(node: ReadStatement, scope: Scope): RuntimeValue;
 
 	queueArg(arg: string) {
 		this.#args.push(arg);
