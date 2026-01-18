@@ -290,7 +290,7 @@ test.concurrent('Estructuras iterativas', async () => {
 
 test.concurrent('EJECUTAR + expresiones de flecha y llamado', async () => {
 	const result = await executePS(testFiles[10], { skipInterpreter: true });
-    const { tokens, tree } = result;
+	const { tokens, tree } = result;
 
 	expect(tokens.length).toBeWithin(64, 69);
 
@@ -528,7 +528,7 @@ test.concurrent('Guardar y Cargar Listas (Ejecución Ordinaria)', async () => {
 
 	const result = await executePS(testFiles[22], {
 		savedData: {
-			valores: makeList([...savedList.elements]),
+			valores: makeList([ ...savedList.elements ]),
 		},
 	});
 	const { sendStack, saveTable } = result;

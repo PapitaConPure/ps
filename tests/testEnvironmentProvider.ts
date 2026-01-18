@@ -79,7 +79,7 @@ export default class TestEnvironmentProvider implements EnvironmentProvider {
 			roleIds: [ '123456789012345681', '123456789012345682' ],
 		});
 	}
-	
+
 	getGuild() {
 		return this.guild;
 	}
@@ -151,7 +151,7 @@ export default class TestEnvironmentProvider implements EnvironmentProvider {
 					return true;
 				}
 				return false;
-			}
+			};
 
 			if(tryName(member.nickname)) continue;
 			if(tryName(member.user.displayName)) continue;
