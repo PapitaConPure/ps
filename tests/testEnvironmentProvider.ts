@@ -1,4 +1,4 @@
-import { EnvironmentProvider, PSChannel, PSGuild, PSMember, PSRole, PSUser } from '../src/interpreter/environment/environmentProvider.js';
+import { EnvironmentProvider, ImageUrlOptions, PSChannel, PSGuild, PSMember, PSRole, PSUser } from '../src/interpreter/environment/environmentProvider.js';
 
 export default class TestEnvironmentProvider implements EnvironmentProvider {
 	guild: PSGuild;
@@ -14,9 +14,9 @@ export default class TestEnvironmentProvider implements EnvironmentProvider {
 			ownerId: '123456789012345684',
 			description: 'Este ser un servidor que realmente no existe',
 			systemChannelId: '123456789012345680',
-			iconUrlHandler: this.#testUrlHandler,
-			bannerUrlHandler: this.#testUrlHandler,
-			splashUrlHandler: this.#testUrlHandler,
+			iconUrlHandler: this.testUrlHandler,
+			bannerUrlHandler: this.testUrlHandler,
+			splashUrlHandler: this.testUrlHandler,
 			premiumTier: 0,
 			channels:  [
 				{
@@ -96,8 +96,7 @@ export default class TestEnvironmentProvider implements EnvironmentProvider {
 		return this.member;
 	}
 
-	/**@param {string} query*/
-	fetchChannel(query) {
+	fetchChannel(query: string) {
 		if(!isNaN(+query)) {
 			const channel = this.guild.channels.get(query);
 			if(channel) return channel;
@@ -116,8 +115,7 @@ export default class TestEnvironmentProvider implements EnvironmentProvider {
 		return bestMatch;
 	}
 
-	/**@param {string} query*/
-	fetchRole(query) {
+	fetchRole(query: string) {
 		if(!isNaN(+query)) {
 			const role = this.guild.roles.get(query);
 			if(role) return role;
@@ -136,8 +134,7 @@ export default class TestEnvironmentProvider implements EnvironmentProvider {
 		return bestMatch;
 	}
 
-	/**@param {string} query*/
-	fetchMember(query) {
+	fetchMember(query: string) {
 		if(!isNaN(+query)) {
 			const member = this.guild.members.get(query);
 			if(member) return member;
@@ -147,7 +144,7 @@ export default class TestEnvironmentProvider implements EnvironmentProvider {
 		let bestMatch = null;
 
 		for(const member of this.guild.members.values()) {
-			const tryName = (/**@type {string?}*/ name) => {
+			const tryName = (/**@type {string?}*/ name: string | null) => {
 				if(name && name.includes(query) && name.length > bestScore) {
 					bestScore = name.length;
 					bestMatch = member;
@@ -164,10 +161,7 @@ export default class TestEnvironmentProvider implements EnvironmentProvider {
 		return bestMatch;
 	}
 
-	/**
-	 * @param {import('../src/interpreter/environment/environmentProvider').ImageUrlOptions} data 
-	 */
-	#testUrlHandler(data) {
+	private testUrlHandler(data: ImageUrlOptions) {
 		return '';
 	}
 }
