@@ -679,11 +679,7 @@ function parseSingleSideAssignment(parser: Parser, operator: Token, receptor: Ex
 	if(receptor.left.kind !== ExpressionKinds.BINARY)
 		return null;
 
-	/**
-	 * @param {Expression} expr
-	 * @returns {Array<Expression>}
-	 */
-	function walkExpressions(expr: Expression): Array<Expression> {
+	function walkExpressions(expr: Expression): Expression[] {
 		if(expr.kind === ExpressionKinds.BINARY) {
 			if(!expr.operator.is(TokenKinds.OR) || expr.right.kind === ExpressionKinds.BINARY)
 				throw parser.TuberParserError('Solo se permiten expresiones binarias lógicas disyuntivas (`o`) sin agrupamientos en sentencias de Asignación Condicional');

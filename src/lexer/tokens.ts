@@ -267,7 +267,7 @@ export class Token {
 	 * @param start La posición del primer caracter del token en el código.
 	 * @param length El largo del token.
 	 */
-	constructor(lexer: import('./lexer').Lexer, kind: TokenKind, value: TokenInternalValue, line: number, column: number, start: number, length: number) {
+	constructor(lexer: Lexer, kind: TokenKind, value: TokenInternalValue, line: number, column: number, start: number, length: number) {
 		if(!Object.values(TokenKinds).includes(kind))
 			throw `Tipo de token inválido: ${kind}`;
 		if(line < 1)

@@ -257,11 +257,7 @@ export class Lexer {
 		return [ ...this.#tokens ];
 	}
 
-	/**
-	 * Avanza la posición del Lexer
-	 * @param {number} [steps=1]
-	 * @param {LexerAdvanceOptions} [options={}]
-	 */
+	/**@description Avanza la posición del Lexer.*/
 	advance(steps: number = 1, options: LexerAdvanceOptions = {}) {
 		options.advanceColumns ??= false;
 		options.newLine ??= false;
@@ -280,22 +276,14 @@ export class Lexer {
 			this.#col += steps;
 	}
 
-	/**
-	 * Añade un token al Lexer
-	 * @param {Token} token
-	 */
+	/**@description Añade un token al Lexer.*/
 	addToken(token: Token) {
 		if(!this.handleCommentStatement)
 			this.#tokens.push(token);
 	}
 
 	//#region Handlers
-	/**
-	 *
-	 * @param {import('./tokens').TokenKind} kind
-	 * @returns {PatternHandler}
-	 */
-	#makeDefaultHandler(kind: import('./tokens').TokenKind): PatternHandler {
+	#makeDefaultHandler(kind: TokenKind): PatternHandler {
 		return (_, rawMatch) => {
 			const len = `${rawMatch}`.length;
 			this.addToken(new Token(this, kind, rawMatch, this.line, this.col, this.pos - 1, len));
@@ -303,10 +291,6 @@ export class Lexer {
 		};
 	}
 
-	/**
-	 *
-	 * @returns {PatternHandler}
-	 */
 	#makeNumberHandler(): PatternHandler {
 		return (matched) => {
 			const len = matched.length;
@@ -320,10 +304,6 @@ export class Lexer {
 		};
 	}
 
-	/**
-	 *
-	 * @returns {PatternHandler}
-	 */
 	#makeStringHandler(): PatternHandler {
 		return (match, rawMatch) => {
 			const len = match.length;
@@ -398,10 +378,6 @@ export class Lexer {
 		};
 	}
 
-	/**
-	 *
-	 * @returns {PatternHandler}
-	 */
 	#makeNewlineHandler(): PatternHandler {
 		return (match, _) => {
 			const len = match.length;
@@ -410,9 +386,6 @@ export class Lexer {
 		};
 	}
 
-	/**
-	 * @returns {PatternHandler}
-	 */
 	#makeSkipHandler(): PatternHandler {
 		return (matched) => {
 			const len = matched.length;
@@ -420,10 +393,6 @@ export class Lexer {
 		};
 	}
 
-	/**
-	 * @param {string} errorMessage
-	 * @returns {PatternHandler}
-	 */
 	#makeInvalidHandler(errorMessage: string): PatternHandler {
 		return (_, __) => {
 			throw this.TuberLexerError(errorMessage);

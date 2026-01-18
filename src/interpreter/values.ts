@@ -278,7 +278,7 @@ export function makeNativeFunction(self: RuntimeValue | null, fn: NativeFunction
 	};
 }
 
-export function makeFunction(body: BlockStatement, args: Array<import('../ast/expressions').ArgumentExpression>, scope: Scope): FunctionValue {
+export function makeFunction(body: BlockStatement, args: ArgumentExpression[], scope: Scope): FunctionValue {
 	const kind = ValueKinds.FUNCTION;
 	return {
 		kind,
@@ -293,7 +293,7 @@ export function makeFunction(body: BlockStatement, args: Array<import('../ast/ex
 	};
 }
 
-export function makeLambda(expression: import('../ast/expressions').Expression, args: Array<import('../ast/expressions').ArgumentExpression>): FunctionValue {
+export function makeLambda(expression: Expression, args: ArgumentExpression[]): FunctionValue {
 	const kind = ValueKinds.FUNCTION;
 	return {
 		kind,

@@ -6,7 +6,7 @@ import { NativeMethodsLookup } from './environment/environment';
 import { Scope } from './scope';
 import { Token, TokenKinds } from '../lexer/tokens';
 import { AssignmentStatement, BlockStatement, ConditionalStatement, DeclarationStatement, DeleteStatement, DoUntilStatement, ExpressionStatement, ForEachStatement, ForStatement, FullForStatement, InsertionStatement, LoadStatement, ProgramStatement, ReadStatement, RepeatStatement, ReturnStatement, SaveStatement, SendStatement, ShortForStatement, Statement, StatementKinds, StopStatement, WhileStatement } from '../ast/statements';
-import { Expression, ExpressionKinds } from '../ast/expressions';
+import { ArrowExpression, BinaryExpression, CallExpression, CastExpression, ConditionalExpression, Expression, ExpressionKinds, FunctionExpression, ListLiteralExpression, RegistryLiteralExpression, SequenceExpression, UnaryExpression } from '../ast/expressions';
 import { iota, shortenText } from '../util/utils';
 import { ValuesOf } from '../util/types';
 
@@ -810,14 +810,14 @@ export class Interpreter {
 	}
 
 	/**@description Evalúa una expresión de Lista y retorna un valor de Lista.*/
-	#evaluateList(node: import('../ast/expressions').ListLiteralExpression, scope: Scope) {
+	#evaluateList(node: ListLiteralExpression, scope: Scope) {
 		const { elements } = node;
 		const evaluatedElements = elements.map(e => this.evaluate(e, scope));
 		return makeList(evaluatedElements);
 	}
 
 	/**@description  Evalúa una expresión de Registro y retorna un valor de Registro.*/
-	#evaluateRegistry(node: import('../ast/expressions').RegistryLiteralExpression, scope: Scope) {
+	#evaluateRegistry(node: RegistryLiteralExpression, scope: Scope) {
 		const { entries } = node;
 
 		const registryValue = makeRegistry(new Map());
@@ -835,7 +835,7 @@ export class Interpreter {
 	}
 
 	/**@description Evalúa una expresión de Función de usuario y devuelve un valor de Función de usuario.*/
-	#evaluateFunction(node: import('../ast/expressions').FunctionExpression, scope: Scope) {
+	#evaluateFunction(node: FunctionExpression, scope: Scope) {
 		if(node.expression === true)
 			return makeLambda(node.body, node.args);
 
@@ -845,7 +845,7 @@ export class Interpreter {
 	}
 
 	/**@description Evalúa una expresión unaria y devuelve el valor resultante de la operación.*/
-	#evaluateUnary(node: import('../ast/expressions').UnaryExpression, scope: Scope, mustBeDeclared = true) {
+	#evaluateUnary(node: UnaryExpression, scope: Scope, mustBeDeclared = true) {
 		const { operator, argument } = node;
 
 		const argumentValue = this.evaluate(argument, scope, mustBeDeclared);
@@ -858,7 +858,7 @@ export class Interpreter {
 	}
 
 	/**@description Evalúa una expresión binaria y devuelve el valor resultante de la operación.*/
-	#evaluateBinary(node: import('../ast/expressions').BinaryExpression, scope: Scope, mustBeDeclared = true) {
+	#evaluateBinary(node: BinaryExpression, scope: Scope, mustBeDeclared = true) {
 		const { operator, left, right } = node;
 
 		if(operator.is(TokenKinds.AFTER))
@@ -880,7 +880,7 @@ export class Interpreter {
 	}
 
 	/**@description Evalúa una expresión ternaria condicional y devuelve el valor resultante de la operación.*/
-	#evaluateConditionalExpr(node: import('../ast/expressions').ConditionalExpression, scope: Scope, mustBeDeclared = true) {
+	#evaluateConditionalExpr(node: ConditionalExpression, scope: Scope, mustBeDeclared = true) {
 		const { test, consequent, alternate } = node;
 
 		const testValue = this.evaluateAs(test, scope, ValueKinds.BOOLEAN, false);
@@ -891,7 +891,7 @@ export class Interpreter {
 	}
 
 	/**@description Evalúa una expresión binaria "luego" y devuelve el valor resultante de la operación.*/
-	#evaluateAfter(node: import('../ast/expressions').BinaryExpression, scope: Scope, mustBeDeclared = true) {
+	#evaluateAfter(node: BinaryExpression, scope: Scope, mustBeDeclared = true) {
 		const { left, right } = node;
 
 		if(this.isTestDrive())
@@ -901,7 +901,7 @@ export class Interpreter {
 	}
 
 	/**@description Evalúa una expresión binaria lógica y devuelve el valor resultante de la operación.*/
-	#evaluateLogical(node: import('../ast/expressions').BinaryExpression, scope: Scope, mustBeDeclared = true) {
+	#evaluateLogical(node: BinaryExpression, scope: Scope, mustBeDeclared = true) {
 		const { operator, left, right } = node;
 
 		const leftValue = this.evaluate(left, scope, mustBeDeclared);
@@ -922,7 +922,7 @@ export class Interpreter {
 	 *
 	 * Si es posible, convierte un valor de un cierto tipo al tipo indicado.
 	 */
-	#evaluateCast(node: import('../ast/expressions').CastExpression, scope: Scope) {
+	#evaluateCast(node: CastExpression, scope: Scope) {
 		const { argument, as } = node;
 		const value = this.evaluate(argument, scope, false);
 		const valueKind = ValueKindLookups.get(as.kind);
@@ -936,7 +936,7 @@ export class Interpreter {
 	 *
 	 * Evalúa todas las expresiones en orden de izquierda a derecha y devuelve el valor de la última expresión evaluada.
 	 */
-	#evaluateSequence(node: import('../ast/expressions').SequenceExpression, scope: Scope) {
+	#evaluateSequence(node: SequenceExpression, scope: Scope) {
 		let lastEvaluation: RuntimeValue = makeNada();
 
 		for(const expression of node.expressions)
@@ -946,7 +946,7 @@ export class Interpreter {
 	}
 
 	/**@description Satanás está DIRECTAMENTE INVOLUCRADO en esta función.*/
-	#evaluateArrow(node: import('../ast/expressions').ArrowExpression, scope: Scope) {
+	#evaluateArrow(node: ArrowExpression, scope: Scope) {
 		const { holder } = node;
 
 		const holderValue = this.evaluate(holder, scope);
@@ -1047,7 +1047,7 @@ export class Interpreter {
 	 *
 	 * Es irrelevante si la Función es nativa o de usuario. Superficialmente, se ejecutarán de forma similar.
 	 */
-	#evaluateCall(node: import('../ast/expressions').CallExpression, scope: Scope) {
+	#evaluateCall(node: CallExpression, scope: Scope) {
 		const { fn, args } = node;
 
 		const fnValue = this.evaluate(fn, scope);
