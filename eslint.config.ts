@@ -1,23 +1,35 @@
-import js from "@eslint/js";
-import globals from "globals";
-import tseslint from "typescript-eslint";
-import { defineConfig } from "eslint/config";
+import js from '@eslint/js';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
+import { defineConfig } from 'eslint/config';
 import stylistic from '@stylistic/eslint-plugin';
 
 export default defineConfig([
 	{
-		files: [ "**/*.{js,ts}" ],
-		plugins: {
-			js,
-			'@stylistic': stylistic
-		},
-		extends: [ "js/recommended" ],
+		files: [ '**/*.ts' ],
+		extends: [
+			js.configs.recommended,
+			tseslint.configs.recommended,
+		],
 		languageOptions: {
 			globals: {...globals.browser, ...globals.node}
-		}
+		},
+		rules: {
+			'no-unused-vars': 'off',
+			'@typescript-eslint/no-unused-vars': 'off',
+			'@typescript-eslint/no-require-imports': 'off',
+			'no-unused-expressions': 'off',
+			'@typescript-eslint/no-unused-expressions': 'off',
+		},
+		ignores: [
+			'**/*.bundle.js',
+		],
 	},
-	tseslint.configs.recommended,
 	{
+		files: [ '**/*.ts' ],
+		plugins: {
+			'@stylistic': stylistic
+		},
 		rules: {
 			'no-unused-expressions': 'off',
 			'@typescript-eslint/no-unused-expressions': 'off',
@@ -109,5 +121,8 @@ export default defineConfig([
 			} ],
 			'@stylistic/eol-last': 'error',
 		},
+		ignores: [
+			'**/*.bundle.js',
+		],
 	},
 ]);
