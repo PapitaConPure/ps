@@ -8,7 +8,7 @@ import {
 } from './values';
 import { Interpreter } from './interpreter';
 
-/**@class Representa un ámbito de variables en un contexto de ejecución de PuréScript.*/
+/**@description Representa un ámbito de variables en un contexto de ejecución de PuréScript.*/
 export class Scope {
 	#interpreter: Interpreter;
 	#parent: Scope | null;
