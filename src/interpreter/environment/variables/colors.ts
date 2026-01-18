@@ -1,6 +1,4 @@
-/**@type {Map<String, Number>}*/
-const NativeColorsLookup = new Map();
-NativeColorsLookup
+export const NativeColorsLookup = new Map<string, number>()
 	.set('colorAnaranjado',       0xe67e22)
 	.set('colorAnaranjadoOscuro', 0xa84300)
     .set('colorAmarillo',         0xfee75c)
@@ -44,7 +42,3 @@ NativeColorsLookup
     .set('colorVerdeOscuro',      0x1f8b4c)
     .set('colorVioleta',          0x9b59b6)
     .set('colorVioletaOscuro',    0x71368a);
-
-module.exports = {
-	NativeColorsLookup,
-};
