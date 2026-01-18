@@ -38,7 +38,10 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "prepare": "lint-staged"
+    "prepare": "lint-staged",
+    "build:node": "bun build ./src/index.ts --outdir ./dist --entry-naming \"[dir]/puréscript.bundle.node.js\" --format esm --plugins dts",
+    "build:browser": "bun build ./src/index.ts --outdir ./dist --entry-naming \"[dir]/puréscript.bundle.js\" --target browser",
+    "build:all": "bun run build:node && bun run build:browser"
   },
   "type": "module",
   "dependencies": {
