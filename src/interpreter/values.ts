@@ -30,7 +30,7 @@ interface BasePrimitiveValueData<U = undefined> {
 	value: U;
 }
 
-export interface PrimitiveValueData<T extends ValueKind, U = undefined> extends BaseValueData<T>, BasePrimitiveValueData<U> {};
+export interface PrimitiveValueData<T extends ValueKind, U = undefined> extends BaseValueData<T>, BasePrimitiveValueData<U> {}
 
 export type NumberValue = PrimitiveValueData<'Number', number>;
 
@@ -44,13 +44,13 @@ export interface ListValueData {
 	elements: RuntimeValue[];
 }
 
-export interface ListValue extends BaseValueData<'List'>, ListValueData {};
+export interface ListValue extends BaseValueData<'List'>, ListValueData {}
 
 export interface RegistryValueData {
 	entries: Map<string, RuntimeValue>;
 }
 
-export interface RegistryValue extends BaseValueData<'Registry'>, RegistryValueData {};
+export interface RegistryValue extends BaseValueData<'Registry'>, RegistryValueData {}
 
 export type EmbedValue = PrimitiveValueData<'Embed', EmbedData>;
 
@@ -341,13 +341,13 @@ export function makeValue<T extends ValueKind>(valueKind: T, value: RuntimeInter
 }
 
 const defaultMakers: Partial<{ [ K in ValueKind ]: () => AssertedRuntimeValue<K> }> = {
-  [ValueKinds.NUMBER]: () => makeNumber(0),
-  [ValueKinds.TEXT]: () => makeText(''),
-  [ValueKinds.BOOLEAN]: () => makeBoolean(false),
-  [ValueKinds.EMBED]: makeEmbed,
-  [ValueKinds.LIST]: () => makeList([]),
-  [ValueKinds.REGISTRY]: () => makeRegistry(new Map()),
-  [ValueKinds.NADA]: makeNada,
+	[ValueKinds.NUMBER]: () => makeNumber(0),
+	[ValueKinds.TEXT]: () => makeText(''),
+	[ValueKinds.BOOLEAN]: () => makeBoolean(false),
+	[ValueKinds.EMBED]: makeEmbed,
+	[ValueKinds.LIST]: () => makeList([]),
+	[ValueKinds.REGISTRY]: () => makeRegistry(new Map()),
+	[ValueKinds.NADA]: makeNada,
 };
 
 /**

@@ -45,7 +45,7 @@ export function makeDate(date: Date): RegistryValue {
 
 	const miembro = new Map<string, RuntimeValue>();
 	miembro
-		.set('mes',     values.mes)
+		.set('mes',     values.mes);
 
 	return makeRegistry(miembro);
 }

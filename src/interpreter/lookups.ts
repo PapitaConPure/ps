@@ -31,40 +31,40 @@ export type BinaryExpressionFunction = (
 function makeUnaryOperation(op: TokenKind): UnaryExpressionFunction {
 	let operation: UnaryExpressionFunction;
 
-	switch (op) {
-		case TokenKinds.PLUS:
-			operation = (it, arg, expr) => {
-				it.rememberNode(expr);
-				const val = coerceValue(it, arg, ValueKinds.NUMBER);
-				it.forgetLastNode();
+	switch(op) {
+	case TokenKinds.PLUS:
+		operation = (it, arg, expr) => {
+			it.rememberNode(expr);
+			const val = coerceValue(it, arg, ValueKinds.NUMBER);
+			it.forgetLastNode();
 
-				return val;
-			};
-			break;
+			return val;
+		};
+		break;
 
-		case TokenKinds.DASH:
-			operation = (it, arg, expr) => {
-				it.rememberNode(expr);
-				const val = coerceValue(it, arg, ValueKinds.NUMBER);
-				it.forgetLastNode();
+	case TokenKinds.DASH:
+		operation = (it, arg, expr) => {
+			it.rememberNode(expr);
+			const val = coerceValue(it, arg, ValueKinds.NUMBER);
+			it.forgetLastNode();
 
-				val.value *= -1;
-				return val;
-			};
-			break;
+			val.value *= -1;
+			return val;
+		};
+		break;
 
-		case TokenKinds.NOT:
-			operation = (it, arg, expr) => {
-				it.rememberNode(expr);
-				const val = coerceValue(it, arg, ValueKinds.BOOLEAN);
-				it.forgetLastNode();
+	case TokenKinds.NOT:
+		operation = (it, arg, expr) => {
+			it.rememberNode(expr);
+			const val = coerceValue(it, arg, ValueKinds.BOOLEAN);
+			it.forgetLastNode();
 
-				return toggleBoolean(val);
-			};
-			break;
+			return toggleBoolean(val);
+		};
+		break;
 
-		default:
-			throw `Operación inválida: ${op}`;
+	default:
+		throw `Operación inválida: ${op}`;
 	}
 
 	return operation;
@@ -82,7 +82,7 @@ const plusBinaryOperation: BinaryExpressionFunction = (
 	leftExpression,
 	rightExpression,
 ) => {
-	if (leftValue.kind === ValueKinds.TEXT || rightValue.kind === ValueKinds.TEXT) {
+	if(leftValue.kind === ValueKinds.TEXT || rightValue.kind === ValueKinds.TEXT) {
 		interpreter.rememberNode(leftExpression);
 		const leftVal = coerceValue(interpreter, leftValue, ValueKinds.TEXT).value;
 		interpreter.forgetLastNode();
@@ -108,30 +108,30 @@ const plusBinaryOperation: BinaryExpressionFunction = (
 function makeArithmeticBinaryOperation(op: TokenKind): BinaryExpressionFunction {
 	let operation: (leftOperand: number, rightOperand: number) => RuntimeValue;
 
-	switch (op) {
-		case TokenKinds.PLUS:
-			operation = (l, r) => makeNumber(l + r);
-			break;
-		case TokenKinds.DASH:
-			operation = (l, r) => makeNumber(l - r);
-			break;
-		case TokenKinds.STAR:
-			operation = (l, r) => makeNumber(l * r);
-			break;
-		case TokenKinds.SLASH:
-			operation = (l, r) => makeNumber(l / r);
-			break;
-		case TokenKinds.PERCENT:
-			operation = (l, r) => makeNumber(l % r);
-			break;
-		case TokenKinds.CARET:
-			operation = (l, r) => makeNumber(l ** r);
-			break;
-		case TokenKinds.DOUBLE_STAR:
-			operation = (l, r) => makeNumber(l ** r);
-			break;
-		default:
-			throw `Operación inválida: ${op}`;
+	switch(op) {
+	case TokenKinds.PLUS:
+		operation = (l, r) => makeNumber(l + r);
+		break;
+	case TokenKinds.DASH:
+		operation = (l, r) => makeNumber(l - r);
+		break;
+	case TokenKinds.STAR:
+		operation = (l, r) => makeNumber(l * r);
+		break;
+	case TokenKinds.SLASH:
+		operation = (l, r) => makeNumber(l / r);
+		break;
+	case TokenKinds.PERCENT:
+		operation = (l, r) => makeNumber(l % r);
+		break;
+	case TokenKinds.CARET:
+		operation = (l, r) => makeNumber(l ** r);
+		break;
+	case TokenKinds.DOUBLE_STAR:
+		operation = (l, r) => makeNumber(l ** r);
+		break;
+	default:
+		throw `Operación inválida: ${op}`;
 	}
 
 	return function (interpreter, leftValue, rightValue, leftExpression, rightExpression) {
@@ -143,34 +143,34 @@ function makeArithmeticBinaryOperation(op: TokenKind): BinaryExpressionFunction 
 		const rightRawVal = coerceValue(interpreter, rightValue, ValueKinds.NUMBER).value;
 		interpreter.forgetLastNode();
 
-		if ((op === TokenKinds.SLASH || op === TokenKinds.PERCENT) && rightRawVal === 0)
+		if((op === TokenKinds.SLASH || op === TokenKinds.PERCENT) && rightRawVal === 0)
 			throw interpreter.TuberInterpreterError('División por cero');
 
 		return operation(leftRawVal, rightRawVal);
 	};
 }
 
-const nonCoercibleKinds = [ValueKinds.EMBED, ValueKinds.FUNCTION, ValueKinds.NATIVE_FN];
+const nonCoercibleKinds = [ ValueKinds.EMBED, ValueKinds.FUNCTION, ValueKinds.NATIVE_FN ];
 
 function seems(interpreter: Interpreter, leftOperand: RuntimeValue, rightOperand: RuntimeValue) {
-	if (leftOperand.kind === rightOperand.kind) return leftOperand.equals(rightOperand);
+	if(leftOperand.kind === rightOperand.kind) return leftOperand.equals(rightOperand);
 
 	//Evitar fallos de coerciones
-	if (
+	if(
 		interpreter.isAnyOf(leftOperand, ...nonCoercibleKinds) ||
 		interpreter.isAnyOf(rightOperand, ...nonCoercibleKinds)
 	)
 		return makeBoolean(false);
 
-	if (leftOperand.kind === ValueKinds.NADA || rightOperand.kind === ValueKinds.NADA) {
-		if (leftOperand.kind === ValueKinds.NUMBER) return makeNumber(0).equals(leftOperand);
+	if(leftOperand.kind === ValueKinds.NADA || rightOperand.kind === ValueKinds.NADA) {
+		if(leftOperand.kind === ValueKinds.NUMBER) return makeNumber(0).equals(leftOperand);
 
-		if (rightOperand.kind === ValueKinds.NUMBER) return makeNumber(0).equals(rightOperand);
+		if(rightOperand.kind === ValueKinds.NUMBER) return makeNumber(0).equals(rightOperand);
 
-		if (interpreter.isAnyOf(leftOperand, ValueKinds.TEXT, ValueKinds.BOOLEAN))
+		if(interpreter.isAnyOf(leftOperand, ValueKinds.TEXT, ValueKinds.BOOLEAN))
 			return coerceValue(interpreter, rightOperand, leftOperand.kind).equals(leftOperand);
 
-		if (interpreter.isAnyOf(rightOperand, ValueKinds.TEXT, ValueKinds.BOOLEAN))
+		if(interpreter.isAnyOf(rightOperand, ValueKinds.TEXT, ValueKinds.BOOLEAN))
 			return coerceValue(interpreter, leftOperand, rightOperand.kind).equals(rightOperand);
 
 		return makeBoolean(false);
@@ -178,7 +178,7 @@ function seems(interpreter: Interpreter, leftOperand: RuntimeValue, rightOperand
 
 	let coercedLeft: NumberValue | TextValue, coercedRight: NumberValue | TextValue;
 
-	if (
+	if(
 		interpreter.isAnyOf(leftOperand, ValueKinds.TEXT, ValueKinds.LIST, ValueKinds.REGISTRY) ||
 		interpreter.isAnyOf(rightOperand, ValueKinds.TEXT, ValueKinds.LIST, ValueKinds.REGISTRY)
 	) {
@@ -195,52 +195,52 @@ function seems(interpreter: Interpreter, leftOperand: RuntimeValue, rightOperand
 function makeRelationalBinaryOperation(op: TokenKind): BinaryExpressionFunction {
 	let operation: BinaryExpressionFunction;
 
-	switch (op) {
-		case TokenKinds.OR:
-			operation = (interpreter, leftValue, rightValue) =>
-				coerceValue(interpreter, leftValue, ValueKinds.BOOLEAN).value
-					? leftValue
-					: rightValue;
-			break;
-		case TokenKinds.AND:
-			operation = (interpreter, leftValue, rightValue) =>
-				coerceValue(interpreter, leftValue, ValueKinds.BOOLEAN).value
-					? rightValue
-					: leftValue;
-			break;
-		case TokenKinds.EQUALS:
-			operation = (_interpreter, leftValue, rightValue) => leftValue.equals(rightValue);
-			break;
-		case TokenKinds.NOT_EQUALS:
-			operation = (_interpreter, leftValue, rightValue) =>
-				toggleBoolean(leftValue.equals(rightValue));
-			break;
-		case TokenKinds.SEEMS:
-			operation = (interpreter, leftValue, rightValue) =>
-				seems(interpreter, leftValue, rightValue);
-			break;
-		case TokenKinds.NOT_SEEMS:
-			operation = (interpreter, leftValue, rightValue) =>
-				toggleBoolean(seems(interpreter, leftValue, rightValue));
-			break;
-		case TokenKinds.LESS:
-			operation = (_interpreter, leftValue, rightValue) =>
-				makeBoolean(leftValue.compareTo(rightValue).value < 0);
-			break;
-		case TokenKinds.LESS_EQUALS:
-			operation = (_interpreter, leftValue, rightValue) =>
-				makeBoolean(leftValue.compareTo(rightValue).value <= 0);
-			break;
-		case TokenKinds.GREATER:
-			operation = (_interpreter, leftValue, rightValue) =>
-				makeBoolean(leftValue.compareTo(rightValue).value > 0);
-			break;
-		case TokenKinds.GREATER_EQUALS:
-			operation = (_interpreter, leftValue, rightValue) =>
-				makeBoolean(leftValue.compareTo(rightValue).value >= 0);
-			break;
-		default:
-			throw `Operación inválida: ${op}`;
+	switch(op) {
+	case TokenKinds.OR:
+		operation = (interpreter, leftValue, rightValue) =>
+			coerceValue(interpreter, leftValue, ValueKinds.BOOLEAN).value
+				? leftValue
+				: rightValue;
+		break;
+	case TokenKinds.AND:
+		operation = (interpreter, leftValue, rightValue) =>
+			coerceValue(interpreter, leftValue, ValueKinds.BOOLEAN).value
+				? rightValue
+				: leftValue;
+		break;
+	case TokenKinds.EQUALS:
+		operation = (_interpreter, leftValue, rightValue) => leftValue.equals(rightValue);
+		break;
+	case TokenKinds.NOT_EQUALS:
+		operation = (_interpreter, leftValue, rightValue) =>
+			toggleBoolean(leftValue.equals(rightValue));
+		break;
+	case TokenKinds.SEEMS:
+		operation = (interpreter, leftValue, rightValue) =>
+			seems(interpreter, leftValue, rightValue);
+		break;
+	case TokenKinds.NOT_SEEMS:
+		operation = (interpreter, leftValue, rightValue) =>
+			toggleBoolean(seems(interpreter, leftValue, rightValue));
+		break;
+	case TokenKinds.LESS:
+		operation = (_interpreter, leftValue, rightValue) =>
+			makeBoolean(leftValue.compareTo(rightValue).value < 0);
+		break;
+	case TokenKinds.LESS_EQUALS:
+		operation = (_interpreter, leftValue, rightValue) =>
+			makeBoolean(leftValue.compareTo(rightValue).value <= 0);
+		break;
+	case TokenKinds.GREATER:
+		operation = (_interpreter, leftValue, rightValue) =>
+			makeBoolean(leftValue.compareTo(rightValue).value > 0);
+		break;
+	case TokenKinds.GREATER_EQUALS:
+		operation = (_interpreter, leftValue, rightValue) =>
+			makeBoolean(leftValue.compareTo(rightValue).value >= 0);
+		break;
+	default:
+		throw `Operación inválida: ${op}`;
 	}
 
 	return operation;

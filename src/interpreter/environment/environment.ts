@@ -23,10 +23,10 @@ export function declareNatives(scope: Scope) {
 	scope.assignVariable('PI', makeNumber(Math.PI));
 	scope.assignVariable('E', makeNumber(Math.E));
 
-	for (const [traducción, original] of NativeColorsLookup)
+	for(const [ traducción, original ] of NativeColorsLookup)
 		scope.assignVariable(traducción, makeText('#' + original.toString(16)));
 
-	for (const { id, fn } of NativeFunctions)
+	for(const { id, fn } of NativeFunctions)
 		scope.assignVariable(id, makeNativeFunction(null, fn));
 }
 
@@ -42,7 +42,7 @@ export async function declareContext(
 	channel && scope.assignVariable('canal', makeDiscordChannel(channel));
 	guild && scope.assignVariable('servidor', await makeDiscordGuild(guild));
 
-	if (savedData != null) {
+	if(savedData != null) {
 		savedData.forEach((node, key) => {
 			scope.assignVariable(key, recursiveRecoverSavedValues(node));
 		});
@@ -51,23 +51,23 @@ export async function declareContext(
 
 /**@description Convierte recursivamente entradas de Registros, de formato JSON a Mapas ES6.*/
 function recursiveRecoverSavedValues(value: RuntimeValue): RuntimeValue {
-	switch (value.kind) {
-		case ValueKinds.NUMBER:
-		case ValueKinds.TEXT:
-		case ValueKinds.BOOLEAN:
-			return makeKindFromValue(value.kind, value.value);
+	switch(value.kind) {
+	case ValueKinds.NUMBER:
+	case ValueKinds.TEXT:
+	case ValueKinds.BOOLEAN:
+		return makeKindFromValue(value.kind, value.value);
 
-		case ValueKinds.LIST:
-			return makeList(value.elements.map((el) => recursiveRecoverSavedValues(el)));
+	case ValueKinds.LIST:
+		return makeList(value.elements.map((el) => recursiveRecoverSavedValues(el)));
 
-		case ValueKinds.REGISTRY: {
-			const mapEntries = new Map();
-			for (const [k, v] of Object.entries(value.entries))
-				mapEntries.set(k, recursiveRecoverSavedValues(v));
-			return makeRegistry(mapEntries);
-		}
+	case ValueKinds.REGISTRY: {
+		const mapEntries = new Map();
+		for(const [ k, v ] of Object.entries(value.entries))
+			mapEntries.set(k, recursiveRecoverSavedValues(v));
+		return makeRegistry(mapEntries);
+	}
 
-		default:
-			return makeNada();
+	default:
+		return makeNada();
 	}
 }

@@ -59,9 +59,9 @@ function verifyParam<TKind extends ValueKind>(name: string, coerced: AssertedRun
 
 /**
  * Función de utilidad para asegurarse de que un parámetro existe y si es del tipo esperado.
- * 
+ *
  * Si el parámetro existe y puede ser convertido al valor esperado correctamente (si no lo era antes), devuelve el resultado de esa conversión. En cualquier otro caso, arroja un error.
- * 
+ *
  * @param name El nombre públicamente representativo del argumento que se pide del usuario.
  * @param value El valor del argumento tal como fue facilitado por el usuario, si existe.
  * @param kind El tipo de valor del argumento de la Función nativa.
@@ -83,12 +83,12 @@ export function expectParam<TKind extends ValueKind>(name: string, value: Runtim
 /**
  * Función de utilidad para recibir un parámetro opcional y siempre conseguir un valor del tipo deseado.
  * Usado para parámetros opcionales que necesitan ser de un tipo específico y tienen un valor por defecto del mismo tipo.
- * 
+ *
  * Devuelve un {@link RuntimeValue} "resultado" cuyo tipo es el tipo especificado y cuyos valores dependen de si el parámetro existe o no:
  * * Si el parámetro existe y puede ser convertido al tipo esperado correctamente, el resultado es el valor convertido al tipo deseado (si no lo era de antemano).
  * * Si el parámetro existe y no puede ser convertido al tipo esperado o su valor no corresponde, se lanzará un error.
  * * Si el parámetro no existe, se devuelve el valor por defecto especificado envuelto en un {@link RuntimeValue} del tipo especificado.
- * 
+ *
  * @param name El nombre públicamente representativo del argumento que se pide del usuario.
  * @param value El valor del argumento tal como fue facilitado por el usuario, si existe.
  * @param kind El tipo de valor del argumento de la Función nativa.
@@ -107,14 +107,14 @@ export function getParamOrDefault<TKind extends ValueKind>(name: string, value: 
 
 /**
  * Función de utilidad para verificar si un parámetro existe y si es del tipo esperado. Usado para parámetros opcionales que necesitan ser de un tipo específico.
- * 
+ *
  * Devuelve un arreglo de 2 elementos cuyos valores dependen de si el parámetro existe o no.
- * 
+ *
  * El primer elemento del arreglo indica si el parámetro existe. El segundo devuelve un {@link RuntimeValue} "resultado" cuyo tipo depende de si el parámetro existe o no:
  * * Si el parámetro existe y puede ser convertido al tipo esperado correctamente, el resultado es el valor convertido al tipo deseado (si no lo era de antemano).
  * * Si el parámetro existe y no puede ser convertido al tipo esperado o su valor no corresponde, se lanzará un error.
  * * Si el parámetro no existe, se devuelve Nada independientemente del tipo.
- * 
+ *
  * @param value El valor del argumento tal como fue facilitado por el usuario, si existe.
  * @param kind El tipo de valor del argumento de la Función nativa.
  * @param scope El {@link Scope} de la Función nativa que llama esta función.
@@ -153,7 +153,7 @@ export function makePredicateFn(name: string, fn: FunctionValue, scope: Scope): 
 
 	if(fn == null)
 		throw it.TuberInterpreterError(`Se esperaba un valor para el parámetro requerido \`${name}\` en Función nativa`);
-	
+
 	if(!it.isAnyOf(fn, ValueKinds.FUNCTION, ValueKinds.NATIVE_FN))
 		throw it.TuberInterpreterError(`Se esperaba una Función para el parámetro requerido \`${name}\` en Función nativa`);
 

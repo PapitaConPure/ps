@@ -110,7 +110,7 @@ export class Interpreter {
 		const suspensorLength = suspensor.length + 1; //Considera el espacio
 
 		if(columnEnd < maxLength) //Suspensor a la derecha
-			lineString = lineString.slice(0, maxLength - suspensorLength) + ' ' + suspensor
+			lineString = lineString.slice(0, maxLength - suspensorLength) + ' ' + suspensor;
 		else if(node.column >= lineString.length) //Suspensor a la izquierda
 			lineString = suspensor + ' ' + lineString.slice(lineString.length - maxLength - 1 + suspensorLength);
 		else { //Dos suspensores
@@ -209,7 +209,7 @@ export class Interpreter {
 		this.#saveTable = new Map();
 		this.#errorStack = [];
 		this.#sendStack = [];
-		this.#lastNodes = []
+		this.#lastNodes = [];
 		this.#source = source.replace(/(^\s+)|(\s+$)/g, '');
 		this.#provider = provider;
 		this.#stop = Stops.NONE;
@@ -331,7 +331,7 @@ export class Interpreter {
 
 	/**@description Evalúa una sentencia o expresión y devuelve un valor extraído de las mismas.*/
 	evaluate(node: Expression, scope: Scope, mustBeDeclared: boolean = true): RuntimeValue {
-		this.rememberNode(node)
+		this.rememberNode(node);
 
 		if(this.#quota <= 0)
 			throw this.TuberInterpreterError(`Límite de ejecución de sentencias agotado. Esto puede deberse a un bucle infinito, abuso de estructuras iterativas o código poco eficiente`, node);
@@ -455,7 +455,7 @@ export class Interpreter {
 
 		let evaluated: RuntimeValue = makeNada();
 
-		do {
+		do{
 			evaluated = this.#evaluateBlock(body, scope);
 			if(this.eatStop(Stops.BREAK)) break;
 		} while(this.evaluateAs(test, scope, ValueKinds.BOOLEAN).value === false);

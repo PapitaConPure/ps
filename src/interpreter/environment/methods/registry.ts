@@ -4,24 +4,24 @@ import { RuntimeValue, NativeFunction, ValueKinds, TextValue, BooleanValue, List
 import { makePredicateFn, expectParam } from '../nativeUtils';
 
 export type RegistryMethod<TArg extends RuntimeValue[] = RuntimeValue[], TResult extends RuntimeValue = RuntimeValue>
- 	= NativeFunction<RegistryValue, TArg, TResult>;
+	= NativeFunction<RegistryValue, TArg, TResult>;
 
 const registroClaves: RegistryMethod<[], ListValue> = (self, []) => {
 	const keysArray = [ ...self.entries.keys() ];
 	const keyRVals = keysArray.map(key => makeText(key));
 	return makeList(keyRVals);
-}
+};
 
 const registroContiene: RegistryMethod<[ TextValue ], BooleanValue> = (self, [ clave ], scope) => {
-	const claveResult = expectParam('clave', clave, ValueKinds.TEXT, scope)
+	const claveResult = expectParam('clave', clave, ValueKinds.TEXT, scope);
 	return makeBoolean(self.entries.has(claveResult.value));
-}
+};
 
 const registroEntradas: RegistryMethod<[], ListValue> = (self, []) => {
 	const entriesArray = [ ...self.entries.entries() ];
 	const entriesRVal = entriesArray.map(([ k, v ]) => makeList([ makeText(k), v ]));
 	return makeList(entriesRVal);
-}
+};
 
 const registroFiltrar: RegistryMethod<[ FunctionValue ], RegistryValue> = (self, [ predicado ], scope) => {
 	const fn = makePredicateFn('filtro', predicado, scope);
@@ -34,7 +34,7 @@ const registroFiltrar: RegistryMethod<[ FunctionValue ], RegistryValue> = (self,
 	}
 
 	return makeRegistry(filtered);
-}
+};
 
 const registroParaCada: RegistryMethod<[ FunctionValue ], NadaValue> = (self, [ predicado ], scope) => {
 	const fn = makePredicateFn('procedimiento', predicado, scope);
@@ -44,22 +44,22 @@ const registroParaCada: RegistryMethod<[ FunctionValue ], NadaValue> = (self, [ 
 		fn(makeText(key), value);
 
 	return makeNada();
-}
+};
 
 const registroQuitar: RegistryMethod<[ TextValue ], BooleanValue> = (self, [ clave ], scope) => {
 	const claveResult = expectParam('clave', clave, ValueKinds.TEXT, scope);
 	const deleted = self.entries.delete(claveResult.value);
 	return makeBoolean(deleted);
-}
+};
 
 const registroVacío: RegistryMethod<[], BooleanValue> = (self, []) => {
 	return makeBoolean(self.entries.size === 0);
-}
+};
 
 const registroValores: RegistryMethod<[], ListValue> = (self, []) => {
 	const valuesArray = [ ...self.entries.values() ];
 	return makeList(valuesArray);
-}
+};
 
 export const registryMethods = new Map<string, RegistryMethod>()
 	.set('claves', registroClaves)

@@ -25,11 +25,11 @@ const marcoAgregarCampo: EmbedMethod<[ TextValue, TextValue, BooleanValue ], Emb
 	});
 
 	return self;
-}
+};
 
 const marcoARegistro: EmbedMethod<[], RegistryValue> = (self, [], scope) => {
 	return require('../registryPrefabs').makeEmbedRegistry(self.value);
-}
+};
 
 const marcoAsignarAutor: EmbedMethod<[ TextValue, TextValue ], EmbedValue> = (self, [ nombre, imagen ], scope) => {
 	const nombreResult = expectParam('nombre', nombre, ValueKinds.TEXT, scope);
@@ -52,7 +52,7 @@ const marcoAsignarAutor: EmbedMethod<[ TextValue, TextValue ], EmbedValue> = (se
 	});
 
 	return self;
-}
+};
 
 const marcoAsignarColor: EmbedMethod<[ TextValue ], EmbedValue> = (self, [ color ], scope) => {
 	const colorResult = expectParam('color', color, ValueKinds.TEXT, scope);
@@ -68,7 +68,7 @@ const marcoAsignarColor: EmbedMethod<[ TextValue ], EmbedValue> = (self, [ color
 	}
 
 	return self;
-}
+};
 
 const marcoAsignarDescripción: EmbedMethod<[ TextValue ], EmbedValue> = (self, [ descripción ], scope) => {
 	const descripciónResult = expectParam('descripción', descripción, ValueKinds.TEXT, scope);
@@ -78,7 +78,7 @@ const marcoAsignarDescripción: EmbedMethod<[ TextValue ], EmbedValue> = (self, 
 
 	self.value.setDescription(descripciónResult.value);
 	return self;
-}
+};
 
 const marcoAsignarEnlace: EmbedMethod<[ TextValue ], EmbedValue> = (self, [ enlace ], scope) => {
 	const enlaceResult = expectParam('enlace', enlace, ValueKinds.TEXT, scope);
@@ -88,7 +88,7 @@ const marcoAsignarEnlace: EmbedMethod<[ TextValue ], EmbedValue> = (self, [ enla
 
 	self.value.setUrl(enlaceResult.value);
 	return self;
-}
+};
 
 const marcoAsignarImagen: EmbedMethod<[ TextValue ], EmbedValue> = (self, [ imagen ], scope) => {
 	const imagenResult = expectParam('imagen', imagen, ValueKinds.TEXT, scope);
@@ -98,7 +98,7 @@ const marcoAsignarImagen: EmbedMethod<[ TextValue ], EmbedValue> = (self, [ imag
 
 	self.value.setImage(imagenResult.value);
 	return self;
-}
+};
 
 const marcoAsignarMiniatura: EmbedMethod<[ TextValue ], EmbedValue> = (self, [ imagen ], scope) => {
 	const imagenResult = expectParam('imagen', imagen, ValueKinds.TEXT, scope);
@@ -108,7 +108,7 @@ const marcoAsignarMiniatura: EmbedMethod<[ TextValue ], EmbedValue> = (self, [ i
 
 	self.value.setThumbnail(imagenResult.value);
 	return self;
-}
+};
 
 const marcoAsignarPie: EmbedMethod<[ TextValue, TextValue ], EmbedValue> = (self, [ pie, ícono ], scope) => {
 	const pieResult = expectParam('pie', pie, ValueKinds.TEXT, scope);
@@ -131,7 +131,7 @@ const marcoAsignarPie: EmbedMethod<[ TextValue, TextValue ], EmbedValue> = (self
 	});
 
 	return self;
-}
+};
 
 const marcoAsignarTítulo: EmbedMethod<[ TextValue ], EmbedValue> = (self, [ título ], scope) => {
 	const títuloResult = expectParam('título', título, ValueKinds.TEXT, scope);
@@ -141,7 +141,7 @@ const marcoAsignarTítulo: EmbedMethod<[ TextValue ], EmbedValue> = (self, [ tí
 
 	self.value.setTitle(títuloResult.value);
 	return self;
-}
+};
 
 export const embedMethods = new Map<string, EmbedMethod>()
 	.set('agregar', marcoAgregarCampo)
