@@ -32,7 +32,13 @@ export default defineConfig([
 					varsIgnorePattern: '^_',
 				},
 			],
-			'indent': [ 'error', 'tab' ],
+			'indent': [
+				'error',
+				'tab',
+				{
+					'ignoreComments': true,
+				},
+			],
 			'no-trailing-spaces': 'error',
 			'no-mixed-spaces-and-tabs': [ 'error', 'smart-tabs' ],
 			'no-extra-semi': 'error',
