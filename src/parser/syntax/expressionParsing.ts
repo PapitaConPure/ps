@@ -2,7 +2,7 @@ import { toLowerCaseNormalized } from '../../util/utils';
 import { TokenKinds } from '../../lexer/tokens';
 import { Associativity, BindingPower, BindingPowers } from '../../ast';
 import { StatementKinds } from '../../ast/statements';
-import { ArgumentExpression, ArrowExpression, BinaryExpression, CallExpression, CastExpression, ConditionalExpression, Expression, ExpressionKinds, FunctionExpression, LambdaExpression, SequenceExpression, UnaryExpression } from '../../ast/expressions';
+import { ArgumentExpression, ArrowExpression, AwaitExpression, BinaryExpression, CallExpression, CastExpression, ConditionalExpression, Expression, ExpressionKinds, FunctionExpression, LambdaExpression, SequenceExpression, UnaryExpression } from '../../ast/expressions';
 import { makeMetadata } from '../../ast/metadata';
 import { parseBlockBody } from './statementParsing';
 import { Parser } from '..';
@@ -245,6 +245,17 @@ export function parseCastExpression(parser: Parser): CastExpression {
 		argument,
 		as,
 		...makeMetadata(as, argument),
+	};
+}
+
+export function parseAwaitExpression(parser: Parser): AwaitExpression {
+	const keyword = parser.advance();
+	const argument = parser.parseExpression(BindingPowers.UNARY);
+
+	return {
+		kind: ExpressionKinds.AWAIT,
+		argument,
+		...makeMetadata(keyword),
 	};
 }
 

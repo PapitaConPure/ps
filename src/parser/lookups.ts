@@ -1,4 +1,4 @@
-import { parsePrimaryExpression, parseUnaryExpression, parseBinaryExpression, parseCastExpression, parseArrowExpression, parseCallExpression, parseFunctionExpression, parseSequenceExpression, parseConditionalExpression, parseLambdaExpression, parseGroupExpression } from './syntax/expressionParsing';
+import { parsePrimaryExpression, parseUnaryExpression, parseBinaryExpression, parseCastExpression, parseArrowExpression, parseCallExpression, parseFunctionExpression, parseSequenceExpression, parseConditionalExpression, parseLambdaExpression, parseGroupExpression, parseAwaitExpression } from './syntax/expressionParsing';
 import { parseBlockStatement, parseConditionalStatement, parseWhileLoopStatement, parseDoWhileLoopStatement, parseRepeatLoopStatement, parseForEachLoopStatement, parseForLoopStatement, parseExpressionStatement, parseReadStatement, parseDeclarationStatement, parseSaveStatement, parseAssignmentStatement, parseExtendStatement, parseDeleteStatement, parseReturnStatement, parseEndStatement, parseStopStatement, parseSendStatement } from './syntax/statementParsing';
 import { BindingPowers, Associativities, BindingPower, Associativity } from '../ast';
 import { TokenKind, TokenKinds } from '../lexer/tokens';
@@ -103,6 +103,7 @@ export function createLookups() {
 	nud(TokenKinds.NUMBER, parseCastExpression);
 	nud(TokenKinds.TEXT, parseCastExpression);
 	nud(TokenKinds.BOOLEAN, parseCastExpression);
+	nud(TokenKinds.AWAIT, parseAwaitExpression);
 
 	//Llamadas
 	led(TokenKinds.PAREN_OPEN, BindingPowers.CALL, Associativities.LEFT, parseCallExpression);
