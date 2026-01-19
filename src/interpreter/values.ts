@@ -8,14 +8,15 @@ import { Scope } from './scope';
 
 /**@description Contiene los tipos de valores de PuréScript.*/
 export const ValueKinds = ({
-	NUMBER: 'number',
+	NUMBER: 'Number',
 	TEXT: 'Text',
-	BOOLEAN: 'boolean',
+	BOOLEAN: 'Boolean',
 	LIST: 'List',
 	REGISTRY: 'Registry',
 	EMBED: 'Embed',
 	NATIVE_FN: 'NativeFunction',
 	FUNCTION: 'Function',
+	PROMISE: 'Promise',
 	NADA: 'Nada',
 }) as const;
 export type ValueKind = ValuesOf<typeof ValueKinds>;
@@ -32,11 +33,11 @@ interface BasePrimitiveValueData<U = undefined> {
 
 export interface PrimitiveValueData<T extends ValueKind, U = undefined> extends BaseValueData<T>, BasePrimitiveValueData<U> {}
 
-export type NumberValue = PrimitiveValueData<'number', number>;
+export type NumberValue = PrimitiveValueData<'Number', number>;
 
 export type TextValue = PrimitiveValueData<'Text', string>;
 
-export type BooleanValue = PrimitiveValueData<'boolean', boolean>;
+export type BooleanValue = PrimitiveValueData<'Boolean', boolean>;
 
 export type NadaValue = PrimitiveValueData<'Nada', null>;
 
@@ -91,6 +92,13 @@ export type FunctionValueData = BaseFunctionValueData & (StandardFunctionValueDa
 
 export type FunctionValue = BaseValueData<'Function'> & FunctionValueData;
 
+export interface PromiseValue extends BaseValueData<'Promise'> {
+	state: 'pending' | 'fulfilled' | 'rejected';
+	promised: () => Promise<RuntimeValue>;
+	value?: RuntimeValue;
+	error?: Error;
+}
+
 export type AnyFunctionValue =
 	| FunctionValue
 	| NativeFunctionValue;
@@ -109,12 +117,13 @@ export type ComplexValue =
 
 export type RuntimeValue =
 	| PrimitiveValue
-	| ComplexValue;
+	| ComplexValue
+	| PromiseValue;
 
 type RuntimeInternalValueMap = {
-	number: number;
+	Number: number;
 	Text: string;
-	boolean: boolean;
+	Boolean: boolean;
 	Nada: null;
 
 	List: RuntimeValue[];
@@ -122,6 +131,7 @@ type RuntimeInternalValueMap = {
 	Embed: EmbedData;
 	NativeFunction: NativeFunction;
 	Function: (x?: unknown) => unknown;
+	Promise: () => Promise<RuntimeValue>;
 };
 export type RuntimeInternalValue<TValue extends ValueKind> = RuntimeInternalValueMap[TValue];
 
@@ -264,6 +274,17 @@ export function makeEmbed(): EmbedValue {
 	};
 }
 
+export function makePromise(promised: () => Promise<RuntimeValue>): PromiseValue {
+	const kind = ValueKinds.PROMISE;
+	return {
+		kind,
+		state: 'pending',
+		promised,
+		equals: EqualsMethodLookups.get(kind),
+		compareTo: CompareToMethodLookups.get(kind),
+	};
+}
+
 export function makeNativeFunction(self: RuntimeValue | null, fn: NativeFunction): NativeFunctionValue {
 	const kind = ValueKinds.NATIVE_FN;
 	return {
@@ -326,6 +347,7 @@ export const valueMakers: Partial<{ [ K in ValueKind ]: (x?: RuntimeInternalValu
 	[ValueKinds.LIST]: makeList,
 	[ValueKinds.REGISTRY]: makeRegistry,
 	[ValueKinds.EMBED]: makeEmbed,
+	[ValueKinds.PROMISE]: makePromise,
 	[ValueKinds.NADA]: makeNada,
 });
 
@@ -347,6 +369,7 @@ const defaultMakers: Partial<{ [ K in ValueKind ]: () => AssertedRuntimeValue<K>
 	[ValueKinds.EMBED]: makeEmbed,
 	[ValueKinds.LIST]: () => makeList([]),
 	[ValueKinds.REGISTRY]: () => makeRegistry(new Map()),
+	[ValueKinds.PROMISE]: () => makePromise(async () => makeNada()),
 	[ValueKinds.NADA]: makeNada,
 };
 
@@ -471,6 +494,10 @@ const coercions: Record<ValueKind, Partial<{ [ KTarget in ValueKind ]: (x: Runti
 		[ValueKinds.TEXT]: () => makeText('[Función nativa]'),
 		[ValueKinds.BOOLEAN]: () => makeBoolean(true),
 	},
+	[ValueKinds.PROMISE]: {
+		[ValueKinds.TEXT]: () => makeText('[Promesa]'),
+		[ValueKinds.BOOLEAN]: () => makeBoolean(true),
+	},
 	[ValueKinds.NADA]: {
 		[ValueKinds.TEXT]: () => makeText('Nada'),
 		[ValueKinds.BOOLEAN]: () => makeBoolean(false),
@@ -502,6 +529,9 @@ export function coerceValue<T extends ValueKind>(interpreter: Interpreter, value
 	case ValueKinds.NATIVE_FN:
 	case ValueKinds.FUNCTION:
 		return coercionFn(null, interpreter);
+
+	case ValueKinds.PROMISE:
+		return coercionFn(value.promised, interpreter);
 
 	default:
 		return coercionFn(value.value, interpreter);

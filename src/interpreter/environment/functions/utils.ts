@@ -236,14 +236,15 @@ const tipoDe: NativeFunction<null, [RuntimeValue], TextValue> = (_self, [ valor 
 		);
 
 	const mappings = {
-		number: 'número',
+		Number: 'número',
 		Text: 'texto',
-		boolean: 'lógico',
+		Boolean: 'lógico',
 		List: 'lista',
 		Registry: 'registro',
 		Embed: 'marco',
 		Function: 'función',
 		NativeFunction: 'función',
+		Promise: 'promesa',
 		Nada: 'nada',
 	} as const satisfies Record<ValueKind, string>;
 

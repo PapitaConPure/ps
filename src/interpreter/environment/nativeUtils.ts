@@ -1,4 +1,4 @@
-import { RuntimeValue, AssertedRuntimeValue, RuntimeInternalValue, ValueKinds, ValueKind, ValueKindTranslationLookups, FunctionValue, NativeFunction, NadaValue, makeList, makeRegistry, makeEmbed, makeFunction, makeNativeFunction, makeNada, valueMakers, coerceValue, isOperable, isValidText } from '../values';
+import { RuntimeValue, AssertedRuntimeValue, RuntimeInternalValue, ValueKinds, ValueKind, ValueKindTranslationLookups, FunctionValue, NativeFunction, NadaValue, makeList, makeRegistry, makeEmbed, makeFunction, makeNativeFunction, makePromise, makeNada, valueMakers, coerceValue, isOperable, isValidText } from '../values';
 import { ArgumentExpression } from '../../ast/expressions';
 import { BlockStatement } from '../../ast/statements';
 import { EmbedData } from '../../embedData';
@@ -33,6 +33,10 @@ export function makeKindFromValue<TKind extends ValueKind>(kind: TKind, ...value
 		const embed = makeEmbed();
 		embed.value = values[0] as EmbedData;
 		return;
+	}
+
+	case ValueKinds.PROMISE: {
+		return makePromise(values[0] as () => Promise<RuntimeValue>) as AssertedRuntimeValue<TKind>;
 	}
 
 	case ValueKinds.NADA:
