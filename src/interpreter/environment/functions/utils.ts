@@ -8,16 +8,19 @@ import {
 	NumberValue,
 	TextValue,
 	BooleanValue,
+	PromiseValue,
 	NadaValue,
 	makeNumber,
 	makeText,
 	makeBoolean,
+	makePromise,
 	makeNada,
 } from '../../values';
 import { getParamOrNada, expectParam } from '../nativeUtils';
 import { rand, randRange } from '../../../util/utils';
 import { rgb2hex, hsl2hex, hsv2hex } from '../../../util/colorUtils';
 import { NativeFunctionEntry } from '.';
+import { sleep } from 'bun';
 
 const aleatorio: NativeFunction<null, [NumberValue, NumberValue], NumberValue> = (
 	_self,
@@ -253,6 +256,13 @@ const tipoDe: NativeFunction<null, [RuntimeValue], TextValue> = (_self, [ valor 
 	return makeText(result);
 };
 
+const pausa: NativeFunction<null, [NumberValue], PromiseValue> = (_self, [ valor ]) => {
+	return makePromise(async () => {
+		await sleep(valor.value);
+		return makeNada();
+	});
+};
+
 export const utilFunctions: NativeFunctionEntry[] = [
 	{ id: 'aleatorio', fn: aleatorio },
 	{ id: 'colorAleatorio', fn: colorAleatorio },
@@ -274,4 +284,6 @@ export const utilFunctions: NativeFunctionEntry[] = [
 	{ id: 'sen', fn: sen },
 	{ id: 'tan', fn: tan },
 	{ id: 'tipoDe', fn: tipoDe },
+	{ id: 'pausa', fn: pausa },
+	{ id: 'pausar', fn: pausa },
 ];
