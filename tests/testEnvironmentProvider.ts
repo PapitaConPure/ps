@@ -1,4 +1,4 @@
-import { EnvironmentProvider, PSChannel, PSGuild, PSMember, PSRole, PSUser } from '../src/interpreter/environment/environmentProvider.js';
+import { EnvironmentProvider, PSChannel, PSGuild, PSMember, PSRole, PSUser } from '../src/interpreter/environment/environmentProvider';
 
 export default class TestEnvironmentProvider implements EnvironmentProvider {
 	guild: PSGuild;
