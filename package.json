@@ -11,12 +11,12 @@
     "codemirror-min": "esbuild docs/codemirror/lib/codemirror.js --bundle --outfile=docs/codemirror/lib/codemirror.min.js --global-name=CodeMirror --minify && esbuild docs/codemirror/lib/codemirror.css --outfile=docs/codemirror/lib/codemirror.min.css --minify"
   },
   "devDependencies": {
-    "@types/node": "^22.9.0",
+    "@types/node": "^22.19.7",
     "chalk": "^4.1.2",
-    "esbuild": "^0.24.0",
-    "prettier": "^3.3.3",
-    "prettier-plugin-tailwindcss": "^0.6.8",
-    "tailwindcss": "^3.4.14"
+    "esbuild": "^0.24.2",
+    "prettier": "^3.8.0",
+    "prettier-plugin-tailwindcss": "^0.6.14",
+    "tailwindcss": "^3.4.19"
   },
   "prettier": {
     "plugins": [
