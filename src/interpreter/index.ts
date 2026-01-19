@@ -1,12 +1,12 @@
 import { Input, InputReader, ProductionInputReader, TestDriveInputReader } from './inputReader';
-import { RuntimeValue, AssertedRuntimeValue, ValueKinds, ValueKindTranslationLookups, makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeEmbed, makeFunction, makeLambda, makeNativeFunction, makeNada, coerceValue, isInternalOperable, ValueKind, AnyFunctionValue } from './values';
+import { RuntimeValue, AssertedRuntimeValue, ValueKinds, ValueKindTranslationLookups, makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeEmbed, makeFunction, makeLambda, makeNativeFunction, makePromise, makeNada, coerceValue, isInternalOperable, ValueKind, AnyFunctionValue, PromiseValue } from './values';
 import { UnaryOperationLookups, BinaryOperationLookups, ValueKindLookups } from './lookups';
 import { EnvironmentProvider } from './environment/environmentProvider';
 import { NativeMethodsLookup } from './environment';
 import { Scope } from './scope';
 import { Token, TokenKinds } from '../lexer/tokens';
 import { AssignmentStatement, BlockStatement, ConditionalStatement, DeclarationStatement, DeleteStatement, DoUntilStatement, ExpressionStatement, ForEachStatement, ForStatement, FullForStatement, InsertionStatement, LoadStatement, ProgramStatement, ReadStatement, RepeatStatement, ReturnStatement, SaveStatement, SendStatement, ShortForStatement, Statement, StatementKinds, StopStatement, WhileStatement } from '../ast/statements';
-import { ArrowExpression, BinaryExpression, CallExpression, CastExpression, ConditionalExpression, Expression, ExpressionKinds, FunctionExpression, ListLiteralExpression, RegistryLiteralExpression, SequenceExpression, UnaryExpression } from '../ast/expressions';
+import { ArrowExpression, AwaitExpression, BinaryExpression, CallExpression, CastExpression, ConditionalExpression, Expression, ExpressionKinds, FunctionExpression, ListLiteralExpression, RegistryLiteralExpression, SequenceExpression, UnaryExpression } from '../ast/expressions';
 import { iota, shortenText } from '../util/utils';
 import { ValuesOf } from '../util/types';
 
@@ -26,6 +26,22 @@ export interface EvaluationResult {
 	errorStack: Error[];
 }
 
+export interface PausedState {
+	state: 'paused';
+	argument: Expression;
+	scope: Scope;
+}
+
+export interface RunningState {
+	state: 'running';
+}
+
+export interface StoppedState {
+	state: 'stopped';
+}
+
+export type ContinuationState = PausedState | RunningState | StoppedState;
+
 /**@description Representa un Intérprete de PuréScript.*/
 export class Interpreter {
 	#inputReader: InputReader;
@@ -34,9 +50,12 @@ export class Interpreter {
 	#saveTable: Map<string, RuntimeValue>;
 	#source: string;
 	#provider: EnvironmentProvider;
+	#continuationState: ContinuationState;
+	#promises: Map<`${number}:${number}`, PromiseValue>;
+	#promiseIds: number[];
 	#stop: StopKind;
 	#quota: number;
-	#lastNodes: Array<Statement | Expression>;
+	#lastNodes: (Statement | Expression)[];
 
 	constructor() {
 		this.#errorStack = [];
@@ -176,12 +195,17 @@ export class Interpreter {
 	}
 
 	eatStop(stopKind: StopKind) {
-		const test = this.#stop >= stopKind;
+		const test = this.checkStop(stopKind);
 
 		if(this.#stop <= stopKind)
 			this.#stop = Stops.NONE;
 
 		return test;
+	}
+
+	/**@throws {HaltSignal}*/
+	halt(promise: PromiseValue): never {
+		throw new HaltSignal(promise);
 	}
 
 	/**@description Agrega el nodo indicado a una pila de nodos para diagnóstico de errores.*/
@@ -199,31 +223,53 @@ export class Interpreter {
 	}
 
 	/**@description Evalúa un nodo programa.*/
-	evaluateProgram(ast: ProgramStatement, scope: Scope, source: string, provider: EnvironmentProvider, args: string[] | null = undefined, isTestDrive: boolean = false): EvaluationResult {
+	async evaluateProgram(ast: ProgramStatement, scope: Scope, source: string, provider: EnvironmentProvider, args: string[] | null = undefined, isTestDrive: boolean = false): Promise<EvaluationResult> {
 		if(ast == null || ast.kind !== StatementKinds.PROGRAM || ast.body == null)
 			throw `Se esperaba AST válido para interpretar`;
 
 		if(typeof source !== 'string')
 			throw new Error('Se esperaba un string válido para proveer información de errores de evaluación');
 
-		this.#saveTable = new Map();
-		this.#errorStack = [];
-		this.#sendStack = [];
-		this.#lastNodes = [];
-		this.#source = source.replace(/(^\s+)|(\s+$)/g, '');
-		this.#provider = provider;
-		this.#stop = Stops.NONE;
-		this.#quota = 2000;
+		//Caché de una unidad de ejecución de programa
+		this.#quota = 2000; //TODO: *Considerar* aumentar a 3000
+		this.#promises = new Map<`${number}:${number}`, PromiseValue>();
+		this.#promiseIds = [];
+		this.#continuationState = { state: 'running' };
 
-		this.#inputReader = isTestDrive
-			? new TestDriveInputReader(this, args)
-			: new ProductionInputReader(this, args);
+		let returned: RuntimeValue;
+		while(this.#continuationState.state === 'running') {
+			try {
+				//Tentativa de evaluación de programa hasta finalizar ejecución.
+				this.#saveTable = new Map();
+				this.#errorStack = [];
+				this.#sendStack = [];
+				this.#lastNodes = [];
+				this.#source = source.replace(/(^\s+)|(\s+$)/g, '');
+				this.#provider = provider;
+				this.#stop = Stops.NONE;
 
-		const returned = this.#evaluateBlock(ast, scope);
+				this.#inputReader = isTestDrive
+					? new TestDriveInputReader(this, args)
+					: new ProductionInputReader(this, args);
+
+				returned = this.#evaluateBlock(ast, scope);
+				this.#continuationState = { state: 'stopped' };
+			} catch(err) {
+				if(err instanceof HaltSignal) {
+					//Reintentar la tentativa de evaluación si se encuentra una espera de promesa.
+					err.promise.value = await err.promise.promised();
+					err.promise.state = 'fulfilled';
+					this.#continuationState = { state: 'running' };
+				} else
+					throw err;
+			}
+		}
+
 		const inputStack = this.#inputReader.inputStack;
 		const sendStack = this.#sendStack.slice();
 		const saveTable = new Map(this.#saveTable.entries());
 		const errorStack = this.#errorStack.slice();
+
 
 		return {
 			returned,
@@ -253,23 +299,48 @@ export class Interpreter {
 			break;
 
 		case StatementKinds.WHILE:
-			returnValue = this.#evaluateWhile(node, scope);
+			this.#promiseIds.push(this.#quota);
+			try {
+				returnValue = this.#evaluateWhile(node, scope);
+			} finally {
+				this.#promiseIds.pop();
+			}
 			break;
 
 		case StatementKinds.DO_UNTIL:
-			returnValue = this.#evaluateDoUntil(node, scope);
+			this.#promiseIds.push(this.#quota);
+			try {
+				returnValue = this.#evaluateDoUntil(node, scope);
+			} finally {
+				this.#promiseIds.pop();
+			}
 			break;
 
 		case StatementKinds.REPEAT:
-			returnValue = this.#evaluateRepeat(node, scope);
+			this.#promiseIds.push(this.#quota);
+			try {
+				returnValue = this.#evaluateRepeat(node, scope);
+			} finally {
+				this.#promiseIds.pop();
+			}
 			break;
 
 		case StatementKinds.FOR_EACH:
-			returnValue = this.#evaluateForEach(node, scope);
+			this.#promiseIds.push(this.#quota);
+			try {
+				returnValue = this.#evaluateForEach(node, scope);
+			} finally {
+				this.#promiseIds.pop();
+			}
 			break;
 
 		case StatementKinds.FOR:
-			returnValue = this.#evaluateFor(node, scope);
+			this.#promiseIds.push(this.#quota);
+			try {
+				returnValue = this.#evaluateFor(node, scope);
+			} finally {
+				this.#promiseIds.pop();
+			}
 			break;
 
 		//Inmediatas
@@ -338,7 +409,7 @@ export class Interpreter {
 
 		this.#quota -= 0.1;
 
-		let returnValue;
+		let returnValue: RuntimeValue;
 		switch(node.kind) {
 		case ExpressionKinds.NUMBER_LITERAL:
 			returnValue = makeNumber(node.value);
@@ -396,6 +467,10 @@ export class Interpreter {
 			returnValue = this.#evaluateSequence(node, scope);
 			break;
 
+		case ExpressionKinds.AWAIT:
+			returnValue = this.#evaluateAwait(node, scope, mustBeDeclared);
+			break;
+
 		case ExpressionKinds.ARROW:
 			returnValue = this.#evaluateArrow(node, scope);
 			break;
@@ -418,6 +493,10 @@ export class Interpreter {
 		const blockScope = new Scope(this, scope);
 		for(const statement of node.body) {
 			returned = this.evaluateStatement(statement, blockScope);
+
+			if(this.#continuationState.state === 'paused')
+				return returned;
+
 			if(this.checkStop(Stops.BREAK)) break;
 		}
 
@@ -945,6 +1024,30 @@ export class Interpreter {
 		return lastEvaluation;
 	}
 
+	/**
+	 * @description Evalúa una expresión de espera.
+	 *
+	 * Esto detiene el flujo de evaluación del intérprete momentáneamente para resolver las promesas dentro del nodo.
+	 */
+	#evaluateAwait(node: AwaitExpression, scope: Scope, mustBeDeclared = false): RuntimeValue {
+		const promiseId = this.#promiseIds.at(-1);
+		const promiseKey = `${node.id}:${promiseId}` as const;
+		const existingPromisedValue = this.#promises.get(promiseKey);
+
+		if(existingPromisedValue?.state === 'fulfilled')
+			return existingPromisedValue.value;
+
+		const { argument } = node;
+
+		let promisedValue = this.evaluate(argument, scope, mustBeDeclared);
+
+		if(promisedValue.kind !== ValueKinds.PROMISE)
+			promisedValue = makePromise(async() => promisedValue);
+
+		this.#promises.set(promiseKey, promisedValue);
+		this.halt(promisedValue);
+	}
+
 	/**@description Satanás está DIRECTAMENTE INVOLUCRADO en esta función.*/
 	#evaluateArrow(node: ArrowExpression, scope: Scope) {
 		const { holder } = node;
@@ -1068,18 +1171,23 @@ export class Interpreter {
 	 * Es irrelevante si la Función es nativa o de usuario. Superficialmente, se ejecutarán de forma similar.
 	 */
 	callFunction(fnValue: AnyFunctionValue, argValues: RuntimeValue[], scope: Scope) {
-		let returnedValue;
+		let returnedValue: RuntimeValue;
 
-		if(this.is(fnValue, ValueKinds.NATIVE_FN)) {
-			const fnScope = new Scope(this, scope);
-			returnedValue = fnValue.call(fnValue.self ?? makeNada(), argValues, fnScope);
-		} else {
-			const fnScope = scope.createFunctionScope(fnValue, argValues);
+		this.#promiseIds.push(this.#quota);
+		try {
+			if(this.is(fnValue, ValueKinds.NATIVE_FN)) {
+				const fnScope = new Scope(this, scope);
+				returnedValue = fnValue.call(fnValue.self ?? makeNada(), argValues, fnScope);
+			} else {
+				const fnScope = scope.createFunctionScope(fnValue, argValues);
 
-			if(fnValue.lambda === false)
-				returnedValue = this.#evaluateBlock(fnValue.body, fnScope);
-			else
-				returnedValue = this.evaluate(fnValue.expression, fnScope);
+				if(fnValue.lambda === false)
+					returnedValue = this.#evaluateBlock(fnValue.body, fnScope);
+				else
+					returnedValue = this.evaluate(fnValue.expression, fnScope);
+			}
+		} finally {
+			this.#promiseIds.pop();
 		}
 
 		this.eatStop(Stops.RETURN);
@@ -1152,5 +1260,14 @@ export class Interpreter {
 	/**@description Devuelve el fragmento de código fuento del cual se originó el nodo AST indicado.*/
 	astString(node: Expression | Statement | Token): string {
 		return this.#source.slice(node.start, node.end);
+	}
+}
+
+export class HaltSignal extends Error {
+	promise: PromiseValue;
+
+	constructor(promise: PromiseValue) {
+		super();
+		this.promise = promise;
 	}
 }
