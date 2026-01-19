@@ -59,7 +59,7 @@ async function executePS(code: string, options: ExecutePSOptions = {}): Promise<
 	const actualSavedData = new Map<string, RuntimeValue>(Object.entries(savedData));
 	await declareContext(scope, provider, actualSavedData);
 
-	const result = interpreter.evaluateProgram(tree, scope, code, provider, args, isTestDrive);
+	const result = await interpreter.evaluateProgram(tree, scope, code, provider, args, isTestDrive);
 	if(log) {
 		console.log(chalk.bold('\nResultado:'));
 		console.log(stringifyPSAST(result));
@@ -212,10 +212,10 @@ test.concurrent('Varias Entradas de Usuario I', async () => {
 
 	expect(inputStack.length).toBe(4);
 
-	expect(inputStack[0]).toMatchObject(new Input('a', 'Text', false));
-	expect(inputStack[1]).toMatchObject(new Input('b', 'boolean', true));
-	expect(inputStack[2]).toMatchObject(new Input('c', 'number', false));
-	expect(inputStack[3]).toMatchObject(new Input('d', 'Text', true));
+	expect(inputStack[0]).toMatchObject(new Input('a', ValueKinds.TEXT, false));
+	expect(inputStack[1]).toMatchObject(new Input('b', ValueKinds.BOOLEAN, true));
+	expect(inputStack[2]).toMatchObject(new Input('c', ValueKinds.NUMBER, false));
+	expect(inputStack[3]).toMatchObject(new Input('d', ValueKinds.TEXT, true));
 
 	expect(sendStack.length).toBe(1);
 	expect(sendStack[0]).toMatchObject(makeText('Ingresa valores'));
@@ -758,4 +758,10 @@ test.concurrent('"este"', async () => {
 	expect(sendStack[1]).toMatchObject(makeText('Moo'));
 	expect(sendStack[2]).toMatchObject(makeText('BAU BAU'));
 	expect(sendStack[3]).toMatchObject(makeText('conchetumare'));
+});
+
+test.concurrent('esperar()', async () => {
+	await executePS(testFiles[39], {
+		log: true,
+	});
 });
