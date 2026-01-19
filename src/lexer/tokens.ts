@@ -85,6 +85,7 @@ export const TokenKinds = ({
 	IN: 'In',
 	FROM: 'From',
 	OPTIONAL: 'Optional',
+	AWAIT: 'Await',
 
 	//Indicadores de Tipo
 	NUMBER: 'NumberKind',
@@ -164,6 +165,7 @@ export const TokenKindTranslations = new Map<TokenKind, string>()
 	.set(TokenKinds.IN, 'Operador especial `en`')
 	.set(TokenKinds.FROM, 'Operador especial `desde`')
 	.set(TokenKinds.OPTIONAL, 'Operador especial `opcional`')
+	.set(TokenKinds.AWAIT, 'Operador `esperar`')
 
 	.set(TokenKinds.PLUS, 'Operador `+`')
 	.set(TokenKinds.DASH, 'Operador `-`')
