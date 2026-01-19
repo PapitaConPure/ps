@@ -10,12 +10,7 @@ import { Parser } from '..';
 export function parsePrimaryExpression(parser: Parser): Expression {
 	const literal = parser.advance();
 
-	const metadata = {
-		line: literal.line,
-		column: literal.column,
-		start: literal.start,
-		end: literal.end,
-	};
+	const metadata = makeMetadata(literal);
 
 	switch(literal.kind) {
 	case TokenKinds.LIT_NUMBER:
@@ -208,13 +203,10 @@ export function parseBinaryExpression(parser: Parser, left: Expression, bp: Bind
 
 	return {
 		kind: ExpressionKinds.BINARY,
-		line: operator.line,
-		column: operator.column,
-		start: left.start,
-		end: right.end,
 		operator,
 		left,
 		right,
+		...makeMetadata(left, right, operator),
 	};
 }
 
@@ -226,13 +218,10 @@ export function parseConditionalExpression(parser: Parser, left: Expression, bp:
 
 	return {
 		kind: ExpressionKinds.CONDITIONAL,
-		line: operator.line,
-		column: operator.column,
-		start: left.start,
-		end: alternate.end,
 		test: left,
 		consequent,
 		alternate,
+		...makeMetadata(left, alternate, operator),
 	};
 }
 
@@ -284,13 +273,10 @@ export function parseArrowExpression(parser: Parser, left: Expression, _bp: Bind
 
 	return {
 		kind,
-		line: holder.line,
-		column: holder.column,
-		start: holder.start,
-		end: primaryExpr.end,
 		holder,
 		key,
 		computed,
+		...makeMetadata(holder, primaryExpr),
 	};
 }
 

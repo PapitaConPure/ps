@@ -4,6 +4,7 @@ import { ProgramStatement, Statement, StatementKinds } from '../ast/statements';
 import { Associativities, Associativity, BindingPower } from '../ast';
 import { parseBlockBody } from './syntax/statementParsing';
 import { Expression } from '../ast/expressions';
+import { makeMetadata, resetMetadataId } from '../ast/metadata';
 
 /**@description Representa un Analizador Sintáctico de PuréScript.*/
 export class Parser {
@@ -190,15 +191,16 @@ export class Parser {
 		this.tokens = tokens;
 		this.#pos = 0;
 
+		resetMetadataId();
+
+		const startToken = this.tokens[0] ?? new Token(null, 'Nada', null, 1, 1, 0, 1);
+		const endToken = this.tokens[this.tokens.length - 1] ?? new Token(null, 'Nada', null, 1, 1, 0, 1);
 		const body = parseBlockBody(this);
 
 		return {
 			kind: StatementKinds.PROGRAM,
-			line: 1,
-			column: 1,
-			start: 0,
-			end: body.length ? body[body.length - 1].end : 1,
 			body,
+			...makeMetadata(startToken, endToken),
 		};
 	}
 

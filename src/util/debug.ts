@@ -175,9 +175,9 @@ export function stringifyPSAST(obj: object | any[], indentSize = 2, indent = ind
 
 	if(!isArray && hasKind) {
 		if(hasPositionalData) {
-			const { kind, line, column: _, start, end, ...rest } = obj as { kind: any, line: any, column: any, start: any, end: any };
+			const { kind, line, column: _, start, end, id, ...rest } = obj as { kind: any, line: any, column: any, start: any, end: any, id: any };
 			obj = rest;
-			name = chalk.cyan(`${kind} ${exChalk.peach(`(${exChalk.mint(line)}, ${exChalk.mint(`${start}~${end}`)})`)} `);
+			name = `${chalk.cyan(kind)} ${exChalk.peach(`(${exChalk.mint(line)}, ${exChalk.mint(`${start}~${end}`)})`)} ${chalk.gray(`#${id}`)} `;
 		} else {
 			const { kind, ...rest } = obj as { kind: any };
 			obj = rest;

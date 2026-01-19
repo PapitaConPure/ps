@@ -44,6 +44,7 @@ export const Associativities = ({
 export type Associativity = ValuesOf<typeof Associativities>;
 
 export interface NodeMetadata {
+	id: number;
 	line: number;
 	column: number;
 	start: number;
