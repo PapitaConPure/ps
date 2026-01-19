@@ -22,6 +22,7 @@ export const ExpressionKinds = ({
 	CONDITIONAL: 'ConditionalExpression',
 	FUNCTION: 'FunctionExpression',
 	SEQUENCE: 'SequenceExpression',
+	AWAIT: 'AwaitExpression',
 }) as const;
 export type ExpressionKind = ValuesOf<typeof ExpressionKinds>;
 
@@ -185,6 +186,12 @@ export interface SequenceExpressionData {
 
 export interface SequenceExpression extends BaseExpressionData<'SequenceExpression'>, SequenceExpressionData {}
 
+export interface AwaitExpressionData {
+	argument: Expression;
+}
+
+export interface AwaitExpression extends BaseExpressionData<'AwaitExpression'>, AwaitExpressionData {}
+
 export type PrimaryExpression =
 	| NumberLiteralExpression
 	| TextLiteralExpression
@@ -204,7 +211,8 @@ export type ComplexExpression =
 	| ConditionalExpression
 	| SequenceExpression
 	| ArgumentExpression
-	| FunctionExpression;
+	| FunctionExpression
+	| AwaitExpression;
 
 export type Expression =
 	| PrimaryExpression
