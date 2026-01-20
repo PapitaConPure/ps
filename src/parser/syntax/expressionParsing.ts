@@ -86,12 +86,6 @@ export function parsePrimaryExpression(parser: Parser): Expression {
 		};
 	}
 
-	case TokenKinds.IMAGE:
-		return {
-			kind: ExpressionKinds.IMAGE_LITERAL,
-			...metadata,
-		};
-
 	case TokenKinds.NADA:
 		return {
 			kind: ExpressionKinds.NADA_LITERAL,

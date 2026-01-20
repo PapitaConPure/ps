@@ -11,7 +11,6 @@ export const ExpressionKinds = ({
 	REGISTRY_LITERAL: 'RegistryLiteralExpression',
 	EMBED_LITERAL: 'EmbedLiteralExpression',
 	CANVAS_LITERAL: 'CanvasLiteralExpression',
-	IMAGE_LITERAL: 'ImageLiteralExpression',
 	NADA_LITERAL: 'NadaLiteralExpression',
 	IDENTIFIER: 'Identifier',
 
@@ -73,8 +72,6 @@ export interface CanvasLiteralExpressionData {
 }
 
 export interface CanvasLiteralExpression extends BaseExpressionData<'CanvasLiteralExpression'>, CanvasLiteralExpressionData {}
-
-export type ImageLiteralExpression = BaseExpressionData<'ImageLiteralExpression'>;
 
 export interface NadaLiteralExpressionData {
 	value: null;
@@ -211,7 +208,6 @@ export type PrimaryExpression =
 	| RegistryLiteralExpression
 	| EmbedLiteralExpression
 	| CanvasLiteralExpression
-	| ImageLiteralExpression
 	| NadaLiteralExpression
 	| Identifier;
 
