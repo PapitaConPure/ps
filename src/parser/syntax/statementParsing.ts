@@ -7,6 +7,7 @@ import { ValueKinds, NumberValue, TextValue, BooleanValue, makeNumber, makeText,
 import { TuberInputError } from '../../interpreter/inputReader';
 import { toLowerCaseNormalized } from '../../util/utils';
 import { Parser } from '..';
+import { parseSequenceExpression } from './expressionParsing';
 
 /**
  * @description
@@ -388,7 +389,7 @@ function parseReadStmtNumberModifier(preModifiers: ReadStatementPreModifier[], m
 			absoluto: () => modifiers.push((v: NumberValue) => makeNumber(Math.abs(v.value))),
 			opcion: () => {
 				const first = parser.parseExpression(BindingPowers.COMMA);
-				const sequence = require('./expressionParsing').parseSequenceExpression(parser, first, BindingPowers.COMMA, Associativities.LEFT);
+				const sequence = parseSequenceExpression(parser, first, BindingPowers.COMMA, Associativities.LEFT);
 				modifiers.push((v: NumberValue, it, scope) => {
 					const i = v.value - 1;
 

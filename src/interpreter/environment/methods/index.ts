@@ -6,6 +6,7 @@ import { textMethods } from './text';
 import { listMethods } from './list';
 import { registryMethods } from './registry';
 import { embedMethods } from './embed';
+import { canvasMethods } from './canvas';
 
 const nativeFunctionMethods = new Map<string, NativeFunction<NativeFunctionValue>>();
 nativeFunctionMethods
@@ -24,11 +25,17 @@ functionMethods.set('llamar', function(self, [], scope) {
 		: scope.interpreter.evaluateStatement(self.body, scope);
 });
 
-export const NativeMethodsLookup = new Map<ValueKind, Map<string, NativeFunction<RuntimeValue>>>()
-	.set(ValueKinds.NUMBER, numberMethods)
-	.set(ValueKinds.TEXT, textMethods)
-	.set(ValueKinds.LIST, listMethods)
-	.set(ValueKinds.REGISTRY, registryMethods)
-	.set(ValueKinds.EMBED, embedMethods)
-	.set(ValueKinds.NATIVE_FN, nativeFunctionMethods)
-	.set(ValueKinds.FUNCTION, functionMethods);
+export const NativeMethodsLookup = ({
+	[ValueKinds.NUMBER]: numberMethods,
+	[ValueKinds.TEXT]: textMethods,
+	[ValueKinds.BOOLEAN]: new Map<string, NativeFunction<RuntimeValue>>(),
+	[ValueKinds.LIST]: listMethods,
+	[ValueKinds.REGISTRY]: registryMethods,
+	[ValueKinds.EMBED]: embedMethods,
+	[ValueKinds.CANVAS]: canvasMethods,
+	[ValueKinds.IMAGE]: new Map<string, NativeFunction<RuntimeValue>>(),
+	[ValueKinds.NATIVE_FN]: nativeFunctionMethods,
+	[ValueKinds.FUNCTION]: functionMethods,
+	[ValueKinds.PROMISE]: new Map<string, NativeFunction<RuntimeValue>>(),
+	[ValueKinds.NADA]: new Map<string, NativeFunction<RuntimeValue>>(),
+}) as const satisfies Record<ValueKind, Map<string, NativeFunction<RuntimeValue>>>;

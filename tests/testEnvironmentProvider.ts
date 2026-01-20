@@ -1,6 +1,6 @@
 import { EnvironmentProvider, PSGuild, PSChannel, PSRole, PSMember, PSUser, PSCanvas } from '../src/interpreter/environment';
-import { PSCanvasDrawTextOptions } from '../src/interpreter/environment/constructs/psCanvas';
-import { Canvas, SKRSContext2D } from '@napi-rs/canvas';
+import { PSCanvasDrawTextOptions, PSCanvasTextAlignment, PSCanvasTextBaseline, PSImageResolvable } from '../src/interpreter/environment/constructs/psCanvas';
+import { Canvas, loadImage, SKRSContext2D } from '@napi-rs/canvas';
 import { ImageValue, makeImage } from '../src/interpreter/values';
 
 class NapiCanvas extends PSCanvas {
@@ -24,8 +24,9 @@ class NapiCanvas extends PSCanvas {
 		return this.#canvas.height;
 	}
 
-	async drawImage(): Promise<void> {
-		throw new Error('Method not implemented.');
+	async drawImage(x: number, y: number, image: PSImageResolvable): Promise<void> {
+		const loadedImage = await loadImage(image);
+		this.#ctx.drawImage(loadedImage, x, y);
 	}
 
 	async drawText(x: number, y: number, text: string, options: PSCanvasDrawTextOptions = {}): Promise<void> {
@@ -48,12 +49,28 @@ class NapiCanvas extends PSCanvas {
 		}
 	}
 
-	setTextAlignment(alignment: CanvasTextAlign): void {
-		this.#ctx.textAlign = alignment;
+	#alignmentMap = {
+		inicio: 'start',
+		izquierda: 'left',
+		centro: 'center',
+		derecha: 'right',
+		fin: 'end',
+	} satisfies Record<PSCanvasTextAlignment, CanvasTextAlign>;
+
+	setTextAlignment(alignment: PSCanvasTextAlignment): void {
+		this.#ctx.textAlign = this.#alignmentMap[alignment];
 	}
 
-	setTextBaseline(baseline: CanvasTextBaseline): void {
-		this.#ctx.textBaseline = baseline;
+	#baselineMap = {
+		superior: 'top',
+		arriba: 'top',
+		medio: 'middle',
+		abajo: 'bottom',
+		inferior: 'bottom',
+	} satisfies Record<PSCanvasTextBaseline, CanvasTextBaseline>;
+
+	setTextBaseline(baseline: PSCanvasTextBaseline): void {
+		this.#ctx.textBaseline = this.#baselineMap[baseline];
 	}
 
 	async renderImage(): Promise<ImageValue> {

@@ -3,6 +3,7 @@
 import { RuntimeValue, NativeFunction, ValueKinds, TextValue, BooleanValue, RegistryValue, EmbedValue } from '../../values';
 import { psFileRegex, expectParam, getParamOrNada, getParamOrDefault, psLinkRegex } from '../nativeUtils';
 import { stringHexToNumber } from '../../../util/utils';
+import { makeEmbedRegistry } from '../registryPrefabs';
 
 export type EmbedMethod<TArg extends RuntimeValue[] = RuntimeValue[], TResult extends RuntimeValue = RuntimeValue>
 	= NativeFunction<EmbedValue, TArg, TResult>;
@@ -28,7 +29,7 @@ const marcoAgregarCampo: EmbedMethod<[ TextValue, TextValue, BooleanValue ], Emb
 };
 
 const marcoARegistro: EmbedMethod<[], RegistryValue> = (self, []) => {
-	return require('../registryPrefabs').makeEmbedRegistry(self.value);
+	return makeEmbedRegistry(self.value);
 };
 
 const marcoAsignarAutor: EmbedMethod<[ TextValue, TextValue ], EmbedValue> = (self, [ nombre, imagen ], scope) => {

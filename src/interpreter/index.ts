@@ -1142,6 +1142,33 @@ export class Interpreter {
 			return makeNada();
 		}
 
+		case ValueKinds.CANVAS: {
+			if(keyString === 'ancho')
+				return makeNumber(holderValue.canvas.width);
+
+			if(keyString === 'alto')
+				return makeNumber(holderValue.canvas.height);
+
+			const method = this.#tryFindNativeMethod(holderValue, keyString);
+			if(method) return method;
+			return makeNada();
+		}
+
+		case ValueKinds.IMAGE: {
+			if(keyString === 'formato')
+				return makeText(holderValue.format);
+
+			if(keyString === 'ancho')
+				return makeNumber(holderValue.width);
+
+			if(keyString === 'alto')
+				return makeNumber(holderValue.height);
+
+			const method = this.#tryFindNativeMethod(holderValue, keyString);
+			if(method) return method;
+			return makeNada();
+		}
+
 		case ValueKinds.NATIVE_FN: {
 			if(keyString === 'largo')
 				return makeNumber(holderValue.call.length);
@@ -1224,8 +1251,10 @@ export class Interpreter {
 	 * Si no se encuentra un método con el nombre solicitado para el tipo del valor indicado, se devuelve `null`
 	 */
 	#tryFindNativeMethod(value: RuntimeValue, key: string): NativeFunctionValue {
-		const lookup = NativeMethodsLookup.get(value.kind);
-		if(!lookup) throw 'Tipo de valor inválido al intentar encontrar método nativo para el mismo';
+		const lookup = NativeMethodsLookup[value.kind];
+
+		if(!lookup)
+			throw this.TuberInterpreterError('Tipo de valor inválido al intentar encontrar método nativo para el mismo');
 
 		const method = lookup.get(key);
 		if(method)
