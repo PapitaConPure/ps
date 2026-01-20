@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { TokenKinds } from '../src/lexer/tokens';
 import { CallExpression, ExpressionKinds, Identifier } from '../src/ast/expressions';
 import { ExpressionStatement, ProgramStatement, StatementKinds } from '../src/ast/statements';
-import { ValueKinds, RuntimeValue, NumberValue, ListValue, RegistryValue, EmbedValue, makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeEmbed, makeNada, coerceValue, BooleanValue } from '../src/interpreter/values';
+import { ValueKinds, RuntimeValue, NumberValue, ListValue, RegistryValue, EmbedValue, makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeEmbed, makeNada, coerceValue, BooleanValue, ImageValue } from '../src/interpreter/values';
 import { Lexer, Parser, Interpreter, Scope, declareNatives, declareContext, Input, stringifyPSAST, Token } from '../src';
 import TestEnvironmentProvider from './testEnvironmentProvider';
 import { EvaluationResult } from '../src/interpreter';
@@ -836,6 +836,10 @@ test.concurrent('Evitar operador "no es" al colocar "no" frente a "esNúmero" o 
 });
 
 test.concurrent('Manipulación básica de imágenes', async () => {
-	await executePS(testFiles[43], { log: true });
+	const result = await executePS(testFiles[43]);
+	const { sendStack } = result;
 
+	expect(sendStack[0].kind).toBe(ValueKinds.IMAGE);
+	const inferredImage = sendStack[0] as ImageValue;
+	expect(inferredImage.buffer).toBeInstanceOf(Buffer);
 });
