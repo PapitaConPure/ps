@@ -65,6 +65,7 @@ class NapiCanvas extends PSCanvas {
 		superior: 'top',
 		arriba: 'top',
 		medio: 'middle',
+		base: 'bottom',
 		abajo: 'bottom',
 		inferior: 'bottom',
 	} satisfies Record<PSCanvasTextBaseline, CanvasTextBaseline>;

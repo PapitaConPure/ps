@@ -23,6 +23,7 @@ export const PSCanvasTextBaselines = ({
 	SUPERIOR: 'superior',
 	ARRIBA: 'arriba',
 	MEDIO: 'medio',
+	BASE: 'base',
 	ABAJO: 'abajo',
 	INFERIOR: 'inferior',
 }) as const;
