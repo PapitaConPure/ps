@@ -1,20 +1,20 @@
 CARGAR pjs con Lista
-  (Registro nombre: "Commando"  , imagen: "https://i.imgur.com/Uf4Zyr7.png", color: "#dc8a10"),
-  (Registro nombre: "Huntress"  , imagen: "https://i.imgur.com/Vu1WCb9.png", color: "#c53634"),
-  (Registro nombre: "Bandit"    , imagen: "https://i.imgur.com/nBV8rKK.png", color: "#d680da"),
-  (Registro nombre: "MUL-T"     , imagen: "https://i.imgur.com/ksE1VVx.png", color: "#c3b548"),
-  (Registro nombre: "Engineer"  , imagen: "https://i.imgur.com/OE6mRJ7.png", color: "#55d27a"),
-  (Registro nombre: "Artificer" , imagen: "https://i.imgur.com/CIaiIBy.png", color: "#e5b3ea"),
-  (Registro nombre: "Mercenary" , imagen: "https://i.imgur.com/tVWtc18.png", color: "#61c2da"),
-  (Registro nombre: "REX"       , imagen: "https://i.imgur.com/Fu22FRv.png", color: "#79914d"),
-  (Registro nombre: "Loader"    , imagen: "https://i.imgur.com/pSnf2dd.png", color: "#5e67ce"),
-  (Registro nombre: "Acrid"     , imagen: "https://i.imgur.com/lTVR6ON.png", color: "#b9e042"),
-  (Registro nombre: "Captain"   , imagen: "https://i.imgur.com/gw6UaLL.png", color: "#afac87"),
-  (Registro nombre: "Railgunner", imagen: "https://i.imgur.com/rsgTKu4.png", color: "#dc1548"),
-  (Registro nombre: "Void Fiend", imagen: "https://i.imgur.com/IqNXiVb.png", color: "#ab15dc"),
-  (Registro nombre: "Seeker"    , imagen: "https://i.imgur.com/yCah2fa.png", color: "#c9a448"),
-  (Registro nombre: "False Son" , imagen: "https://i.imgur.com/sNfQ3Bt.png", color: "#c16e5b"),
-  (Registro nombre: "Chef"      , imagen: "https://i.imgur.com/LSEkCo3.png", color: "#bd155b"),
+  (Registro nombre: "Commando"  , img: "https://i.imgur.com/Uf4Zyr7.png", color: "#dc8a10"),
+  (Registro nombre: "Huntress"  , img: "https://i.imgur.com/Vu1WCb9.png", color: "#c53634"),
+  (Registro nombre: "Bandit"    , img: "https://i.imgur.com/nBV8rKK.png", color: "#d680da"),
+  (Registro nombre: "MUL-T"     , img: "https://i.imgur.com/ksE1VVx.png", color: "#c3b548"),
+  (Registro nombre: "Engineer"  , img: "https://i.imgur.com/OE6mRJ7.png", color: "#55d27a"),
+  (Registro nombre: "Artificer" , img: "https://i.imgur.com/CIaiIBy.png", color: "#e5b3ea"),
+  (Registro nombre: "Mercenary" , img: "https://i.imgur.com/tVWtc18.png", color: "#61c2da"),
+  (Registro nombre: "REX"       , img: "https://i.imgur.com/Fu22FRv.png", color: "#79914d"),
+  (Registro nombre: "Loader"    , img: "https://i.imgur.com/pSnf2dd.png", color: "#5e67ce"),
+  (Registro nombre: "Acrid"     , img: "https://i.imgur.com/lTVR6ON.png", color: "#b9e042"),
+  (Registro nombre: "Captain"   , img: "https://i.imgur.com/gw6UaLL.png", color: "#afac87"),
+  (Registro nombre: "Railgunner", img: "https://i.imgur.com/rsgTKu4.png", color: "#dc1548"),
+  (Registro nombre: "Void Fiend", img: "https://i.imgur.com/IqNXiVb.png", color: "#ab15dc"),
+  (Registro nombre: "Seeker"    , img: "https://i.imgur.com/yCah2fa.png", color: "#c9a448"),
+  (Registro nombre: "False Son" , img: "https://i.imgur.com/sNfQ3Bt.png", color: "#c16e5b"),
+  (Registro nombre: "Chef"      , img: "https://i.imgur.com/LSEkCo3.png", color: "#bd155b"),
 
 CARGAR idx con dado(pjs->largo)
 CARGAR pj CON pjs->(idx)
@@ -22,7 +22,7 @@ CARGAR pj CON pjs->(idx)
 CARGAR mc con Marco
 EJECUTAR mc->asignarAutor(usuario->nombre, usuario->avatar)
 EJECUTAR mc->asignarColor(colorDorado)
-EJECUTAR mc->asignarMiniatura(pj->imagen)
+EJECUTAR mc->asignarMiniatura(pj->img)
 EJECUTAR mc->agregarCampo("Vas a ir con...", pj->nombre)
 
 ENVIAR mc
