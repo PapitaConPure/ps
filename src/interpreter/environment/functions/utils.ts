@@ -23,7 +23,7 @@ import { rand, randRange } from '../../../util/utils';
 import { rgb2hex, hsl2hex, hsv2hex } from '../../../util/colorUtils';
 import { NativeFunctionEntry } from '.';
 import { sleep } from 'bun';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 const aleatorio: NativeFunction<null, [NumberValue, NumberValue], NumberValue> = (
 	_self,
@@ -270,15 +270,45 @@ const obtener: NativeFunction<null, [TextValue], PromiseValue<RegistryValue>> = 
 	return makePromise(async () => {
 		try {
 			const result = await axios.get(valor.value);
-			return makeRegistry({
-				exito: makeBoolean(false),
-				datos: makeRuntimeValueFromInternalValue(result.data, { omitFunctions: true }),
-			});
+			const status = makeNumber(result.status);
+			if(result.status >= 200 && result.status < 400) {
+				const success = makeBoolean(true);
+				return makeRegistry({
+					éxito: success,
+					exito: success,
+					código: status,
+					codigo: status,
+					datos: makeRuntimeValueFromInternalValue(result.data, { omitFunctions: true }),
+				});
+			} else {
+				const success = makeBoolean(false);
+				return makeRegistry({
+					éxito: success,
+					exito: success,
+					código: status,
+					codigo: status,
+					datos: makeRuntimeValueFromInternalValue(result.data, { omitFunctions: true }),
+				});
+			}
 		} catch(err) {
-			return makeRegistry({
-				exito: makeBoolean(false),
-				mensaje: makeText(err?.message ?? 'No se especificó el problema.'),
-			});
+			const success = makeBoolean(false);
+			if(err instanceof AxiosError) {
+				return makeRegistry({
+					éxito: success,
+					exito: success,
+					código: makeNumber(err.status ?? -1),
+					codigo: makeNumber(err.status ?? -1),
+					mensaje: makeText(err?.message ?? 'Ocurrió un problema desconocido al obtener los datos pedidos.'),
+				});
+			} else {
+				return makeRegistry({
+					éxito: success,
+					exito: success,
+					código: makeNumber(-1),
+					codigo: makeNumber(-1),
+					mensaje: makeText(err?.message ?? 'No se especificó el problema.'),
+				});
+			}
 		}
 	});
 };
