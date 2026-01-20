@@ -36,7 +36,7 @@ export {
 
 export { stringifyPSAST, logPSAST } from './util/debug';
 
-export const PS_VERSION = 1.1;
+export const PS_VERSION = 1.2;
 
 export interface BaseTubercle {
 	id: string;
