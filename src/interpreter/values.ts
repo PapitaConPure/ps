@@ -5,6 +5,8 @@ import { ValuesOf } from '../util/types';
 import { makeEmbedRegistry } from './environment/registryPrefabs';
 import { Interpreter } from '.';
 import { Scope } from './scope';
+import { makeRuntimeValueFromInternalValue } from './environment/nativeUtils';
+import { PSCanvas } from './environment';
 
 /**@description Contiene los tipos de valores de PuréScript.*/
 export const ValueKinds = ({
@@ -14,6 +16,8 @@ export const ValueKinds = ({
 	LIST: 'List',
 	REGISTRY: 'Registry',
 	EMBED: 'Embed',
+	CANVAS: 'Canvas',
+	IMAGE: 'Image',
 	NATIVE_FN: 'NativeFunction',
 	FUNCTION: 'Function',
 	PROMISE: 'Promise',
@@ -54,6 +58,23 @@ export interface RegistryValueData {
 export interface RegistryValue extends BaseValueData<'Registry'>, RegistryValueData {}
 
 export type EmbedValue = PrimitiveValueData<'Embed', EmbedData>;
+
+export interface CanvasValueData {
+	canvas: PSCanvas;
+}
+
+export interface CanvasValue extends BaseValueData<'Canvas'>, CanvasValueData {}
+
+export type ImageValueFormat = 'webp' | 'png' | 'jpeg' | 'bmp';
+
+export interface ImageValueData {
+	format: ImageValueFormat;
+	width: number;
+	height: number;
+	buffer: Buffer<ArrayBufferLike>;
+}
+
+export interface ImageValue extends BaseValueData<'Image'>, ImageValueData {}
 
 export type NativeMethod<T extends RuntimeValue> = (self: T, args: RuntimeValue[], scope: Scope) => RuntimeValue;
 
@@ -106,6 +127,8 @@ export type ComplexValue =
 	| ListValue
 	| RegistryValue
 	| EmbedValue
+	| CanvasValue
+	| ImageValue
 	| AnyFunctionValue;
 
 export type TangibleValue =
@@ -132,6 +155,8 @@ type RuntimeInternalValueMap = {
 	List: RuntimeValue[];
 	Registry: Map<string, RuntimeValue>;
 	Embed: EmbedData;
+	Canvas: PSCanvas;
+	Image: ImageValueData;
 	NativeFunction: NativeFunction;
 	Function: (x?: unknown) => unknown;
 	Promise: () => Promise<RuntimeValue>;
@@ -272,6 +297,29 @@ export function makeEmbed(): EmbedValue {
 	return {
 		kind,
 		value: new EmbedData(),
+		equals: EqualsMethodLookups.get(kind),
+		compareTo: CompareToMethodLookups.get(kind),
+	};
+}
+
+export function makeCanvas(interpreter: Interpreter, width: NumberValue, height: NumberValue): CanvasValue {
+	const kind = ValueKinds.CANVAS;
+	return {
+		kind,
+		canvas: interpreter.provider.createCanvas(width.value, height.value),
+		equals: EqualsMethodLookups.get(kind),
+		compareTo: CompareToMethodLookups.get(kind),
+	};
+}
+
+export function makeImage(format: ImageValueFormat, width: number, height: number, data: Buffer<ArrayBufferLike>): ImageValue {
+	const kind = ValueKinds.IMAGE;
+	return {
+		kind,
+		format,
+		width,
+		height,
+		buffer: data,
 		equals: EqualsMethodLookups.get(kind),
 		compareTo: CompareToMethodLookups.get(kind),
 	};
@@ -489,6 +537,39 @@ const coercions: Record<ValueKind, Partial<{ [ KTarget in ValueKind ]: (x: Runti
 			return makeEmbedRegistry(x);
 		},
 	},
+	[ValueKinds.CANVAS]: {
+		[ValueKinds.TEXT]: () => makeText('[Lienzo]'),
+		[ValueKinds.BOOLEAN]: () => makeBoolean(true),
+		[ValueKinds.REGISTRY]: (x: PSCanvas) => {
+			if(x == null)
+				return null;
+
+			return makeRegistry({
+				ancho: makeNumber(x.width),
+				alto: makeNumber(x.height),
+			});
+		},
+	},
+	[ValueKinds.IMAGE]: {
+		[ValueKinds.TEXT]: () => makeText('[Imagen]'),
+		[ValueKinds.BOOLEAN]: () => makeBoolean(true),
+		[ValueKinds.LIST]: (x: ImageValueData) => {
+			if(x == null || !(x instanceof Buffer))
+				return null;
+
+			return makeList([ ...x.values().map(v => makeRuntimeValueFromInternalValue(v)) ]);
+		},
+		[ValueKinds.REGISTRY]: (x: ImageValueData) => {
+			if(x == null || x.buffer == null)
+				return null;
+
+			return makeRegistry({
+				formato: makeText(x.format),
+				ancho: makeNumber(x.width),
+				alto: makeNumber(x.height),
+			});
+		},
+	},
 	[ValueKinds.FUNCTION]: {
 		[ValueKinds.TEXT]: () => makeText('[Función]'),
 		[ValueKinds.BOOLEAN]: () => makeBoolean(true),
@@ -532,6 +613,12 @@ export function coerceValue<T extends ValueKind>(interpreter: Interpreter, value
 	case ValueKinds.NATIVE_FN:
 	case ValueKinds.FUNCTION:
 		return coercionFn(null, interpreter);
+
+	case ValueKinds.CANVAS:
+		return coercionFn(value.canvas, interpreter);
+
+	case ValueKinds.IMAGE:
+		return coercionFn({ ...value }, interpreter);
 
 	case ValueKinds.PROMISE:
 		return coercionFn(value.promised, interpreter);
