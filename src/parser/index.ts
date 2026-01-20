@@ -121,7 +121,7 @@ export class Parser {
 		if(!expectedToken.isAny(...tokenKinds)) {
 			this.#pos--;
 			return {
-				orFail: function(errorMessage = `Se esperaba un token de tipo: ${translateTokenKinds(...tokenKinds).join('/')}, pero se recibió: ${expectedToken.translated}`, token = null) {
+				orFail: (errorMessage = `Se esperaba un token de tipo: ${translateTokenKinds(...tokenKinds).join('/')}, pero se recibió: ${expectedToken.translated}`, token = null) => {
 					token ??= expectedToken;
 					throw this.TuberParserError(errorMessage, token);
 				},
@@ -129,7 +129,7 @@ export class Parser {
 		}
 
 		return {
-			orFail: function(_errorMessage = null, _token = null) {
+			orFail: (_errorMessage = null, _token = null) => {
 				return expectedToken;
 			},
 		};
