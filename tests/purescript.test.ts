@@ -13,7 +13,7 @@ import { shortenText } from '../src/util/utils';
 import chalk from 'chalk';
 
 const testFiles: string[] = [];
-const relPath = './tests/tubertests';
+const relPath = './tests/scripts';
 for(const filename of readdirSync(relPath).sort()) {
 	const file = readFileSync(join(relPath, filename), { encoding: 'utf-8' });
 	testFiles.push(file);
@@ -811,7 +811,7 @@ test.concurrent('"esperar" con estructuras de control', async () => {
 });
 
 test.concurrent('Evitar operador "no es" al colocar "no" frente a "esNúmero" o similares', async () => {
-	const result = await executePS(testFiles[42], { log: true });
+	const result = await executePS(testFiles[42]);
 	const { tokens, sendStack } = result;
 
 	expect(tokens[7].kind).toBe(TokenKinds.IF);
