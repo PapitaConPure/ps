@@ -834,3 +834,8 @@ test.concurrent('Evitar operador "no es" al colocar "no" frente a "esNúmero" o 
 	expect(sendStack[2]).toMatchObject(makeText('Es un texto'));
 	expect(sendStack[3]).toMatchObject(makeText('No es un texto'));
 });
+
+test.concurrent('Manipulación básica de imágenes', async () => {
+	await executePS(testFiles[43], { log: true });
+
+});
