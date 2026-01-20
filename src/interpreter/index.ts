@@ -1,12 +1,12 @@
 import { Input, InputReader, ProductionInputReader, TestDriveInputReader } from './inputReader';
-import { RuntimeValue, AssertedRuntimeValue, ValueKinds, ValueKindTranslationLookups, makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeEmbed, makeFunction, makeLambda, makeNativeFunction, makePromise, makeNada, coerceValue, isInternalOperable, ValueKind, AnyFunctionValue, PromiseValue, TangibleValue, ListValue, RegistryValue, FunctionValue, NadaValue, NativeFunctionValue } from './values';
+import { RuntimeValue, AssertedRuntimeValue, ValueKinds, ValueKindTranslationLookups, makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeEmbed, makeCanvas, makeFunction, makeLambda, makeNativeFunction, makePromise, makeNada, coerceValue, isInternalOperable, ValueKind, AnyFunctionValue, PromiseValue, TangibleValue, ListValue, RegistryValue, CanvasValue, FunctionValue, NadaValue, NativeFunctionValue } from './values';
 import { UnaryOperationLookups, BinaryOperationLookups, ValueKindLookups } from './lookups';
 import { EnvironmentProvider } from './environment/environmentProvider';
 import { NativeMethodsLookup } from './environment';
 import { Scope } from './scope';
 import { Token, TokenKinds } from '../lexer/tokens';
 import { AssignmentStatement, BlockStatement, ConditionalStatement, DeclarationStatement, DeleteStatement, DoUntilStatement, ExpressionStatement, ForEachStatement, ForStatement, FullForStatement, InsertionStatement, LoadStatement, ProgramStatement, ReadStatement, RepeatStatement, ReturnStatement, SaveStatement, SendStatement, ShortForStatement, Statement, StatementKinds, StopStatement, WhileStatement } from '../ast/statements';
-import { ArrowExpression, AwaitExpression, BinaryExpression, CallExpression, CastExpression, ConditionalExpression, Expression, ExpressionKinds, FunctionExpression, ListLiteralExpression, RegistryLiteralExpression, SequenceExpression, UnaryExpression } from '../ast/expressions';
+import { ArrowExpression, AwaitExpression, BinaryExpression, CallExpression, CanvasLiteralExpression, CastExpression, ConditionalExpression, Expression, ExpressionKinds, FunctionExpression, ListLiteralExpression, RegistryLiteralExpression, SequenceExpression, UnaryExpression } from '../ast/expressions';
 import { iota, shortenText } from '../util/utils';
 import { ValuesOf } from '../util/types';
 
@@ -410,6 +410,10 @@ export class Interpreter {
 
 		case ExpressionKinds.EMBED_LITERAL:
 			returnValue = makeEmbed();
+			break;
+
+		case ExpressionKinds.CANVAS_LITERAL:
+			returnValue = this.#evaluateCanvas(node, scope);
 			break;
 
 		case ExpressionKinds.FUNCTION:
@@ -902,6 +906,16 @@ export class Interpreter {
 		const { elements } = node;
 		const evaluatedElements = elements.map(e => this.evaluate(e, scope));
 		return makeList(evaluatedElements);
+	}
+
+	/**@description Evalúa una expresión de Lienzo y retorna un valor de Lienzo.*/
+	#evaluateCanvas(node: CanvasLiteralExpression, scope: Scope): CanvasValue {
+		const { width, height } = node;
+
+		const evaluatedWidth = this.evaluateAs(width, scope, ValueKinds.NUMBER, true);
+		const evaluatedHeight = this.evaluateAs(height, scope, ValueKinds.NUMBER, true);
+
+		return makeCanvas(this, evaluatedWidth, evaluatedHeight);
 	}
 
 	/**@description  Evalúa una expresión de Registro y retorna un valor de Registro.*/
