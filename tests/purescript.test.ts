@@ -760,8 +760,19 @@ test.concurrent('"este"', async () => {
 	expect(sendStack[3]).toMatchObject(makeText('conchetumare'));
 });
 
-test.concurrent('esperar()', async () => {
-	await executePS(testFiles[39], {
-		log: true,
-	});
+test.concurrent('"esperar"', async () => {
+	const result = await executePS(testFiles[39], {});
+	const { sendStack, returned } = result;
+
+	expect(sendStack[0]).toMatchObject(makeText('holaaaaa nwn'));
+	expect(returned).toMatchObject(makeNada());
+});
+
+test.concurrent('"esperar" con estructuras de control', async () => {
+	const result = await executePS(testFiles[40], { log: true });
+	const { sendStack, returned } = result;
+
+	expect(sendStack[0]).toMatchObject(makeText('valores de l: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9'));
+	expect(sendStack[1]).toMatchObject(makeText('wawa'));
+	expect(returned).toMatchObject(makeNada());
 });

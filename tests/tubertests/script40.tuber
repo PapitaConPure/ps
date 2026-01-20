@@ -1,0 +1,17 @@
+CREAR Lista l
+CARGAR cnt con 0
+
+REPETIR 10 veces
+	EJECUTAR esperar pausa(50)
+	EXTENDER l con cnt
+	SUMAR cnt
+FIN
+
+ENVIAR "valores de l: " + l->unir(", ")
+
+CARGAR wawa con Función()
+	EJECUTAR esperar pausa(50)
+	DEVOLVER 'wawa'
+FIN
+
+ENVIAR wawa()
