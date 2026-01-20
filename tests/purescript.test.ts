@@ -2,10 +2,11 @@ import { test, expect } from 'bun:test';
 import { readdirSync } from 'node:fs';
 import { readFileSync } from 'fs';
 import { join } from 'node:path';
-import { Lexer, Parser, Interpreter, Scope, declareNatives, declareContext, Input, stringifyPSAST, Token } from '../src/index.js';
-import { ValueKinds, RuntimeValue, NumberValue, ListValue, RegistryValue, EmbedValue, makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeEmbed, makeNada, coerceValue, BooleanValue } from '../src/interpreter/values.js';
-import { ExpressionStatement, ProgramStatement, StatementKinds } from '../src/ast/statements.js';
-import { CallExpression, ExpressionKinds, Identifier } from '../src/ast/expressions.js';
+import { TokenKinds } from '../src/lexer/tokens';
+import { CallExpression, ExpressionKinds, Identifier } from '../src/ast/expressions';
+import { ExpressionStatement, ProgramStatement, StatementKinds } from '../src/ast/statements';
+import { ValueKinds, RuntimeValue, NumberValue, ListValue, RegistryValue, EmbedValue, makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeEmbed, makeNada, coerceValue, BooleanValue } from '../src/interpreter/values';
+import { Lexer, Parser, Interpreter, Scope, declareNatives, declareContext, Input, stringifyPSAST, Token } from '../src';
 import TestEnvironmentProvider from './testEnvironmentProvider';
 import { EvaluationResult } from '../src/interpreter';
 import { shortenText } from '../src/util/utils';
@@ -806,5 +807,22 @@ test.concurrent('"esperar" con estructuras de control', async () => {
 
 	expect(sendStack[0]).toMatchObject(makeText('valores de l: 0, 1, 2, 3, 4'));
 	expect(sendStack[1]).toMatchObject(makeText('wawa'));
+	expect(returned).toMatchObject(makeNada());
+});
+
+test.concurrent('Evitar operador "no es" al colocar "no" frente a "esNúmero" o similares', async () => {
+	const result = await executePS(testFiles[42], { log: true });
+	const { tokens, sendStack, returned } = result;
+
+	expect(tokens[ 7].kind).toBe(TokenKinds.IF);
+	expect(tokens[ 8].kind).toBe(TokenKinds.NOT);
+	expect(tokens[ 9].kind).toBe(TokenKinds.IDENTIFIER);
+	expect(tokens[10].kind).toBe(TokenKinds.PAREN_OPEN);
+	expect(tokens[11].kind).toBe(TokenKinds.IDENTIFIER);
+	expect(tokens[12].kind).toBe(TokenKinds.PAREN_CLOSE);
+
+	expect(sendStack[0]).toMatchObject(makeText('No es un número'));
+	expect(sendStack[1]).toMatchObject(makeText('Es un número'));
+	expect(sendStack[2]).toMatchObject(makeText('No es un número'));
 	expect(returned).toMatchObject(makeNada());
 });

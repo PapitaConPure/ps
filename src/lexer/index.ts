@@ -138,12 +138,12 @@ export class Lexer {
 			{ match: '&&', handler: this.#makeDefaultHandler(TokenKinds.AND) },
 			{ match: '!', handler: this.#makeDefaultHandler(TokenKinds.NOT) },
 
-			{ match: 'no excede', handler: this.#makeDefaultHandler(TokenKinds.LESS_EQUALS) },
-			{ match: 'no precede', handler: this.#makeDefaultHandler(TokenKinds.GREATER_EQUALS) },
-			{ match: 'no es', handler: this.#makeDefaultHandler(TokenKinds.NOT_EQUALS) },
-			{ match: 'no parece', handler: this.#makeDefaultHandler(TokenKinds.NOT_SEEMS) },
-			{ match: 'sino si', handler: this.#makeDefaultHandler(TokenKinds.ELSE_IF) },
-			{ match: 'para cada', handler: this.#makeDefaultHandler(TokenKinds.FOR_EACH) },
+			{ match: /^no excede[^a-z]/, handler: this.#makeDefaultHandler(TokenKinds.LESS_EQUALS) },
+			{ match: /^no precede[^a-z]/, handler: this.#makeDefaultHandler(TokenKinds.GREATER_EQUALS) },
+			{ match: /^no es[^a-z]/, handler: this.#makeDefaultHandler(TokenKinds.NOT_EQUALS) },
+			{ match: /^no parece[^a-z]/, handler: this.#makeDefaultHandler(TokenKinds.NOT_SEEMS) },
+			{ match: /^sino si[^a-z]/, handler: this.#makeDefaultHandler(TokenKinds.ELSE_IF) },
+			{ match: /^para cada[^a-z]/, handler: this.#makeDefaultHandler(TokenKinds.FOR_EACH) },
 
 			{ match: /^[A-Za-z_][A-Za-z0-9_]{0,99}/, handler: this.#makeSymbolHandler() },
 

@@ -1,0 +1,11 @@
+cargar comprobarVal con Función(x)
+	si no esNúmero(x)
+		devolver "No es un número"
+	sino
+		devolver "Es un número"
+	fin
+fin
+
+ENVIAR comprobarVal(Nada)
+ENVIAR comprobarVal(42)
+ENVIAR comprobarVal(Verdadero)
