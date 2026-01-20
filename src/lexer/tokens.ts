@@ -94,6 +94,8 @@ export const TokenKinds = ({
 	LIST: 'List',
 	REGISTRY: 'Registry',
 	EMBED: 'Embed',
+	CANVAS: 'Lienzo',
+	IMAGE: 'Imagen',
 	INPUT: 'Input',
 	FUNCTION: 'Function',
 
@@ -103,96 +105,100 @@ export const TokenKinds = ({
 /**@description Representa un tipo de token de lexer.*/
 export type TokenKind = ValuesOf<typeof TokenKinds>;
 
-export const TokenKindTranslations = new Map<TokenKind, string>()
-	.set(TokenKinds.LIT_NUMBER, 'Literal de Número')
-	.set(TokenKinds.LIT_TEXT, 'Literal de Texto')
-	.set(TokenKinds.LIT_BOOLEAN, 'Literal de Lógico')
-	.set(TokenKinds.IDENTIFIER, 'Identificador')
+export const TokenKindTranslations = ({
+	[TokenKinds.LIT_NUMBER]: 'Literal de Número',
+	[TokenKinds.LIT_TEXT]: 'Literal de Texto',
+	[TokenKinds.LIT_BOOLEAN]: 'Literal de Lógico',
+	[TokenKinds.IDENTIFIER]: 'Identificador',
 
-	.set(TokenKinds.PAREN_OPEN, 'Inicio de agrupamiento `(`')
-	.set(TokenKinds.PAREN_CLOSE, 'Fin de agrupamiento `)`')
-	.set(TokenKinds.BLOCK_OPEN, 'Sentencia `BLOQUE`')
-	.set(TokenKinds.BLOCK_CLOSE, 'Sentencia `FIN`')
-	.set(TokenKinds.IF, 'Sentencia `SI`')
-	.set(TokenKinds.ELSE, 'Sentencia `SINO`')
-	.set(TokenKinds.ELSE_IF, 'Sentencias `SINO SI`')
-	.set(TokenKinds.WHILE, 'Sentencia `MIENTRAS`')
-	.set(TokenKinds.DO, 'Sentencia `HACER`')
-	.set(TokenKinds.UNTIL, 'Sentencia `HASTA` u operador especial `hasta`')
-	.set(TokenKinds.REPEAT, 'Sentencia `REPETIR`')
-	.set(TokenKinds.FOR_EACH, 'Sentencia `PARA CADA`')
-	.set(TokenKinds.FOR, 'Sentencia `PARA`')
+	[TokenKinds.PAREN_OPEN]: 'Inicio de agrupamiento `(`',
+	[TokenKinds.PAREN_CLOSE]: 'Fin de agrupamiento `)`',
+	[TokenKinds.BLOCK_OPEN]: 'Sentencia `BLOQUE`',
+	[TokenKinds.BLOCK_CLOSE]: 'Sentencia `FIN`',
+	[TokenKinds.IF]: 'Sentencia `SI`',
+	[TokenKinds.ELSE]: 'Sentencia `SINO`',
+	[TokenKinds.ELSE_IF]: 'Sentencias `SINO SI`',
+	[TokenKinds.WHILE]: 'Sentencia `MIENTRAS`',
+	[TokenKinds.DO]: 'Sentencia `HACER`',
+	[TokenKinds.UNTIL]: 'Sentencia `HASTA` u operador especial `hasta`',
+	[TokenKinds.REPEAT]: 'Sentencia `REPETIR`',
+	[TokenKinds.FOR_EACH]: 'Sentencia `PARA CADA`',
+	[TokenKinds.FOR]: 'Sentencia `PARA`',
 
-	.set(TokenKinds.READ, 'Sentencia `LEER`')
-	.set(TokenKinds.CREATE, 'Sentencia `CREAR`')
-	.set(TokenKinds.SAVE, 'Sentencia `GUARDAR`')
-	.set(TokenKinds.LOAD, 'Sentencia `CARGAR`')
-	.set(TokenKinds.ADD, 'Sentencia `SUMAR`')
-	.set(TokenKinds.SUBTRACT, 'Sentencia `RESTAR`')
-	.set(TokenKinds.MULTIPLY, 'Sentencia `MULTIPLICAR`')
-	.set(TokenKinds.DIVIDE, 'Sentencia `DIVIDIR`')
-	.set(TokenKinds.EXTEND, 'Sentencia `EXTENDER`')
-	.set(TokenKinds.DELETE, 'Sentencia `BORRAR`')
-	.set(TokenKinds.EXECUTE, 'Sentencia `EJECUTAR`')
-	.set(TokenKinds.RETURN, 'Sentencia `DEVOLVER`')
-	.set(TokenKinds.END, 'Sentencia `TERMINAR`')
-	.set(TokenKinds.STOP, 'Sentencia `PARAR`')
-	.set(TokenKinds.SEND, 'Sentencia `ENVIAR`')
-	.set(TokenKinds.COMMENT, 'Sentencia `COMENTAR`')
+	[TokenKinds.READ]: 'Sentencia `LEER`',
+	[TokenKinds.CREATE]: 'Sentencia `CREAR`',
+	[TokenKinds.SAVE]: 'Sentencia `GUARDAR`',
+	[TokenKinds.LOAD]: 'Sentencia `CARGAR`',
+	[TokenKinds.ADD]: 'Sentencia `SUMAR`',
+	[TokenKinds.SUBTRACT]: 'Sentencia `RESTAR`',
+	[TokenKinds.MULTIPLY]: 'Sentencia `MULTIPLICAR`',
+	[TokenKinds.DIVIDE]: 'Sentencia `DIVIDIR`',
+	[TokenKinds.EXTEND]: 'Sentencia `EXTENDER`',
+	[TokenKinds.DELETE]: 'Sentencia `BORRAR`',
+	[TokenKinds.EXECUTE]: 'Sentencia `EJECUTAR`',
+	[TokenKinds.RETURN]: 'Sentencia `DEVOLVER`',
+	[TokenKinds.END]: 'Sentencia `TERMINAR`',
+	[TokenKinds.STOP]: 'Sentencia `PARAR`',
+	[TokenKinds.SEND]: 'Sentencia `ENVIAR`',
+	[TokenKinds.COMMENT]: 'Sentencia `COMENTAR`',
 
-	.set(TokenKinds.OR, 'Operador `o`')
-	.set(TokenKinds.AND, 'Operador `y`')
-	.set(TokenKinds.NOT, 'Operador `no`')
+	[TokenKinds.OR]: 'Operador `o`',
+	[TokenKinds.AND]: 'Operador `y`',
+	[TokenKinds.NOT]: 'Operador `no`',
 
-	.set(TokenKinds.EQUALS, 'Operador `es`')
-	.set(TokenKinds.NOT_EQUALS, 'Operador `no es`')
-	.set(TokenKinds.SEEMS, 'Operador `parece`')
-	.set(TokenKinds.NOT_SEEMS, 'Operador `no parece`')
-	.set(TokenKinds.LESS, 'Operador `precede`')
-	.set(TokenKinds.LESS_EQUALS, 'Operador `no excede`')
-	.set(TokenKinds.GREATER, 'Operador `excede`')
-	.set(TokenKinds.GREATER_EQUALS, 'Operador `no precede`')
+	[TokenKinds.EQUALS]: 'Operador `es`',
+	[TokenKinds.NOT_EQUALS]: 'Operador `no es`',
+	[TokenKinds.SEEMS]: 'Operador `parece`',
+	[TokenKinds.NOT_SEEMS]: 'Operador `no parece`',
+	[TokenKinds.LESS]: 'Operador `precede`',
+	[TokenKinds.LESS_EQUALS]: 'Operador `no excede`',
+	[TokenKinds.GREATER]: 'Operador `excede`',
+	[TokenKinds.GREATER_EQUALS]: 'Operador `no precede`',
 
-	.set(TokenKinds.ASSIGNMENT, 'Operador `con`')
-	.set(TokenKinds.ARROW, 'Operador de flecha `->`')
-	.set(TokenKinds.COLON, 'Operador `:`')
-	.set(TokenKinds.QUESTION, 'Operador `?`')
-	.set(TokenKinds.COMMA, 'Operador `,`')
-	.set(TokenKinds.LAMBDA, 'Operador Lambda')
-	.set(TokenKinds.TIMES, 'Operador especial `veces`')
-	.set(TokenKinds.AFTER, 'Operador `luego`')
-	.set(TokenKinds.DOT, 'Operador `.`')
-	.set(TokenKinds.IN, 'Operador especial `en`')
-	.set(TokenKinds.FROM, 'Operador especial `desde`')
-	.set(TokenKinds.OPTIONAL, 'Operador especial `opcional`')
-	.set(TokenKinds.AWAIT, 'Operador `esperar`')
+	[TokenKinds.ASSIGNMENT]: 'Operador `con`',
+	[TokenKinds.ARROW]: 'Operador de flecha `->`',
+	[TokenKinds.COLON]: 'Operador `:`',
+	[TokenKinds.QUESTION]: 'Operador `?`',
+	[TokenKinds.COMMA]: 'Operador `,`',
+	[TokenKinds.LAMBDA]: 'Operador Lambda',
+	[TokenKinds.TIMES]: 'Operador especial `veces`',
+	[TokenKinds.AFTER]: 'Operador `luego`',
+	[TokenKinds.DOT]: 'Operador `.`',
+	[TokenKinds.IN]: 'Operador especial `en`',
+	[TokenKinds.FROM]: 'Operador especial `desde`',
+	[TokenKinds.OPTIONAL]: 'Operador especial `opcional`',
+	[TokenKinds.AWAIT]: 'Operador `esperar`',
 
-	.set(TokenKinds.PLUS, 'Operador `+`')
-	.set(TokenKinds.DASH, 'Operador `-`')
-	.set(TokenKinds.STAR, 'Operador `*`')
-	.set(TokenKinds.SLASH, 'Operador `/`')
-	.set(TokenKinds.PERCENT, 'Operador `%`')
-	.set(TokenKinds.CARET, 'Operador `^`')
-	.set(TokenKinds.DOUBLE_STAR, 'Operador `**`')
+	[TokenKinds.PLUS]: 'Operador `+`',
+	[TokenKinds.DASH]: 'Operador `-`',
+	[TokenKinds.STAR]: 'Operador `*`',
+	[TokenKinds.SLASH]: 'Operador `/`',
+	[TokenKinds.PERCENT]: 'Operador `%`',
+	[TokenKinds.CARET]: 'Operador `^`',
+	[TokenKinds.DOUBLE_STAR]: 'Operador `**`',
 
-	.set(TokenKinds.NUMBER, 'Tipo Número')
-	.set(TokenKinds.TEXT, 'Tipo Texto')
-	.set(TokenKinds.BOOLEAN, 'Tipo Lógico')
-	.set(TokenKinds.LIST, 'Tipo Lista')
-	.set(TokenKinds.REGISTRY, 'Tipo Registro')
-	.set(TokenKinds.EMBED, 'Tipo Marco')
-	.set(TokenKinds.INPUT, 'Tipo Entrada')
-	.set(TokenKinds.FUNCTION, 'Tipo Función')
-	.set(TokenKinds.NADA, 'Tipo u Valor Nada')
+	[TokenKinds.NUMBER]: 'Tipo Número',
+	[TokenKinds.TEXT]: 'Tipo Texto',
+	[TokenKinds.BOOLEAN]: 'Tipo Lógico',
+	[TokenKinds.LIST]: 'Tipo Lista',
+	[TokenKinds.REGISTRY]: 'Tipo Registro',
+	[TokenKinds.EMBED]: 'Tipo Marco',
+	[TokenKinds.CANVAS]: 'Tipo Lienzo',
+	[TokenKinds.IMAGE]: 'Tipo Imagen',
+	[TokenKinds.INPUT]: 'Tipo Entrada',
+	[TokenKinds.FUNCTION]: 'Tipo Función',
+	[TokenKinds.NADA]: 'Tipo u Valor Nada',
 
-	.set(TokenKinds.EOF, 'Fin de Código');
+	[TokenKinds.EOF]: 'Fin de Código',
+
+}) as const satisfies Record<TokenKind, string>;
 
 export function translateTokenKind(tokenKind: TokenKind): string {
-	return TokenKindTranslations.get(tokenKind);
+	return TokenKindTranslations[tokenKind];
 }
 
 export function translateTokenKinds(...tokenKinds: TokenKind[]): string[] {
-	return tokenKinds.map(tokenKind => TokenKindTranslations.get(tokenKind));
+	return tokenKinds.map(tokenKind => TokenKindTranslations[tokenKind]);
 }
 
 /**@description Contiene tipos de indicador de sentencia de lexer.*/
@@ -295,7 +301,7 @@ export class Token {
 	get kind() { return this.#kind; }
 
 	get translated() {
-		return TokenKindTranslations.get(this.#kind);
+		return TokenKindTranslations[this.#kind];
 	}
 
 	/**@description El valor del token.*/

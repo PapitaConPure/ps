@@ -81,6 +81,8 @@ export class Lexer {
 			{ match: 'lista', kind: TokenKinds.LIST },
 			{ match: 'registro', kind: TokenKinds.REGISTRY },
 			{ match: 'marco', kind: TokenKinds.EMBED },
+			{ match: 'lienzo', kind: TokenKinds.CANVAS },
+			{ match: 'imagen', kind: TokenKinds.IMAGE },
 			{ match: 'funcion', kind: TokenKinds.FUNCTION },
 			{ match: 'nada', kind: TokenKinds.NADA, value: null },
 
