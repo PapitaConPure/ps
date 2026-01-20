@@ -3,7 +3,7 @@ import { readdirSync } from 'node:fs';
 import { readFileSync } from 'fs';
 import { join } from 'node:path';
 import { Lexer, Parser, Interpreter, Scope, declareNatives, declareContext, Input, stringifyPSAST, Token } from '../src/index.js';
-import { ValueKinds, RuntimeValue, NumberValue, ListValue, RegistryValue, EmbedValue, makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeEmbed, makeNada, coerceValue } from '../src/interpreter/values.js';
+import { ValueKinds, RuntimeValue, NumberValue, ListValue, RegistryValue, EmbedValue, makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeEmbed, makeNada, coerceValue, BooleanValue } from '../src/interpreter/values.js';
 import { ExpressionStatement, ProgramStatement, StatementKinds } from '../src/ast/statements.js';
 import { CallExpression, ExpressionKinds, Identifier } from '../src/ast/expressions.js';
 import TestEnvironmentProvider from './testEnvironmentProvider';
@@ -18,10 +18,6 @@ for(const filename of readdirSync(relPath).sort()) {
 	testFiles.push(file);
 }
 
-const lexer = new Lexer();
-const parser = new Parser();
-const interpreter = new Interpreter();
-
 interface ExecutePSOptions {
 	args?: string[];
 	log?: boolean;
@@ -30,6 +26,9 @@ interface ExecutePSOptions {
 }
 
 interface ExecutePSResult extends Partial<EvaluationResult> {
+	lexer: Lexer;
+	parser: Parser;
+	interpreter: Interpreter;
 	tokens?: Token[];
 	tree?: ProgramStatement;
 	scope?: Scope;
@@ -39,6 +38,10 @@ interface ExecutePSResult extends Partial<EvaluationResult> {
 async function executePS(code: string, options: ExecutePSOptions = {}): Promise<ExecutePSResult> {
 	const { args, log = false, skipInterpreter = false, savedData = {} } = options;
 	const isTestDrive = (args == null);
+
+	const lexer = new Lexer();
+	const parser = new Parser();
+	const interpreter = new Interpreter();
 
 	const tokens = lexer.tokenize(code);
 	if(log)
@@ -51,7 +54,7 @@ async function executePS(code: string, options: ExecutePSOptions = {}): Promise<
 	}
 
 	if(skipInterpreter)
-		return { tokens, tree };
+		return { lexer, parser, interpreter, tokens, tree };
 
 	const scope = new Scope(interpreter);
 	const provider = new TestEnvironmentProvider();
@@ -67,6 +70,9 @@ async function executePS(code: string, options: ExecutePSOptions = {}): Promise<
 	}
 
 	return {
+		lexer,
+		parser,
+		interpreter,
 		tokens,
 		tree,
 		scope,
@@ -113,7 +119,7 @@ test.concurrent('Randomrain', async () => {
 
 test.concurrent('Variables y Expresiones', async () => {
 	const result = await executePS(testFiles[3]);
-	const { sendStack } = result;
+	const { interpreter, sendStack } = result;
 
 	expect(sendStack.length).toBe(1);
 
@@ -761,18 +767,44 @@ test.concurrent('"este"', async () => {
 });
 
 test.concurrent('"esperar"', async () => {
-	const result = await executePS(testFiles[39], {});
+	const result = await executePS(testFiles[39]);
 	const { sendStack, returned } = result;
 
 	expect(sendStack[0]).toMatchObject(makeText('holaaaaa nwn'));
 	expect(returned).toMatchObject(makeNada());
 });
 
-test.concurrent('"esperar" con estructuras de control', async () => {
-	const result = await executePS(testFiles[40], { log: true });
+test.concurrent('Obtener gatos', async () => {
+	const result = await executePS(testFiles[40]);
 	const { sendStack, returned } = result;
 
-	expect(sendStack[0]).toMatchObject(makeText('valores de l: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9'));
+	expect(returned.kind).toBe(ValueKinds.REGISTRY);
+	const inferredRegistry = returned as RegistryValue;
+
+	expect(inferredRegistry.entries.has('éxito')).toBeTrue();
+	const inferredSuccessEntry = inferredRegistry.entries.get('éxito') as BooleanValue;
+
+	expect(inferredRegistry.entries.has('código')).toBeTrue();
+	const inferredStatusEntry = inferredRegistry.entries.get('código') as NumberValue;
+
+	expect(inferredSuccessEntry.kind).toBe('Boolean');
+	expect(inferredStatusEntry.kind).toBe('Number');
+
+	if(inferredSuccessEntry.value) {
+		expect(inferredRegistry.entries.has('datos')).toBeTrue();
+		expect(inferredRegistry.entries.get('datos').kind).toBe(ValueKinds.REGISTRY);
+	} else {
+		expect(inferredRegistry.entries.has('mensaje')).toBeTrue();
+	}
+
+	expect(sendStack[0]).toMatchObject(makeText('wah'));
+});
+
+test.concurrent('"esperar" con estructuras de control', async () => {
+	const result = await executePS(testFiles[41]);
+	const { sendStack, returned } = result;
+
+	expect(sendStack[0]).toMatchObject(makeText('valores de l: 0, 1, 2, 3, 4'));
 	expect(sendStack[1]).toMatchObject(makeText('wawa'));
 	expect(returned).toMatchObject(makeNada());
 });
