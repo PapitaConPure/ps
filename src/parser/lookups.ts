@@ -119,6 +119,8 @@ export function createLookups() {
 	nud(TokenKinds.LIST, parsePrimaryExpression);
 	nud(TokenKinds.REGISTRY, parsePrimaryExpression);
 	nud(TokenKinds.EMBED, parsePrimaryExpression);
+	nud(TokenKinds.CANVAS, parsePrimaryExpression);
+	nud(TokenKinds.IMAGE, parsePrimaryExpression);
 	nud(TokenKinds.IDENTIFIER, parsePrimaryExpression);
 	nud(TokenKinds.NADA, parsePrimaryExpression);
 

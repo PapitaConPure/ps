@@ -70,6 +70,28 @@ export function parsePrimaryExpression(parser: Parser): Expression {
 			...metadata,
 		};
 
+	case TokenKinds.CANVAS: {
+		const elements = parseListElements(parser);
+
+		if(elements.length !== 2)
+			throw parser.TuberParserError(`Se esperaban 2 expresiones separadas por coma (ancho, alto) luego del indicador de tipo: \`${literal.translated}\``);
+
+		const [ width, height ] = elements;
+
+		return {
+			kind: ExpressionKinds.CANVAS_LITERAL,
+			width,
+			height,
+			...metadata,
+		};
+	}
+
+	case TokenKinds.IMAGE:
+		return {
+			kind: ExpressionKinds.IMAGE_LITERAL,
+			...metadata,
+		};
+
 	case TokenKinds.NADA:
 		return {
 			kind: ExpressionKinds.NADA_LITERAL,
