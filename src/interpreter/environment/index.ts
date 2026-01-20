@@ -15,7 +15,14 @@ import { makeDiscordMember, makeDiscordChannel, makeDiscordGuild } from './regis
 import { makeKindFromValue } from './nativeUtils';
 import { EnvironmentProvider } from './environmentProvider';
 
+export { PSGuild } from './constructs/psGuild';
+export { PSChannel } from './constructs/psChannel';
+export { PSRole } from './constructs/psRole';
+export { PSMember } from './constructs/psMember';
+export { PSUser } from './constructs/psUser';
+export { PSCanvas } from './constructs/psCanvas';
 export { NativeMethodsLookup } from './methods';
+export { EnvironmentProvider };
 
 export function declareNatives(scope: Scope) {
 	scope.global = true;

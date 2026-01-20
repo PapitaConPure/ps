@@ -1,4 +1,70 @@
-import { EnvironmentProvider, PSChannel, PSGuild, PSMember, PSRole, PSUser } from '../src/interpreter/environment/environmentProvider';
+import { EnvironmentProvider, PSGuild, PSChannel, PSRole, PSMember, PSUser, PSCanvas } from '../src/interpreter/environment';
+import { PSCanvasDrawTextOptions } from '../src/interpreter/environment/constructs/psCanvas';
+import { Canvas, SKRSContext2D } from '@napi-rs/canvas';
+import { ImageValue, makeImage } from '../src/interpreter/values';
+
+class NapiCanvas extends PSCanvas {
+	#canvas: Canvas;
+	#ctx: SKRSContext2D;
+
+	constructor(width: number, height: number) {
+		super();
+		this.#canvas = new Canvas(width, height);
+		this.#ctx = this.#canvas.getContext('2d', {
+			colorSpace: 'srgb',
+			alpha: true,
+		});
+	}
+
+	get width(): number {
+		return this.#canvas.width;
+	}
+
+	get height(): number {
+		return this.#canvas.height;
+	}
+
+	async drawImage(): Promise<void> {
+		throw new Error('Method not implemented.');
+	}
+
+	async drawText(x: number, y: number, text: string, options: PSCanvasDrawTextOptions = {}): Promise<void> {
+		const {
+			fillColor = 0x000000,
+			strokeColor = 0x000000,
+			strokeWidth = 0,
+			fontSize = 12,
+			bold = false,
+			italic = false,
+		} = options;
+
+		this.#ctx.fillStyle = `${fillColor} solid`;
+		this.#ctx.font = `${bold ? 'bold ' : ''}${italic ? 'italic ' : ''}${fontSize}px sans-serif`;
+		this.#ctx.fillText(text, x, y);
+
+		if(strokeWidth > 0) {
+			this.#ctx.strokeStyle = `${strokeWidth}px ${strokeColor} solid`;
+			this.#ctx.strokeText(text, x, y);
+		}
+	}
+
+	setTextAlignment(alignment: CanvasTextAlign): void {
+		this.#ctx.textAlign = alignment;
+	}
+
+	setTextBaseline(baseline: CanvasTextBaseline): void {
+		this.#ctx.textBaseline = baseline;
+	}
+
+	async renderImage(): Promise<ImageValue> {
+		return makeImage(
+			'webp',
+			this.#canvas.width,
+			this.#canvas.height,
+			this.#canvas.toBuffer('image/webp'),
+		);
+	}
+}
 
 export default class TestEnvironmentProvider implements EnvironmentProvider {
 	guild: PSGuild;
@@ -159,6 +225,10 @@ export default class TestEnvironmentProvider implements EnvironmentProvider {
 		}
 
 		return bestMatch;
+	}
+
+	createCanvas(width: number, height: number): PSCanvas | null {
+		return new NapiCanvas(width, height);
 	}
 
 	private testUrlHandler() {

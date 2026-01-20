@@ -32,7 +32,7 @@ export {
 	PSRole,
 	PSUser,
 	PSMember,
-} from './interpreter/environment/environmentProvider';
+} from './interpreter/environment';
 
 export { stringifyPSAST, logPSAST } from './util/debug';
 

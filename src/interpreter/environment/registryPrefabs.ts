@@ -1,4 +1,7 @@
-import { PSMember, PSChannel, PSGuild, PSRole } from './environmentProvider';
+import { PSMember } from "./constructs/psMember";
+import { PSRole } from "./constructs/psRole";
+import { PSChannel } from "./constructs/psChannel";
+import { PSGuild } from "./constructs/psGuild";
 import { makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeNada, RuntimeValue, RegistryValue } from '../values';
 import { EmbedData } from '../../embedData';
 
