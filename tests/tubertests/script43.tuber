@@ -9,7 +9,7 @@ CARGAR propiedadesTexto con Registro
 	tamaño: 24,
 	negrita: Verdadero,
 
-EJECUTAR esperar lz->dibujarImagen(url)
+EJECUTAR esperar lz->dibujarImagen(0, 0, url)
 EJECUTAR lz->alinearTexto("centro", "base")
 EJECUTAR esperar lz->dibujarTexto(
 	lz->ancho / 2,
