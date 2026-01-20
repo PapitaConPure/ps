@@ -812,17 +812,25 @@ test.concurrent('"esperar" con estructuras de control', async () => {
 
 test.concurrent('Evitar operador "no es" al colocar "no" frente a "esNúmero" o similares', async () => {
 	const result = await executePS(testFiles[42], { log: true });
-	const { tokens, sendStack, returned } = result;
+	const { tokens, sendStack } = result;
 
-	expect(tokens[ 7].kind).toBe(TokenKinds.IF);
-	expect(tokens[ 8].kind).toBe(TokenKinds.NOT);
-	expect(tokens[ 9].kind).toBe(TokenKinds.IDENTIFIER);
+	expect(tokens[7].kind).toBe(TokenKinds.IF);
+
+	expect(tokens[8].kind).toBe(TokenKinds.NOT);
+	expect(tokens[8].value).toBe('no');
+
+	expect(tokens[9].kind).toBe(TokenKinds.IDENTIFIER);
+	expect(tokens[9].value).toBe('esNúmero');
+
 	expect(tokens[10].kind).toBe(TokenKinds.PAREN_OPEN);
+
 	expect(tokens[11].kind).toBe(TokenKinds.IDENTIFIER);
+	expect(tokens[11].value).toBe('x');
+
 	expect(tokens[12].kind).toBe(TokenKinds.PAREN_CLOSE);
 
-	expect(sendStack[0]).toMatchObject(makeText('No es un número'));
+	expect(sendStack[0]).toMatchObject(makeText('No es un texto'));
 	expect(sendStack[1]).toMatchObject(makeText('Es un número'));
-	expect(sendStack[2]).toMatchObject(makeText('No es un número'));
-	expect(returned).toMatchObject(makeNada());
+	expect(sendStack[2]).toMatchObject(makeText('Es un texto'));
+	expect(sendStack[3]).toMatchObject(makeText('No es un texto'));
 });

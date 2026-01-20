@@ -1,6 +1,10 @@
 cargar comprobarVal con Función(x)
 	si no esNúmero(x)
-		devolver "No es un número"
+		si no esTexto(x)
+			devolver "No es un texto"
+		sino
+			devolver "Es un texto"
+		fin
 	sino
 		devolver "Es un número"
 	fin
@@ -8,4 +12,5 @@ fin
 
 ENVIAR comprobarVal(Nada)
 ENVIAR comprobarVal(42)
+ENVIAR comprobarVal("WAH")
 ENVIAR comprobarVal(Verdadero)
