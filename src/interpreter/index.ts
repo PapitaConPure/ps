@@ -1,5 +1,5 @@
 import { Input, InputReader, ProductionInputReader, TestDriveInputReader } from './inputReader';
-import { RuntimeValue, AssertedRuntimeValue, ValueKinds, ValueKindTranslationLookups, makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeEmbed, makeFunction, makeLambda, makeNativeFunction, makePromise, makeNada, coerceValue, isInternalOperable, ValueKind, AnyFunctionValue, PromiseValue, TangibleValue } from './values';
+import { RuntimeValue, AssertedRuntimeValue, ValueKinds, ValueKindTranslationLookups, makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeEmbed, makeFunction, makeLambda, makeNativeFunction, makePromise, makeNada, coerceValue, isInternalOperable, ValueKind, AnyFunctionValue, PromiseValue, TangibleValue, ListValue, RegistryValue, FunctionValue, NadaValue, NativeFunctionValue } from './values';
 import { UnaryOperationLookups, BinaryOperationLookups, ValueKindLookups } from './lookups';
 import { EnvironmentProvider } from './environment/environmentProvider';
 import { NativeMethodsLookup } from './environment';
@@ -464,7 +464,7 @@ export class Interpreter {
 		return returnValue;
 	}
 
-	#evaluateBlock(node: ProgramStatement | BlockStatement, scope: Scope) {
+	#evaluateBlock(node: ProgramStatement | BlockStatement, scope: Scope): RuntimeValue {
 		let returned: RuntimeValue = makeNada();
 
 		const blockScope = new Scope(this, scope);
@@ -480,7 +480,7 @@ export class Interpreter {
 		return returned;
 	}
 
-	#evaluateConditionalStmt(node: ConditionalStatement, scope: Scope) {
+	#evaluateConditionalStmt(node: ConditionalStatement, scope: Scope): RuntimeValue {
 		const { test, consequent, alternate } = node;
 
 		const testValue = this.evaluateAs(test, scope, ValueKinds.BOOLEAN, false);
@@ -493,7 +493,7 @@ export class Interpreter {
 		return makeNada();
 	}
 
-	#evaluateWhile(node: WhileStatement, scope: Scope) {
+	#evaluateWhile(node: WhileStatement, scope: Scope): RuntimeValue {
 		const { test, body } = node;
 
 		let evaluated: RuntimeValue = makeNada();
@@ -511,7 +511,7 @@ export class Interpreter {
 		return evaluated;
 	}
 
-	#evaluateDoUntil(node: DoUntilStatement, scope: Scope) {
+	#evaluateDoUntil(node: DoUntilStatement, scope: Scope): RuntimeValue {
 		const { test, body } = node;
 
 		let evaluated: RuntimeValue = makeNada();
@@ -529,7 +529,7 @@ export class Interpreter {
 		return evaluated;
 	}
 
-	#evaluateRepeat(node: RepeatStatement, scope: Scope) {
+	#evaluateRepeat(node: RepeatStatement, scope: Scope): RuntimeValue {
 		const { times, body } = node;
 
 		let evaluated: RuntimeValue = makeNada();
@@ -548,7 +548,7 @@ export class Interpreter {
 		return evaluated;
 	}
 
-	#evaluateForEach(node: ForEachStatement, scope: Scope) {
+	#evaluateForEach(node: ForEachStatement, scope: Scope): RuntimeValue {
 		const { identifier, container, body } = node;
 
 		let evaluated: RuntimeValue = makeNada();
@@ -579,13 +579,13 @@ export class Interpreter {
 		return evaluated;
 	}
 
-	#evaluateFor(node: ForStatement, scope: Scope) {
+	#evaluateFor(node: ForStatement, scope: Scope): RuntimeValue {
 		return (node.full === true)
 			? this.#evaluateFullFor(node, scope)
 			: this.#evaluateShortFor(node, scope);
 	}
 
-	#evaluateFullFor(node: FullForStatement, scope: Scope) {
+	#evaluateFullFor(node: FullForStatement, scope: Scope): RuntimeValue {
 		const { init, test, step, identifier, body } = node;
 
 		let evaluated: RuntimeValue = makeNada();
@@ -612,7 +612,7 @@ export class Interpreter {
 		return evaluated;
 	}
 
-	#evaluateShortFor(node: ShortForStatement, scope: Scope) {
+	#evaluateShortFor(node: ShortForStatement, scope: Scope): RuntimeValue {
 		const { from, to, identifier, body } = node;
 
 		let evaluated: RuntimeValue = makeNada();
@@ -640,7 +640,7 @@ export class Interpreter {
 		return evaluated;
 	}
 
-	#evaluateExpressionStatement(node: ExpressionStatement, scope: Scope) {
+	#evaluateExpressionStatement(node: ExpressionStatement, scope: Scope): NadaValue {
 		this.evaluate(node.expression, scope);
 		return makeNada();
 	}
@@ -659,7 +659,7 @@ export class Interpreter {
 	 *   3. Si la Entrada es opcional y no tiene valor de falla, se asume el valor por defecto del tipo esperado de la Entrada.
 	 *   4. Se lanza un error.
 	 */
-	#evaluateReadStatement(node: ReadStatement, scope: Scope) {
+	#evaluateReadStatement(node: ReadStatement, scope: Scope): NadaValue {
 		const coercedValue = this.#inputReader.readInput(node, scope);
 		this.#assignValueToExpression(node.receptor, coercedValue, scope);
 		return makeNada();
@@ -672,7 +672,7 @@ export class Interpreter {
 	 * La variable no debe estar ya declarada en el mismo ámbito.
 	 * Si la variable existía en un ámbito padre, se declara otra en el ámbito actual que opaca la del ámbito padre.
 	 */
-	#evaluateDeclarationStatement(node: DeclarationStatement, scope: Scope) {
+	#evaluateDeclarationStatement(node: DeclarationStatement, scope: Scope): NadaValue {
 		const { dataKind, declarations } = node;
 
 		const valueKind = dataKind != null ? (ValueKindLookups.get(dataKind.kind) ?? ValueKinds.NADA) : ValueKinds.NADA;
@@ -688,7 +688,7 @@ export class Interpreter {
 	 *
 	 * La variable se guarda en la base de datos para recuperarla en ejecuciones subsecuentes.
 	 */
-	#evaluateSaveStatement(node: SaveStatement, scope: Scope) {
+	#evaluateSaveStatement(node: SaveStatement, scope: Scope): NadaValue {
 		const { identifier, expression } = node;
 
 		const value = this.evaluate(expression, scope);
@@ -709,7 +709,7 @@ export class Interpreter {
 	 *
 	 * La variable se borra de la base de datos para no recuperarla en ejecuciones subsecuentes.
 	 */
-	#evaluateDeleteStatement(node: DeleteStatement, _scope: Scope) {
+	#evaluateDeleteStatement(node: DeleteStatement, _scope: Scope): NadaValue {
 		const { identifier } = node;
 		this.#saveTable.set(identifier, makeNada());
 		return makeNada();
@@ -721,7 +721,7 @@ export class Interpreter {
 	 *
 	 * La variable se guarda en la base de datos para recuperarla en ejecuciones subsecuentes.
 	 */
-	#evaluateLoadStatement(node: LoadStatement, scope: Scope) {
+	#evaluateLoadStatement(node: LoadStatement, scope: Scope): NadaValue {
 		const { identifier, conditional } = node;
 
 		if(conditional) {
@@ -746,7 +746,7 @@ export class Interpreter {
 	 *
 	 * Si la variable no está declarada en este ámbito o los ámbitos padre y la sentencia es CARGAR, se la declara en este ámbito.
 	 */
-	#evaluateAssignmentStatement(node: AssignmentStatement, scope: Scope) {
+	#evaluateAssignmentStatement(node: AssignmentStatement, scope: Scope): NadaValue {
 		const { operator, receptor, reception } = node;
 
 		let receptionValue: RuntimeValue;
@@ -802,7 +802,7 @@ export class Interpreter {
 	 *
 	 * La variable debe estar declarada y debe ser una Lista.
 	 */
-	#evaluateInsertionStatement(node: InsertionStatement, scope: Scope) {
+	#evaluateInsertionStatement(node: InsertionStatement, scope: Scope): NadaValue {
 		const { receptor, reception, index } = node;
 
 		const receptorValue = this.evaluate(receptor, scope, false);
@@ -824,7 +824,7 @@ export class Interpreter {
 	 * Devuelve el valor de la expresión indicada.
 	 * Todas las sentencias luego de esta se ignoran hasta que finaliza un ámbito de Función o el Programa.
 	 */
-	#evaluateReturnStatement(node: ReturnStatement, scope: Scope) {
+	#evaluateReturnStatement(node: ReturnStatement, scope: Scope): RuntimeValue {
 		const returned = this.evaluate(node.expression, scope, false);
 		this.#stop = Stops.RETURN;
 		return returned;
@@ -836,7 +836,7 @@ export class Interpreter {
 	 *
 	 * Todas las sentencias luego de esta se ignoran hasta que finaliza un ámbito de Función o el Programa.
 	 */
-	#evaluateEndStatement() {
+	#evaluateEndStatement(): NadaValue {
 		this.#stop = Stops.BREAK;
 		return makeNada();
 	}
@@ -850,7 +850,7 @@ export class Interpreter {
 	 *
 	 * Los ámbitos de Función son irrelevantes para esta sentencia.
 	 */
-	#evaluateStopStatement(node: StopStatement, scope: Scope) {
+	#evaluateStopStatement(node: StopStatement, scope: Scope): RuntimeValue {
 		const { condition, stopMessage } = node;
 
 		const conditionValue = condition ? coerceValue(this, this.evaluate(condition, scope, false), ValueKinds.BOOLEAN) : makeBoolean(true);
@@ -872,7 +872,7 @@ export class Interpreter {
 	 * Añade un valor a la pila de valores enviados.
 	 * Dichos valores serían enviados en conjunto al finalizar el Programa.
 	 */
-	#evaluateSendStatement(node: SendStatement, scope: Scope) {
+	#evaluateSendStatement(node: SendStatement, scope: Scope): NadaValue {
 		let sendValue = this.evaluate(node.expression, scope, false);
 
 		switch(sendValue.kind) {
@@ -898,14 +898,14 @@ export class Interpreter {
 	}
 
 	/**@description Evalúa una expresión de Lista y retorna un valor de Lista.*/
-	#evaluateList(node: ListLiteralExpression, scope: Scope) {
+	#evaluateList(node: ListLiteralExpression, scope: Scope): ListValue {
 		const { elements } = node;
 		const evaluatedElements = elements.map(e => this.evaluate(e, scope));
 		return makeList(evaluatedElements);
 	}
 
 	/**@description  Evalúa una expresión de Registro y retorna un valor de Registro.*/
-	#evaluateRegistry(node: RegistryLiteralExpression, scope: Scope) {
+	#evaluateRegistry(node: RegistryLiteralExpression, scope: Scope): RegistryValue {
 		const { entries } = node;
 
 		const registryValue = makeRegistry(new Map());
@@ -923,7 +923,7 @@ export class Interpreter {
 	}
 
 	/**@description Evalúa una expresión de Función de usuario y devuelve un valor de Función de usuario.*/
-	#evaluateFunction(node: FunctionExpression, scope: Scope) {
+	#evaluateFunction(node: FunctionExpression, scope: Scope): FunctionValue {
 		if(node.expression === true)
 			return makeLambda(node.body, node.args);
 
@@ -933,7 +933,7 @@ export class Interpreter {
 	}
 
 	/**@description Evalúa una expresión unaria y devuelve el valor resultante de la operación.*/
-	#evaluateUnary(node: UnaryExpression, scope: Scope, mustBeDeclared = true) {
+	#evaluateUnary(node: UnaryExpression, scope: Scope, mustBeDeclared = true): RuntimeValue {
 		const { operator, argument } = node;
 
 		const argumentValue = this.evaluate(argument, scope, mustBeDeclared);
@@ -946,7 +946,7 @@ export class Interpreter {
 	}
 
 	/**@description Evalúa una expresión binaria y devuelve el valor resultante de la operación.*/
-	#evaluateBinary(node: BinaryExpression, scope: Scope, mustBeDeclared = true) {
+	#evaluateBinary(node: BinaryExpression, scope: Scope, mustBeDeclared = true): RuntimeValue {
 		const { operator, left, right } = node;
 
 		if(operator.is(TokenKinds.AFTER))
@@ -968,7 +968,7 @@ export class Interpreter {
 	}
 
 	/**@description Evalúa una expresión ternaria condicional y devuelve el valor resultante de la operación.*/
-	#evaluateConditionalExpr(node: ConditionalExpression, scope: Scope, mustBeDeclared = true) {
+	#evaluateConditionalExpr(node: ConditionalExpression, scope: Scope, mustBeDeclared = true): RuntimeValue {
 		const { test, consequent, alternate } = node;
 
 		const testValue = this.evaluateAs(test, scope, ValueKinds.BOOLEAN, false);
@@ -979,7 +979,7 @@ export class Interpreter {
 	}
 
 	/**@description Evalúa una expresión binaria "luego" y devuelve el valor resultante de la operación.*/
-	#evaluateAfter(node: BinaryExpression, scope: Scope, mustBeDeclared = true) {
+	#evaluateAfter(node: BinaryExpression, scope: Scope, mustBeDeclared = true): RuntimeValue {
 		const { left, right } = node;
 
 		if(this.isTestDrive())
@@ -989,7 +989,7 @@ export class Interpreter {
 	}
 
 	/**@description Evalúa una expresión binaria lógica y devuelve el valor resultante de la operación.*/
-	#evaluateLogical(node: BinaryExpression, scope: Scope, mustBeDeclared = true) {
+	#evaluateLogical(node: BinaryExpression, scope: Scope, mustBeDeclared = true): RuntimeValue {
 		const { operator, left, right } = node;
 
 		const leftValue = this.evaluate(left, scope, mustBeDeclared);
@@ -1010,7 +1010,7 @@ export class Interpreter {
 	 *
 	 * Si es posible, convierte un valor de un cierto tipo al tipo indicado.
 	 */
-	#evaluateCast(node: CastExpression, scope: Scope) {
+	#evaluateCast(node: CastExpression, scope: Scope): RuntimeValue {
 		const { argument, as } = node;
 		const value = this.evaluate(argument, scope, false);
 		const valueKind = ValueKindLookups.get(as.kind);
@@ -1024,7 +1024,7 @@ export class Interpreter {
 	 *
 	 * Evalúa todas las expresiones en orden de izquierda a derecha y devuelve el valor de la última expresión evaluada.
 	 */
-	#evaluateSequence(node: SequenceExpression, scope: Scope) {
+	#evaluateSequence(node: SequenceExpression, scope: Scope): RuntimeValue {
 		let lastEvaluation: RuntimeValue = makeNada();
 
 		for(const expression of node.expressions)
@@ -1058,7 +1058,7 @@ export class Interpreter {
 	}
 
 	/**@description Satanás está DIRECTAMENTE INVOLUCRADO en esta función.*/
-	#evaluateArrow(node: ArrowExpression, scope: Scope) {
+	#evaluateArrow(node: ArrowExpression, scope: Scope): RuntimeValue {
 		const { holder } = node;
 
 		const holderValue = this.evaluate(holder, scope);
@@ -1159,7 +1159,7 @@ export class Interpreter {
 	 *
 	 * Es irrelevante si la Función es nativa o de usuario. Superficialmente, se ejecutarán de forma similar.
 	 */
-	#evaluateCall(node: CallExpression, scope: Scope) {
+	#evaluateCall(node: CallExpression, scope: Scope): RuntimeValue {
 		const { fn, args } = node;
 
 		const fnValue = this.evaluate(fn, scope);
@@ -1179,7 +1179,7 @@ export class Interpreter {
 	 *
 	 * Es irrelevante si la Función es nativa o de usuario. Superficialmente, se ejecutarán de forma similar.
 	 */
-	callFunction(fnValue: AnyFunctionValue, argValues: RuntimeValue[], scope: Scope) {
+	callFunction(fnValue: AnyFunctionValue, argValues: RuntimeValue[], scope: Scope): RuntimeValue {
 		let returnedValue: RuntimeValue;
 
 		this.#promiseIds.push(this.#promiseCounter++);
@@ -1209,7 +1209,7 @@ export class Interpreter {
 	 *
 	 * Si no se encuentra un método con el nombre solicitado para el tipo del valor indicado, se devuelve `null`
 	 */
-	#tryFindNativeMethod(value: RuntimeValue, key: string) {
+	#tryFindNativeMethod(value: RuntimeValue, key: string): NativeFunctionValue {
 		const lookup = NativeMethodsLookup.get(value.kind);
 		if(!lookup) throw 'Tipo de valor inválido al intentar encontrar método nativo para el mismo';
 
@@ -1221,7 +1221,7 @@ export class Interpreter {
 	}
 
 	/**@description Asigna un valor concreto a un valor receptor. La expresión receptora DEBE evaluar a una referencia asignable.*/
-	#assignValueToExpression(receptor: Expression, receptionValue: RuntimeValue, scope: Scope) {
+	#assignValueToExpression(receptor: Expression, receptionValue: RuntimeValue, scope: Scope): void {
 		let identifier: string;
 		switch(receptor.kind) {
 		case ExpressionKinds.IDENTIFIER: {
