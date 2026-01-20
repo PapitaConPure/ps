@@ -8,19 +8,22 @@ import {
 	NumberValue,
 	TextValue,
 	BooleanValue,
+	RegistryValue,
 	PromiseValue,
 	NadaValue,
 	makeNumber,
 	makeText,
 	makeBoolean,
+	makeRegistry,
 	makePromise,
 	makeNada,
 } from '../../values';
-import { getParamOrNada, expectParam } from '../nativeUtils';
+import { getParamOrNada, expectParam, makeRuntimeValueFromInternalValue } from '../nativeUtils';
 import { rand, randRange } from '../../../util/utils';
 import { rgb2hex, hsl2hex, hsv2hex } from '../../../util/colorUtils';
 import { NativeFunctionEntry } from '.';
 import { sleep } from 'bun';
+import axios from 'axios';
 
 const aleatorio: NativeFunction<null, [NumberValue, NumberValue], NumberValue> = (
 	_self,
@@ -256,12 +259,30 @@ const tipoDe: NativeFunction<null, [RuntimeValue], TextValue> = (_self, [ valor 
 	return makeText(result);
 };
 
-const pausa: NativeFunction<null, [NumberValue], PromiseValue> = (_self, [ valor ]) => {
+const pausa: NativeFunction<null, [NumberValue], PromiseValue<NadaValue>> = (_self, [ valor ]) => {
 	return makePromise(async () => {
 		await sleep(valor.value);
 		return makeNada();
 	});
 };
+
+const obtener: NativeFunction<null, [TextValue], PromiseValue<RegistryValue>> = (_self, [ valor ]) => {
+	return makePromise(async () => {
+		try {
+			const result = await axios.get(valor.value);
+			return makeRegistry({
+				exito: makeBoolean(false),
+				datos: makeRuntimeValueFromInternalValue(result.data, { omitFunctions: true }),
+			});
+		} catch(err) {
+			return makeRegistry({
+				exito: makeBoolean(false),
+				mensaje: makeText(err?.message ?? 'No se especificó el problema.'),
+			});
+		}
+	});
+};
+
 
 export const utilFunctions: NativeFunctionEntry[] = [
 	{ id: 'aleatorio', fn: aleatorio },
@@ -286,4 +307,5 @@ export const utilFunctions: NativeFunctionEntry[] = [
 	{ id: 'tipoDe', fn: tipoDe },
 	{ id: 'pausa', fn: pausa },
 	{ id: 'pausar', fn: pausa },
+	{ id: 'obtener', fn: obtener },
 ];
