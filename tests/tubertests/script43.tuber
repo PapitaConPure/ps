@@ -7,7 +7,7 @@ CARGAR propiedadesTexto con Registro
 	borde: colorNegro,
 	grosor: 2,
 	tamaño: 24,
-	negrita: Verdadero
+	negrita: Verdadero,
 
 EJECUTAR esperar lz->dibujarImagen(url)
 EJECUTAR lz->alinearTexto("centro", "base")
@@ -15,7 +15,7 @@ EJECUTAR esperar lz->dibujarTexto(
 	lz->ancho / 2,
 	lz->alto,
 	usuario->nombre,
-	propiedadesTexto
+	propiedadesTexto,
 )
 CARGAR img con esperar lz->crearImagen()
 
