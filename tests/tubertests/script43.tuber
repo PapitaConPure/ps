@@ -1,6 +1,6 @@
 LEER Texto url con usuario->avatar
 
-CARGAR lz con Lienzo 520, 520
+CARGAR lz con Lienzo 512, 512
 
 CARGAR propiedadesTexto con Registro
 	color: colorRojo,
@@ -17,6 +17,6 @@ EJECUTAR esperar lz->dibujarTexto(
 	usuario->nombre,
 	propiedadesTexto
 )
-CARGAR img con esperar lz->exportar()
+CARGAR img con esperar lz->crearImagen()
 
 ENVIAR img
