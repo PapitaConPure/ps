@@ -1,5 +1,5 @@
 import { Input, InputReader, ProductionInputReader, TestDriveInputReader } from './inputReader';
-import { RuntimeValue, AssertedRuntimeValue, ValueKinds, ValueKindTranslationLookups, makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeEmbed, makeFunction, makeLambda, makeNativeFunction, makePromise, makeNada, coerceValue, isInternalOperable, ValueKind, AnyFunctionValue, PromiseValue } from './values';
+import { RuntimeValue, AssertedRuntimeValue, ValueKinds, ValueKindTranslationLookups, makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeEmbed, makeFunction, makeLambda, makeNativeFunction, makePromise, makeNada, coerceValue, isInternalOperable, ValueKind, AnyFunctionValue, PromiseValue, TangibleValue } from './values';
 import { UnaryOperationLookups, BinaryOperationLookups, ValueKindLookups } from './lookups';
 import { EnvironmentProvider } from './environment/environmentProvider';
 import { NativeMethodsLookup } from './environment';
@@ -1051,7 +1051,7 @@ export class Interpreter {
 		let promisedValue = this.evaluate(argument, scope, mustBeDeclared);
 
 		if(promisedValue.kind !== ValueKinds.PROMISE)
-			promisedValue = makePromise(async() => promisedValue);
+			promisedValue = makePromise(async() => promisedValue as TangibleValue);
 
 		this.#promises.set(promiseKey, promisedValue);
 		this.halt(promisedValue);

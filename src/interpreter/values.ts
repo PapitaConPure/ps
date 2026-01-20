@@ -92,13 +92,6 @@ export type FunctionValueData = BaseFunctionValueData & (StandardFunctionValueDa
 
 export type FunctionValue = BaseValueData<'Function'> & FunctionValueData;
 
-export interface PromiseValue extends BaseValueData<'Promise'> {
-	state: 'pending' | 'fulfilled' | 'rejected';
-	promised: () => Promise<RuntimeValue>;
-	value?: RuntimeValue;
-	error?: Error;
-}
-
 export type AnyFunctionValue =
 	| FunctionValue
 	| NativeFunctionValue;
@@ -115,9 +108,19 @@ export type ComplexValue =
 	| EmbedValue
 	| AnyFunctionValue;
 
-export type RuntimeValue =
+export type TangibleValue =
 	| PrimitiveValue
-	| ComplexValue
+	| ComplexValue;
+
+export interface PromiseValue<TResult extends TangibleValue = TangibleValue> extends BaseValueData<'Promise'> {
+	state: 'pending' | 'fulfilled';
+	promised: () => Promise<TangibleValue>;
+	value?: TResult;
+	error?: Error;
+}
+
+export type RuntimeValue =
+	| TangibleValue
 	| PromiseValue;
 
 type RuntimeInternalValueMap = {
@@ -274,7 +277,7 @@ export function makeEmbed(): EmbedValue {
 	};
 }
 
-export function makePromise(promised: () => Promise<RuntimeValue>): PromiseValue {
+export function makePromise<TResult extends TangibleValue>(promised: () => Promise<TResult>): PromiseValue<TResult> {
 	const kind = ValueKinds.PROMISE;
 	return {
 		kind,

@@ -1,4 +1,4 @@
-import { RuntimeValue, AssertedRuntimeValue, RuntimeInternalValue, ValueKinds, ValueKind, ValueKindTranslationLookups, FunctionValue, NativeFunction, NadaValue, makeList, makeRegistry, makeEmbed, makeFunction, makeNativeFunction, makePromise, makeNada, valueMakers, coerceValue, isOperable, isValidText } from '../values';
+import { RuntimeValue, AssertedRuntimeValue, RuntimeInternalValue, ValueKinds, ValueKind, ValueKindTranslationLookups, FunctionValue, NativeFunction, NadaValue, makeList, makeRegistry, makeEmbed, makeFunction, makeNativeFunction, makePromise, makeNada, valueMakers, coerceValue, isOperable, isValidText, makeNumber, makeText, makeBoolean, PrimitiveValue, ListValue, RegistryValue, NativeFunctionValue, TangibleValue } from '../values';
 import { ArgumentExpression } from '../../ast/expressions';
 import { BlockStatement } from '../../ast/statements';
 import { EmbedData } from '../../embedData';
@@ -36,7 +36,7 @@ export function makeKindFromValue<TKind extends ValueKind>(kind: TKind, ...value
 	}
 
 	case ValueKinds.PROMISE: {
-		return makePromise(values[0] as () => Promise<RuntimeValue>) as AssertedRuntimeValue<TKind>;
+		return makePromise(values[0] as () => Promise<TangibleValue>) as AssertedRuntimeValue<TKind>;
 	}
 
 	case ValueKinds.NADA:
@@ -45,6 +45,70 @@ export function makeKindFromValue<TKind extends ValueKind>(kind: TKind, ...value
 	default:
 		throw 'Tipo de dato inválido al intentar crear un RuntimeValue desde tipo de dato y valor primitivo';
 	}
+}
+
+interface MakeRuntimeValueFromInternalValueOptions {
+	omitFunctions?: boolean;
+	depth?: number;
+}
+export function makeRuntimeValueFromInternalValue(value: unknown, options: MakeRuntimeValueFromInternalValueOptions = {}): RuntimeValue {
+	const {
+		omitFunctions = false,
+		depth = 4,
+	} = options;
+
+	if(value == null)
+		return makeNada();
+
+	if((value as RuntimeValue).kind === 'Nada' && (value as NadaValue).value === null)
+		return value as NadaValue;
+
+	if((value as RuntimeValue).kind
+	&& (value as RuntimeValue).compareTo
+	&& (value as RuntimeValue).equals
+	&& ((value as PrimitiveValue).value || (value as ListValue).elements || (value as RegistryValue).entries || (value as NativeFunctionValue).call))
+		return value as RuntimeValue;
+
+	if(typeof value === 'number')
+		return makeNumber(value);
+
+	if(typeof value === 'bigint')
+		return makeNumber(Number(value));
+
+	if(typeof value === 'string')
+		return makeText(value);
+
+	if(typeof value === 'boolean')
+		return makeBoolean(value);
+
+	if(typeof value === 'function') {
+		if(omitFunctions)
+			return makeNada();
+
+		return makeNativeFunction(null, () => value.call(null));
+	}
+
+	if(Array.isArray(value)) {
+		if(depth === 0)
+			return makeText('[]');
+
+		return makeList(value.map(v => makeRuntimeValueFromInternalValue(v, { omitFunctions, depth: depth - 1 })));
+	}
+
+	if(typeof value === 'object') {
+		if(depth === 0)
+			return makeText('{}');
+
+		if(value instanceof Set)
+			return makeList([ ...value.values().map(v => makeRuntimeValueFromInternalValue(v, { omitFunctions, depth: depth - 1 })) ]);
+
+		if(value instanceof Map)
+			return makeRegistry(new Map(value.entries().map(([ k, v ]) => [ `${k}`, makeRuntimeValueFromInternalValue(v, { omitFunctions, depth: depth - 1 }) ])));
+
+		return makeRegistry(new Map(Object.entries(value).map(([ k, v ]) => [ k, makeRuntimeValueFromInternalValue(v, { omitFunctions, depth: depth - 1 }) ])));
+	}
+
+	return makeNada();
 }
 
 /**
