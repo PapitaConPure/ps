@@ -52,6 +52,7 @@ export class Interpreter {
 	#provider: EnvironmentProvider;
 	#continuationState: ContinuationState;
 	#promises: Map<`${number}:${number}`, PromiseValue>;
+	#promiseCounter: number;
 	#promiseIds: number[];
 	#stop: StopKind;
 	#quota: number;
@@ -235,6 +236,8 @@ export class Interpreter {
 		this.#promises = new Map<`${number}:${number}`, PromiseValue>();
 		this.#promiseIds = [];
 		this.#continuationState = { state: 'running' };
+		this.#source = source.replace(/(^\s+)|(\s+$)/g, '');
+		this.#provider = provider;
 
 		let returned: RuntimeValue;
 		while(this.#continuationState.state === 'running') {
@@ -244,9 +247,8 @@ export class Interpreter {
 				this.#errorStack = [];
 				this.#sendStack = [];
 				this.#lastNodes = [];
-				this.#source = source.replace(/(^\s+)|(\s+$)/g, '');
-				this.#provider = provider;
 				this.#stop = Stops.NONE;
+				this.#promiseCounter = 0;
 
 				this.#inputReader = isTestDrive
 					? new TestDriveInputReader(this, args)
@@ -287,7 +289,7 @@ export class Interpreter {
 
 		this.rememberNode(node);
 
-		let returnValue;
+		let returnValue: RuntimeValue;
 		switch(node.kind) {
 		//Estructuras de control
 		case StatementKinds.BLOCK:
@@ -299,48 +301,23 @@ export class Interpreter {
 			break;
 
 		case StatementKinds.WHILE:
-			this.#promiseIds.push(this.#quota);
-			try {
-				returnValue = this.#evaluateWhile(node, scope);
-			} finally {
-				this.#promiseIds.pop();
-			}
+			returnValue = this.#evaluateWhile(node, scope);
 			break;
 
 		case StatementKinds.DO_UNTIL:
-			this.#promiseIds.push(this.#quota);
-			try {
-				returnValue = this.#evaluateDoUntil(node, scope);
-			} finally {
-				this.#promiseIds.pop();
-			}
+			returnValue = this.#evaluateDoUntil(node, scope);
 			break;
 
 		case StatementKinds.REPEAT:
-			this.#promiseIds.push(this.#quota);
-			try {
-				returnValue = this.#evaluateRepeat(node, scope);
-			} finally {
-				this.#promiseIds.pop();
-			}
+			returnValue = this.#evaluateRepeat(node, scope);
 			break;
 
 		case StatementKinds.FOR_EACH:
-			this.#promiseIds.push(this.#quota);
-			try {
-				returnValue = this.#evaluateForEach(node, scope);
-			} finally {
-				this.#promiseIds.pop();
-			}
+			returnValue = this.#evaluateForEach(node, scope);
 			break;
 
 		case StatementKinds.FOR:
-			this.#promiseIds.push(this.#quota);
-			try {
-				returnValue = this.#evaluateFor(node, scope);
-			} finally {
-				this.#promiseIds.pop();
-			}
+			returnValue = this.#evaluateFor(node, scope);
 			break;
 
 		//Inmediatas
@@ -522,7 +499,12 @@ export class Interpreter {
 		let evaluated: RuntimeValue = makeNada();
 
 		while(this.evaluateAs(test, scope, ValueKinds.BOOLEAN).value === true) {
-			evaluated = this.#evaluateBlock(body, scope);
+			this.#promiseIds.push(this.#promiseCounter++);
+			try {
+				evaluated = this.#evaluateBlock(body, scope);
+			} finally {
+				this.#promiseIds.pop();
+			}
 			if(this.eatStop(Stops.BREAK)) break;
 		}
 
@@ -535,7 +517,12 @@ export class Interpreter {
 		let evaluated: RuntimeValue = makeNada();
 
 		do {
-			evaluated = this.#evaluateBlock(body, scope);
+			this.#promiseIds.push(this.#promiseCounter++);
+			try {
+				evaluated = this.#evaluateBlock(body, scope);
+			} finally {
+				this.#promiseIds.pop();
+			}
 			if(this.eatStop(Stops.BREAK)) break;
 		} while(this.evaluateAs(test, scope, ValueKinds.BOOLEAN).value === false);
 
@@ -549,7 +536,12 @@ export class Interpreter {
 
 		const timesValue = this.evaluateAs(times, scope, ValueKinds.NUMBER).value;
 		for(let i = 0; i < timesValue; i++) {
-			evaluated = this.#evaluateBlock(body, scope);
+			this.#promiseIds.push(this.#promiseCounter++);
+			try {
+				evaluated = this.#evaluateBlock(body, scope);
+			} finally {
+				this.#promiseIds.pop();
+			}
 			if(this.eatStop(Stops.BREAK)) break;
 		}
 
@@ -568,12 +560,19 @@ export class Interpreter {
 		const entryNames = (this.is(containerValue, ValueKinds.LIST) ? containerValue.elements : containerValue.entries).keys();
 		const forEachScope = new Scope(this, scope);
 		const getFn = this.is(containerValue, ValueKinds.LIST)
-			? (idx => containerValue.elements[idx])
-			: (name => makeList([ makeText(name), containerValue.entries.get(name) ]));
+			? (idx: string | number) => containerValue.elements[idx]
+			: (name: string) => makeList([ makeText(name), containerValue.entries.get(name) ]);
 
 		for(const entryName of entryNames) {
 			forEachScope.assignVariable(identifier, getFn(entryName));
-			evaluated = this.#evaluateBlock(body, forEachScope);
+
+			this.#promiseIds.push(this.#promiseCounter++);
+			try {
+				evaluated = this.#evaluateBlock(body, forEachScope);
+			} finally {
+				this.#promiseIds.pop();
+			}
+
 			if(this.eatStop(Stops.BREAK)) break;
 		}
 
@@ -601,7 +600,12 @@ export class Interpreter {
 		const stepFn = () => this.evaluateStatement(step, forScope);
 
 		for(startFn(); testFn(); stepFn()) {
-			evaluated = this.#evaluateBlock(body, forScope);
+			this.#promiseIds.push(this.#promiseCounter++);
+			try {
+				evaluated = this.#evaluateBlock(body, forScope);
+			} finally {
+				this.#promiseIds.pop();
+			}
 			if(this.eatStop(Stops.BREAK)) break;
 		}
 
@@ -617,14 +621,19 @@ export class Interpreter {
 		const toValue = this.evaluateAs(to, scope, ValueKinds.NUMBER).value;
 		const forScope = new Scope(this, scope);
 
-		let i;
+		let i: number;
 		const { testFn, stepFn } = (fromValue < toValue)
 			? { testFn: () => i <= toValue, stepFn: () => i++ }
 			: { testFn: () => i >= toValue, stepFn: () => i-- };
 
 		for(i = fromValue; testFn(); stepFn()) {
 			forScope.assignVariable(identifier, makeNumber(i));
-			evaluated = this.#evaluateBlock(body, forScope);
+			this.#promiseIds.push(this.#promiseCounter++);
+			try {
+				evaluated = this.#evaluateBlock(body, forScope);
+			} finally {
+				this.#promiseIds.pop();
+			}
 			if(this.eatStop(Stops.BREAK)) break;
 		}
 
@@ -1173,7 +1182,7 @@ export class Interpreter {
 	callFunction(fnValue: AnyFunctionValue, argValues: RuntimeValue[], scope: Scope) {
 		let returnedValue: RuntimeValue;
 
-		this.#promiseIds.push(this.#quota);
+		this.#promiseIds.push(this.#promiseCounter++);
 		try {
 			if(this.is(fnValue, ValueKinds.NATIVE_FN)) {
 				const fnScope = new Scope(this, scope);
