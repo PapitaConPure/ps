@@ -259,7 +259,6 @@ export class Interpreter {
 		const saveTable = new Map(this.#saveTable.entries());
 		const errorStack = this.#errorStack.slice();
 
-
 		return {
 			returned,
 			inputStack,
