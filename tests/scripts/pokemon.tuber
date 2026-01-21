@@ -1,0 +1,75 @@
+//Definimos las funciones que vamos a usar
+CARGAR crearPj con nombre => Registro
+	nombre: nombre,
+	vida: 100,
+	stamina: 3,
+
+CARGAR preTurno con Función(pj)
+	SI pj->stamina precede 3
+		SUMAR pj->stamina
+	FIN
+FIN
+
+CARGAR atacar con Función(pj, ataque, destino)
+	CREAR Número daño
+
+	SI ataque es "PLACAJE"
+		CARGAR daño con dado(12, 33)
+	SINO SI ataque es "PIEDRAZO" y pj->stamina no precede 3
+		RESTAR pj->stamina con 3
+		CARGAR daño con dado(24, 43)
+	SINO
+		CARGAR ataque con "SALPICADURA"
+	FIN
+	RESTAR destino->vida con daño
+
+	CREAR Marco m
+	ENVIAR m->asignarColor(colorRojo)->agregarCampo(
+		pj->nombre + " usa " + ataque, "Causa __" + daño + "__ de daño a **" + destino->nombre + "**"
+	)
+FIN
+
+//Cargamos ambos jugadores
+CARGAR humano con humano o crearPj(usuario->nombre)
+CARGAR bot con bot o crearPj("Bot de Puré")
+
+//Recargamos stamina de ambos jugadores
+USAR (preTurno(humano), preTurno(bot))
+
+//Realizamos un turno
+LEER Texto ataque con "PLACAJE" en mayúsculas
+USAR atacar(humano, ataque, bot)
+
+SI bot->vida excede 0
+ CARGAR ataque con elegir("PLACAJE", "PIEDRAZO", "SALPICADURA")
+ USAR atacar(bot, ataque, humano)
+FIN
+
+//Mostrar estado
+CREAR Marco m
+SI humano->vida excede 0 y bot->vida excede 0
+	ENVIAR m
+		->asignarColor(colorAzul)
+		->asignarTítulo("Salud de los contrincantes")
+		->agregarCampo(
+			humano->nombre,
+			humano->vida + " / " + humano->stamina,
+			Verdadero)
+		->agregarCampo(
+			bot->nombre,
+			bot->vida + " / " + bot->stamina,
+			Verdadero)
+
+	//Guardar datos de ambos jugadores...
+	GUARDAR humano
+	GUARDAR bot
+SINO
+	CARGAR ganador con (humano->vida excede 0 y humano->nombre) o bot->nombre
+	ENVIAR m
+		->asignarColor(colorRojoOscuro)
+		->asignarTítulo("¡" + ganador + " ganó!")
+
+	//Borrar jugadores
+	BORRAR humano
+	BORRAR bot
+FIN

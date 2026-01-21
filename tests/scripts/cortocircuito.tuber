@@ -1,0 +1,13 @@
+//El ejemplo original usa CARGAR ... con ...
+//Se adaptó a ENVIAR con propósitos de testing
+
+ENVIAR Falso o Verdadero //Asigna Verdadero
+ENVIAR Falso o 42 //Asigna 42
+ENVIAR Verdadero y 32 //Asigna 32
+ENVIAR Nada o Verdadero //Asigna Verdadero
+ENVIAR Nada y Falso //Asigna Nada
+ENVIAR Falso o (2 y 0) //Asigna 0
+ENVIAR (0 y 1) no es (2 o 4) //Asigna Verdadero
+ENVIAR "Té" es Falso //Asigna Falso
+ENVIAR "Café" o Falso //Asigna "Café"
+ENVIAR (2 no es 2) o (2 es 2) //Asigna Verdadero

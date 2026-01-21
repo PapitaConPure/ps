@@ -1,0 +1,5 @@
+CARGAR producto con Función(a, b: 10)
+	DEVOLVER a * b
+FIN
+
+ENVIAR producto(2)

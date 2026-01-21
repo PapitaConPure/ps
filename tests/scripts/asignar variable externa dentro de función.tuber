@@ -1,0 +1,12 @@
+CARGAR wah con 42
+
+CARGAR fn con Función()
+	SUMAR wah
+	ENVIAR wah
+FIN
+
+ENVIAR wah
+EJECUTAR fn()
+ENVIAR wah
+SUMAR wah
+ENVIAR wah

@@ -1,0 +1,8 @@
+CREAR Texto var
+CARGAR var con "Esto es bastante textoso"
+BLOQUE
+	CREAR Número var
+	CARGAR var con 23
+	ENVIAR var //Envía "23"
+FIN
+ENVIAR var //Envía "Esto es bastante textoso"

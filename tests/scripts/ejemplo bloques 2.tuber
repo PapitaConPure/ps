@@ -1,0 +1,26 @@
+CREAR Texto útil
+
+BLOQUE
+	BLOQUE
+		CARGAR café con "colombiano"
+		BLOQUE
+			CARGAR algo con "No sé en dónde me metí…"
+			//Envía "Me gusta mucho el café colombiano"
+			ENVIAR "Me gusta mucho el café " + café
+		FIN
+	FIN
+
+	//Envía "¿Nada? Eso ya no existe"
+	ENVIAR "¿" + algo + "? Eso ya no existe"
+	CARGAR inútil con "Esto es inútil"
+	CARGAR útil con "Esto es útil"
+FIN
+
+//Envía "¿Qué es Nada? Yo solo conozco a Esto es útil"
+ENVIAR "¿Qué es " + inútil + "? Yo solo conozco a " + útil
+
+CREAR Número inútil
+CARGAR inútil con 23
+
+//Envía "23 es el vigésimo-tercer número"
+ENVIAR Texto inútil + " es el vigésimo-tercer número"

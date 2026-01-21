@@ -1,4 +1,4 @@
-import { BooleanValue, ListValue, NumberValue, RegistryValue, RuntimeValue, TextValue, ValueKinds } from '../../src/interpreter/values';
+import { BooleanValue, ListValue, NadaValue, NumberValue, RegistryValue, RuntimeValue, TextValue, ValueKinds } from '../../src/interpreter/values';
 import { expect } from 'bun:test';
 
 export interface ExpectNumberOptions {
@@ -201,4 +201,13 @@ export function expectRegistry(value: RuntimeValue, options: ExpectRegistryOptio
 		expect(inferredRegistry.entries).toSatisfy(v => !v.entries().some(([ k, v ]) => none(k, v)));
 
 	return inferredRegistry;
+}
+
+export function expectNada(value: RuntimeValue): NadaValue {
+	expect(value).toBeDefined();
+	expect(value.kind).toBe(ValueKinds.NADA);
+	const inferredNada = value as NadaValue;
+	expect(inferredNada.value).toBeNull();
+
+	return inferredNada;
 }

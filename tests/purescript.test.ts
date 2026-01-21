@@ -8,7 +8,7 @@ import { ExpressionStatement, StatementKinds } from '../src/ast/statements';
 import { ValueKinds, NumberValue, ListValue, RegistryValue, EmbedValue, makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeEmbed, makeNada, coerceValue, BooleanValue, ImageValue } from '../src/interpreter/values';
 import { executePS } from './helpers/executePS';
 import { Input } from '../src';
-import { expectList, expectNumber, expectRegistry, expectText } from './helpers/expectValue';
+import { expectBoolean, expectList, expectNada, expectNumber, expectRegistry, expectText } from './helpers/expectValue';
 
 const testFiles: Record<string, string> = {};
 const relPath = './tests/scripts';
@@ -238,6 +238,83 @@ test.concurrent('Estructuras iterativas', async () => {
 	expect(sendStack[16]).toMatchObject(makeNumber(5));
 });
 
+test.concurrent('Guía - Ejemplo de Bloques', async () => {
+	const result = await executePS(testFiles['ejemplo bloques 1.tuber']);
+	const { sendStack } = result;
+
+	expectText(sendStack[0], { exactly: '¡¡¡WOW!!!' });
+	expectNada(sendStack[1]);
+});
+
+test.concurrent('Guía - Ejemplo de Bloques II', async () => {
+	const result = await executePS(testFiles['ejemplo bloques 2.tuber']);
+	const { sendStack } = result;
+
+	expectText(sendStack[0], { exactly: 'Me gusta mucho el café colombiano' });
+	expectText(sendStack[1], { exactly: '¿Nada? Eso ya no existe' });
+	expectText(sendStack[2], { exactly: '¿Qué es Nada? Yo solo conozco a Esto es útil' });
+	expectText(sendStack[3], { exactly: '23 es el vigésimo-tercer número' });
+});
+
+test.concurrent('Guía - Ocultación de variables por Ámbito', async () => {
+	const result = await executePS(testFiles['ocultación por ámbito.tuber']);
+	const { sendStack } = result;
+
+	expectNumber(sendStack[0], { exactly: 23 });
+	expectText(sendStack[1], { exactly: 'Esto es bastante textoso' });
+});
+
+test.concurrent('Guía - Evaluaciones Lógicas', async () => {
+	const result = await executePS(testFiles['evaluaciones lógicas.tuber']);
+	const { sendStack } = result;
+
+	expectBoolean(sendStack[0], { exactly: true });
+	expectBoolean(sendStack[1], { exactly: false });
+	expectBoolean(sendStack[2], { exactly: false });
+	expectBoolean(sendStack[3], { exactly: false });
+	expectBoolean(sendStack[4], { exactly: true });
+	expectBoolean(sendStack[5], { exactly: false });
+	expectText(sendStack[6], { exactly: 'Café' });
+	expectBoolean(sendStack[7], { exactly: false });
+	expectBoolean(sendStack[8], { exactly: false });
+});
+
+test.concurrent('Guía - Evaluación de cortocircuito', async () => {
+	const result = await executePS(testFiles['cortocircuito.tuber']);
+	const { sendStack } = result;
+
+	expectBoolean(sendStack[0], { exactly: true });
+	expectNumber(sendStack[1], { exactly: 42 });
+	expectNumber(sendStack[2], { exactly: 32 });
+	expectBoolean(sendStack[3], { exactly: true });
+	expectNada(sendStack[4]);
+	expectNumber(sendStack[5], { exactly: 0 });
+	expectBoolean(sendStack[6], { exactly: true });
+	expectBoolean(sendStack[7], { exactly: false });
+	expectText(sendStack[8], { exactly: 'Café' });
+	expectBoolean(sendStack[9], { exactly: true });
+});
+
+test.concurrent('Repetir', async () => {
+	const result = await executePS(testFiles['repetir.tuber']);
+	const { sendStack, returned } = result;
+
+	expect(sendStack).toMatchObject([
+		makeNumber(1),
+		makeNumber(2),
+		makeNumber(3),
+		makeNumber(4),
+		makeNumber(5),
+		makeNumber(6),
+		makeNumber(7),
+		makeNumber(8),
+		makeNumber(9),
+		makeNumber(10),
+	]);
+
+	expectNumber(returned, { exactly: 11 });
+});
+
 test.concurrent('EJECUTAR + expresiones de flecha y llamado', async () => {
 	const result = await executePS(testFiles['ejecutar funciones y métodos.tuber'], { skipInterpreter: true });
 	const { tokens, tree } = result;
@@ -309,10 +386,21 @@ test.concurrent('Métodos nativos', async () => {
 	expectText(sendStack[5], { exactly: '[a: 3] - - [b: 2] - - [c: 1]' });
 });
 
-test.concurrent('Expresiones de Secuencia', async () => {
-	const result = await executePS(testFiles['expresiones de secuencia.tuber']);
+test.concurrent('Asignar variable externa en función', async () => {
+	const result = await executePS(testFiles['asignar variable externa dentro de función.tuber'], { log: true });
 	const { sendStack } = result;
 
+	expectNumber(sendStack[0], { exactly: 42 });
+	expectNumber(sendStack[1], { exactly: 43 });
+	expectNumber(sendStack[2], { exactly: 43 });
+	expectNumber(sendStack[3], { exactly: 44 });
+});
+
+test.concurrent('Parámetros opcionales de función', async () => {
+	const result = await executePS(testFiles['parámetro opcional de función.tuber']);
+	const { sendStack } = result;
+
+	expectNumber(sendStack[0], { exactly: 20 });
 });
 
 test.concurrent('Expresiones Lambda', async () => {
@@ -558,6 +646,36 @@ test.concurrent('Terraria', async () => {
 	expect(sendStack[0]).toMatchObject(
 		makeText('Terraria es un juego de Acción/Aventura para PC, Consolas, Móvil. Salió en 2011')
 	);
+});
+
+test.concurrent('Batalla Pokémon (no me gusta Pokémon)', async () => {
+	const result = await executePS(testFiles['pokemon.tuber']);
+	const { sendStack, saveTable } = result;
+
+	expect(sendStack).toBeArrayOfSize(3);
+	expect(sendStack[0].kind).toBe(ValueKinds.EMBED);
+	expect(sendStack[1].kind).toBe(ValueKinds.EMBED);
+	expect(sendStack[2].kind).toBe(ValueKinds.EMBED);
+
+	const [ embed1, embed2, embed3 ] = sendStack as EmbedValue[];
+
+	expect(embed1.value.data.fields[0].name).toStartWith('Bot de Puré usa ');
+	expect(embed2.value.data.fields[0].name).toStartWith('Bot de Puré usa ');
+	expect(embed3.value.data.title).toBe('Salud de los contrincantes');
+	const humano = expectRegistry(saveTable.get('humano'), {
+		containKeys: [ 'nombre', 'vida', 'stamina' ],
+		none: (_, el) => el.kind === 'Nada',
+	});
+	const bot = expectRegistry(saveTable.get('bot'), {
+		containKeys: [ 'nombre', 'vida', 'stamina' ],
+	});
+
+	expectText(humano.entries.get('nombre'), { empty: false });
+	expectText(bot.entries.get('nombre'), { empty: false });
+	expectNumber(humano.entries.get('vida'), { min: 50, max: 100 });
+	expectNumber(bot.entries.get('vida'), { min: 50, max: 100 });
+	expectNumber(humano.entries.get('stamina'), { min: 0, max: 3 });
+	expectNumber(bot.entries.get('stamina'), { min: 0, max: 3 });
 });
 
 test.concurrent('Predicados', async () => {

@@ -1,0 +1,9 @@
+CARGAR ejecuciones con 1
+
+REPETIR 10 veces
+	//Envía el valor actual de "ejecuciones" y le suma 1
+	ENVIAR ejecuciones
+	SUMAR ejecuciones
+FIN
+
+DEVOLVER ejecuciones

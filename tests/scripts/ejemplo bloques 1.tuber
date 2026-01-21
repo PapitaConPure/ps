@@ -1,0 +1,14 @@
+CARGAR común con "Meh..."
+
+BLOQUE
+	CARGAR genial con "¡Esto está dentro de un bloque!"
+	CARGAR común con "¡¡¡WOW!!!"
+FIN
+
+//Esto envía "¡¡¡WOW!!!", porque la variable "común" fue modificada dentro
+//de un bloque de este ámbito
+ENVIAR común
+
+//Esto envía "Nada", porque la variable "genial" fue definida en un
+//ámbito que ya no existe en este punto
+ENVIAR genial
