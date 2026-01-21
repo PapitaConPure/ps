@@ -26,21 +26,7 @@ export interface EvaluationResult {
 	errorStack: Error[];
 }
 
-export interface PausedState {
-	state: 'paused';
-	argument: Expression;
-	scope: Scope;
-}
-
-export interface RunningState {
-	state: 'running';
-}
-
-export interface StoppedState {
-	state: 'stopped';
-}
-
-export type ContinuationState = PausedState | RunningState | StoppedState;
+export type ContinuationState = 'paused' | 'running' | 'finished';
 
 /**@description Representa un Intérprete de PuréScript.*/
 export class Interpreter {
@@ -235,12 +221,12 @@ export class Interpreter {
 		this.#quota = 2000; //TODO: *Considerar* aumentar a 3000
 		this.#promises = new Map<`${number}:${number}`, PromiseValue>();
 		this.#promiseIds = [];
-		this.#continuationState = { state: 'running' };
+		this.#continuationState = 'running';
 		this.#source = source.replace(/(^\s+)|(\s+$)/g, '');
 		this.#provider = provider;
 
 		let returned: RuntimeValue;
-		while(this.#continuationState.state === 'running') {
+		while(this.#continuationState === 'running') {
 			try {
 				//Tentativa de evaluación de programa hasta finalizar ejecución.
 				this.#saveTable = new Map();
@@ -255,13 +241,14 @@ export class Interpreter {
 					: new ProductionInputReader(this, args);
 
 				returned = this.#evaluateBlock(ast, scope);
-				this.#continuationState = { state: 'stopped' };
+
+				this.#continuationState = 'finished';
 			} catch(err) {
 				if(err instanceof HaltSignal) {
 					//Reintentar la tentativa de evaluación si se encuentra una espera de promesa.
 					err.promise.value = await err.promise.promised();
 					err.promise.state = 'fulfilled';
-					this.#continuationState = { state: 'running' };
+					this.#continuationState = 'running';
 				} else
 					throw err;
 			}
@@ -475,7 +462,7 @@ export class Interpreter {
 		for(const statement of node.body) {
 			returned = this.evaluateStatement(statement, blockScope);
 
-			if(this.#continuationState.state === 'paused')
+			if(this.#continuationState === 'paused')
 				return returned;
 
 			if(this.checkStop(Stops.BREAK)) break;
