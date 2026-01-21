@@ -148,7 +148,7 @@ export function expectList(value: RuntimeValue, options: ExpectListOptions = {})
 }
 
 export interface ExpectRegistryOptions {
-	exactly?: Map<string, RuntimeValue>;
+	exactly?: Record<string, RuntimeValue>;
 	size?: number;
 	containKeys?: string[];
 	containValues?: RuntimeValue[];
@@ -174,8 +174,9 @@ export function expectRegistry(value: RuntimeValue, options: ExpectRegistryOptio
 	expect(inferredRegistry.entries).toBeInstanceOf(Map);
 
 	if(exactly != null) {
-		expect(inferredRegistry.entries.size).toBe(exactly.size);
-		expect(inferredRegistry.entries).toSatisfy(registry => registry.entries().every(([ k, v ]) => v.equals(exactly.get(k))));
+		const exactlyMap = new Map<string, RuntimeValue>(Object.entries(exactly));
+		expect(inferredRegistry.entries.size).toBe(exactlyMap.size);
+		expect(inferredRegistry.entries).toSatisfy(registry => registry.entries().every(([ k, v ]) => v.equals(exactlyMap.get(k))));
 		return inferredRegistry;
 	}
 
