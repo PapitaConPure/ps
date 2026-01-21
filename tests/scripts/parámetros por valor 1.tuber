@@ -1,0 +1,14 @@
+//Ejemplo adaptado de la guía con propósitos de testeo
+
+CARGAR fn con Función(var)
+	//La variable "var" aquí es una copia del valor ingresado
+	CARGAR var con 30
+FIN
+
+CARGAR var con 15
+
+//Se ejecuta la función con una copia de "var"...
+EJECUTAR fn(var)
+
+//Envía 15, porque "var" de este ámbito nunca fue modificada
+ENVIAR var

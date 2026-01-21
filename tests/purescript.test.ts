@@ -238,7 +238,7 @@ test.concurrent('Estructuras iterativas', async () => {
 	expect(sendStack[16]).toMatchObject(makeNumber(5));
 });
 
-test.concurrent('Guía - Ejemplo de Bloques', async () => {
+test.concurrent('Guía - Ejemplo de Bloques I', async () => {
 	const result = await executePS(testFiles['ejemplo bloques 1.tuber']);
 	const { sendStack } = result;
 
@@ -458,8 +458,17 @@ test.concurrent('Funciones impuras', async () => {
 	);
 });
 
-test.concurrent('Retorno de Funciones y Ámbito de Función', async () => {
+test.concurrent('Ámbito de Función', async () => {
 	const result = await executePS(testFiles['ámbito de función.tuber']);
+	const { sendStack } = result;
+
+	expectNumber(sendStack[0], { exactly: 555 });
+	expectNumber(sendStack[1], { exactly: 3 });
+	expectNumber(sendStack[2], { exactly: 460 });
+});
+
+test.concurrent('Retorno de Funciones y closures de Función', async () => {
+	const result = await executePS(testFiles['closures.tuber']);
 	const { sendStack, returned } = result;
 
 	expect(sendStack).toBeArrayOfSize(0);
@@ -713,12 +722,48 @@ test.concurrent('Formateo de Números', async () => {
 	expect(sendStack[4]).toMatchObject(makeText('003,000'));
 });
 
+test.concurrent('Paso de parámetros por valor I', async () => {
+	const result = await executePS(testFiles['parámetros por valor 1.tuber']);
+	const { sendStack } = result;
+
+	expectNumber(sendStack[0], { exactly: 15 });
+});
+
+test.concurrent('Paso de parámetros por valor II', async () => {
+	const result = await executePS(testFiles['parámetros por valor 2.tuber']);
+	const { sendStack } = result;
+
+	expectNumber(sendStack[0], { exactly: 9 });
+});
+
+test.concurrent('Paso de parámetros por referencia', async () => {
+	const result = await executePS(testFiles['parámetro de lista por referencia.tuber']);
+	const { sendStack } = result;
+
+	expectText(sendStack[0], { exactly: 'Mono, Orangután, Lémur' });
+	expectText(sendStack[1], { exactly: 'Mono, Orangután, Lémur, Gorila' });
+});
+
 test.concurrent('Mismo identificador en Funciones', async () => {
 	const result = await executePS(testFiles['mismo identificador en funciones.tuber']);
 	const { sendStack } = result;
 
 	expect(sendStack[0]).toMatchObject(makeText('chocolate'));
 	expect(sendStack[1]).toMatchObject(makeText('caramelo'));
+});
+
+test.concurrent('Recorrer nodos', async () => {
+	const result = await executePS(testFiles['nodos.tuber']);
+	const { sendStack } = result;
+
+	expectNumber(sendStack[0], { exactly: 7 });
+});
+
+test.concurrent('Guía - Funciones como Parámetros', async () => {
+	const result = await executePS(testFiles['funciones como parámetros.tuber']);
+	const { sendStack } = result;
+
+	expectText(sendStack[0], { exactly: '12, 4, 8, 14, 20' });
 });
 
 test.concurrent('Asignación en mientras', async () => {
@@ -756,7 +801,7 @@ test.concurrent('Operador luego (Ejecución Ordinaria)', async () => {
 	expect(sendStack[0]).toMatchObject(makeNumber(42));
 });
 
-test.concurrent('Cargar Condicional', async () => {
+test.concurrent('Cargar Condicional I', async () => {
 	const result = await executePS(testFiles['cargar condicional.tuber']);
 	const { sendStack } = result;
 

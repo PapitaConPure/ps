@@ -1,11 +1,32 @@
-CARGAR fn1 con Función(a)       //Parámetro capturado por Función interna
-	CARGAR d con 100            //Variable de Función capturada por Función interna
-	CARGAR fn2 con Función(b)   //Valor de parámetro de Función guardado
-		DEVOLVER a + b + c + d  //Sumar todas las variables capturadas
-	FIN
-	DEVOLVER fn2                //Devolver Función con 3 de 4 variables capturadas
+//Ejemplo adaptado de la Guía (el ejemplo en la guía estaba mal, hay que corregirlo)
+
+CARGAR a con 1
+CARGAR b con 2
+CARGAR c con 30
+
+CARGAR sumarInterno con Función()
+	CREAR Número a, b, c
+	CARGAR a con 5
+	CARGAR b con 50
+	CARGAR c con 500
+	DEVOLVER a + b + c
 FIN
 
-CARGAR d con 1000   //Debería ignorarse por la variable "d" de contexto más cercano a la declaración de la Función
-CARGAR c con 4      //Variable pseudoglobal capturada
-DEVOLVER fn1(3)(2)  //109
+ENVIAR sumarInterno() //Envía "555" (5 + 50 + 500)
+
+
+CARGAR sumarExternoDeclaración con Función()
+	DEVOLVER a + b
+FIN
+
+ENVIAR sumarExternoDeclaración() //Envía "3" (1 + 2)
+
+
+CARGAR sumarExternoLlamado con Función()
+	CARGAR a con 10
+	CARGAR b con 20
+	DEVOLVER a + b + c + d
+FIN
+
+CARGAR d con 400
+ENVIAR sumarExternoLlamado() //Envía "460" (10 + 20 + 30 + 400)

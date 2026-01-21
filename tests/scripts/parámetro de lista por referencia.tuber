@@ -1,0 +1,15 @@
+CARGAR agregarGorila con Función(li)
+	//EXTENDER agrega un nuevo elemento al final de una Lista
+	EXTENDER li con "Gorila"
+FIN
+
+CARGAR primates con Lista "Mono", "Orangután", "Lémur"
+
+//Envía "Mono, Orangután, Lémur"
+ENVIAR primates->unir(", ")
+
+//Se envía una referencia al valor de Lista de "primates"...
+EJECUTAR agregarGorila(primates)
+
+//Envía "Mono, Orangután, Lémur, Gorila"
+ENVIAR primates->unir(", ")

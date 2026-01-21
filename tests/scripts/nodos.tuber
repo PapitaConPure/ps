@@ -1,0 +1,36 @@
+CARGAR recorrer con Función(nodo)
+	SI no esRegistro(nodo)
+		DEVOLVER nodo
+	FIN
+
+	CARGAR op con nodo->op
+
+	SI op es "+"
+		DEVOLVER recorrer(nodo->izq) + recorrer(nodo->der)
+	SINO SI op es "-"
+		DEVOLVER recorrer(nodo->izq) - recorrer(nodo->der)
+	SINO SI op es "*"
+		DEVOLVER recorrer(nodo->izq) * recorrer(nodo->der)
+	SINO SI op es "/"
+		DEVOLVER recorrer(nodo->izq) / recorrer(nodo->der)
+	FIN
+FIN
+
+CARGAR árbol con Registro
+	op: "-",
+	izq: (Registro
+		op: "+",
+		izq: (Registro
+			op: "*",
+			izq: 4,
+			der: 2,
+		),
+		der: (Registro
+			op: "/",
+			izq: 6,
+			der: 3,
+		),
+	),
+	der: 3,
+
+ENVIAR recorrer(árbol)

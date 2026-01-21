@@ -1,0 +1,16 @@
+//La Función que diseñamos en la anterior página...
+CARGAR cambiarLista con Función(li, fn)
+	PARA i desde 0 hasta (li->largo - 1)
+		CARGAR li->(i) con fn(li->(i))
+	FIN
+FIN
+
+//La Función que le pasaremos a la de arriba...
+CARGAR duplicar con Función(val)
+	DEVOLVER val * 2
+FIN
+
+//¡Aplicar lo que aprendimos!
+CARGAR unaLista con Lista 6, 2, 4, 7, 10
+EJECUTAR cambiarLista(unaLista, duplicar)
+ENVIAR unaLista->unir(", ") //Envía "12, 4, 8, 14, 20"
