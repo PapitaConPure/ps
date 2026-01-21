@@ -1,0 +1,8 @@
+CARGAR wawa con Lista 
+CARGAR wawa con Lista 42
+CARGAR wawa con Lista ,,42, 69
+CARGAR wawa con Lista 42, 69,
+CARGAR wawa con Lista 42,,,
+CARGAR wawa con (Lista ,,,420,,,)
+CARGAR wawa con (Lista 911)
+ENVIAR wawa

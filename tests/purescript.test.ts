@@ -8,20 +8,21 @@ import { ExpressionStatement, StatementKinds } from '../src/ast/statements';
 import { ValueKinds, NumberValue, ListValue, RegistryValue, EmbedValue, makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeEmbed, makeNada, coerceValue, BooleanValue, ImageValue } from '../src/interpreter/values';
 import { executePS } from './helpers/executePS';
 import { Input } from '../src';
+import { expectList, expectNumber, expectRegistry, expectText } from './helpers/expectValue';
 
-const testFiles: string[] = [];
+const testFiles: Record<string, string> = {};
 const relPath = './tests/scripts';
 for(const filename of readdirSync(relPath).sort()) {
-	const file = readFileSync(join(relPath, filename), { encoding: 'utf-8' });
-	testFiles.push(file);
+	const code = readFileSync(join(relPath, filename), { encoding: 'utf-8' });
+	testFiles[filename] = code;
 }
 
 test.concurrent('Piloto', async () => {
-	const result = await executePS(testFiles[0]);
+	const result = await executePS(testFiles['piloto.tuber']);
 	const { inputStack, saveTable } = result;
 
 	expect(inputStack.length).toBe(1);
-	expect(inputStack[0]).toMatchObject(new Input('folladito', 'Text', false));
+	expect(inputStack[0]).toMatchObject(new Input('folladito', ValueKinds.TEXT, false));
 
 	const cosita = saveTable.get('cosita') as ListValue;
 	expect(cosita.kind).toBe(ValueKinds.LIST);
@@ -32,7 +33,7 @@ test.concurrent('Piloto', async () => {
 });
 
 test.concurrent('Envío simple', async () => {
-	const result = await executePS(testFiles[1]);
+	const result = await executePS(testFiles['envio simple.tuber']);
 	const { sendStack } = result;
 
 	expect(sendStack.length).toBe(1);
@@ -40,7 +41,7 @@ test.concurrent('Envío simple', async () => {
 });
 
 test.concurrent('Randomrain', async () => {
-	const result = await executePS(testFiles[2]);
+	const result = await executePS(testFiles['randomrain.tuber']);
 	const { sendStack } = result;
 
 	expect(sendStack.length).toBe(1);
@@ -53,8 +54,16 @@ test.concurrent('Randomrain', async () => {
 	expect(inferredEmbed.data.fields?.[0].inline).toBe(false);
 });
 
+test.concurrent('Expresiones matemáticas', async () => {
+	const result = await executePS(testFiles['expresiones matemáticas.tuber'], { log: true });
+	const { sendStack } = result;
+
+	expect(sendStack.length).toBe(1);
+	expectNumber(sendStack[0], { exactly: 1 * 2 ** 3 + 4 * 5 / 6 });
+});
+
 test.concurrent('Variables y Expresiones', async () => {
-	const result = await executePS(testFiles[3]);
+	const result = await executePS(testFiles['variables y expresiones.tuber']);
 	const { interpreter, sendStack } = result;
 
 	expect(sendStack.length).toBe(1);
@@ -69,35 +78,34 @@ test.concurrent('Variables y Expresiones', async () => {
 	expect(sendStack[0]).toMatchObject(makeText(`${av} ${bv} ${cv}`));
 });
 
-test.concurrent('Asignaciones complejas', async () => {
-	const result = await executePS(testFiles[4]);
+test.concurrent('Asignaciones de Lista', async () => {
+	const result = await executePS(testFiles['asignaciones de lista.tuber']);
 	const { sendStack } = result;
 
-	expect(sendStack.length).toBe(7);
+	expectList(sendStack[0], { exactly: [ makeNumber(911) ] });
+});
 
-	expect(sendStack[0].kind).toBe(ValueKinds.LIST);
-	const inferredList = sendStack[0] as ListValue;
+test.concurrent('Asignaciones de Registro', async () => {
+	const result = await executePS(testFiles['asignaciones de registro.tuber']);
+	const { sendStack } = result;
 
-	expect(inferredList.elements).toBeArrayOfSize(1);
-	expect(inferredList.elements[0]).toMatchObject(makeNumber(911));
+	expectRegistry(sendStack[0], {
+		exactly: {
+			a: makeNumber(3),
+			b: makeNumber(2),
+			c: makeNumber(1),
+		},
+	});
 
-	expect(sendStack[1].kind).toBe(ValueKinds.REGISTRY);
-	const inferredRegistry = sendStack[1] as RegistryValue;
-
-	expect(inferredRegistry.entries.size).toBe(3);
-	expect(inferredRegistry.entries.get('a')).toMatchObject(makeNumber(3));
-	expect(inferredRegistry.entries.get('b')).toMatchObject(makeNumber(2));
-	expect(inferredRegistry.entries.get('c')).toMatchObject(makeNumber(1));
-
-	expect(sendStack[2]).toMatchObject(makeNumber(3));
-	expect(sendStack[3]).toMatchObject(makeNumber(4));
-	expect(sendStack[4]).toMatchObject(makeNumber(-3));
-	expect(sendStack[5]).toMatchObject(makeNumber(-9));
-	expect(sendStack[6]).toMatchObject(makeNumber(-4.5));
+	expect(sendStack[1]).toMatchObject(makeNumber(3));
+	expect(sendStack[2]).toMatchObject(makeNumber(4));
+	expect(sendStack[3]).toMatchObject(makeNumber(-3));
+	expect(sendStack[4]).toMatchObject(makeNumber(-9));
+	expect(sendStack[5]).toMatchObject(makeNumber(-4.5));
 });
 
 test.concurrent('Expresiones de flecha', async () => {
-	const result = await executePS(testFiles[5]);
+	const result = await executePS(testFiles['expresiones de flecha.tuber']);
 	const { sendStack } = result;
 
 	expect(sendStack.length).toBe(20);
@@ -149,7 +157,7 @@ test.concurrent('Expresiones de flecha', async () => {
 });
 
 test.concurrent('Varias Entradas de Usuario I', async () => {
-	const result = await executePS(testFiles[6]);
+	const result = await executePS(testFiles['varias entradas de usuario.tuber']);
 	const { inputStack, sendStack, returned } = result;
 
 	expect(inputStack.length).toBe(4);
@@ -165,7 +173,7 @@ test.concurrent('Varias Entradas de Usuario I', async () => {
 });
 
 test.concurrent('Varias Entradas de Usuario II', async () => {
-	const result = await executePS(testFiles[6], {
+	const result = await executePS(testFiles['varias entradas de usuario.tuber'], {
 		args: [ 'nwn', 'verdadero', '42', 'tiraba esa', '1', '2', '3', '4' ],
 	});
 	const { inputStack, sendStack, returned } = result;
@@ -183,7 +191,7 @@ test.concurrent('Varias Entradas de Usuario II', async () => {
 });
 
 test.concurrent('Sentencias de retorno rápido', async () => {
-	const result = await executePS(testFiles[7]);
+	const result = await executePS(testFiles['retorno temprano.tuber']);
 	const { sendStack, returned } = result;
 
 	expect(sendStack.length).toBe(1);
@@ -192,14 +200,14 @@ test.concurrent('Sentencias de retorno rápido', async () => {
 });
 
 test.concurrent('Estructuras de control', async () => {
-	const result = await executePS(testFiles[8]);
+	const result = await executePS(testFiles['estructuras de control.tuber']);
 	const { returned } = result;
 
 	expect(returned).toMatchObject(makeText('🥺'));
 });
 
 test.concurrent('Estructuras iterativas', async () => {
-	const result = await executePS(testFiles[9]);
+	const result = await executePS(testFiles['estructuras iterativas.tuber']);
 	const { sendStack } = result;
 
 	expect(sendStack).toHaveLength(17);
@@ -231,7 +239,7 @@ test.concurrent('Estructuras iterativas', async () => {
 });
 
 test.concurrent('EJECUTAR + expresiones de flecha y llamado', async () => {
-	const result = await executePS(testFiles[10], { skipInterpreter: true });
+	const result = await executePS(testFiles['ejecutar funciones y métodos.tuber'], { skipInterpreter: true });
 	const { tokens, tree } = result;
 
 	expect(tokens.length).toBeWithin(64, 69);
@@ -253,7 +261,7 @@ test.concurrent('EJECUTAR + expresiones de flecha y llamado', async () => {
 });
 
 test.concurrent('Expresión de función', async () => {
-	const result = await executePS(testFiles[11]);
+	const result = await executePS(testFiles['expresión de función.tuber']);
 	const { sendStack } = result;
 
 	expect(sendStack).toHaveLength(3);
@@ -264,7 +272,7 @@ test.concurrent('Expresión de función', async () => {
 });
 
 test.concurrent('Casteos Primitivos de expresiones', async () => {
-	const result = await executePS(testFiles[12]);
+	const result = await executePS(testFiles['casteos primitivos.tuber']);
 	const { sendStack } = result;
 
 	expect(sendStack[0]).toMatchObject(makeNumber(1));
@@ -277,57 +285,38 @@ test.concurrent('Casteos Primitivos de expresiones', async () => {
 
 test.concurrent('Funciones nativas', async () => {
 	Array.from({ length: 1 }, async () => { //Aumentar length si se quiere testear a profundidad
-		const result = await executePS(testFiles[13]);
+		const result = await executePS(testFiles['funciones nativas.tuber']);
 		const { sendStack } = result;
 
-		let inferredNumber: NumberValue;
-
-		expect(sendStack[0].kind).toBe(ValueKinds.NUMBER);
-		inferredNumber = sendStack[0] as NumberValue;
-		expect(inferredNumber.value).toBeInteger();
-		expect(inferredNumber.value).toBeWithin(1, 7);
-
-		expect(sendStack[1].kind).toBe(ValueKinds.NUMBER);
-		inferredNumber = sendStack[1] as NumberValue;
-		expect(inferredNumber.value).toBeInteger();
-		expect(inferredNumber.value).toBeWithin(0, 1000);
-
-		expect(sendStack[2].kind).toBe(ValueKinds.NUMBER);
-		inferredNumber = sendStack[2] as NumberValue;
-		expect(inferredNumber.value).toBeInteger();
-		expect(inferredNumber.value).toBeWithin(-10, -5);
-
-		expect(sendStack[3].kind).toBe(ValueKinds.NUMBER);
-		inferredNumber = sendStack[3] as NumberValue;
-		expect(inferredNumber.value).not.toBeInteger();
-		expect(inferredNumber.value).toBeWithin(0, 1);
-
-		expect(sendStack[4].kind).toBe(ValueKinds.NUMBER);
-		inferredNumber = sendStack[4] as NumberValue;
-		expect(inferredNumber.value).not.toBeInteger();
-		expect(inferredNumber.value).toBeWithin(0, 1000);
-
-		expect(sendStack[5].kind).toBe(ValueKinds.NUMBER);
-		inferredNumber = sendStack[5] as NumberValue;
-		expect(inferredNumber.value).not.toBeInteger();
-		expect(inferredNumber.value).toBeWithin(-100, -5);
+		expectNumber(sendStack[0], { integer: true, min: 1, max: 7 });
+		expectNumber(sendStack[1], { integer: true, min: 0, max: 1000 });
+		expectNumber(sendStack[2], { integer: true, min: -10, max: -5 });
+		expectNumber(sendStack[3], { integer: false, min: 0, max: 1 });
+		expectNumber(sendStack[4], { integer: false, min: 0, max: 1000 });
+		expectNumber(sendStack[5], { integer: false, min: -100, max: -5 });
 	});
 });
 
 test.concurrent('Métodos nativos', async () => {
-	const result = await executePS(testFiles[14]);
+	const result = await executePS(testFiles['métodos nativos.tuber']);
 	const { sendStack } = result;
 
-	expect(sendStack[0]).toMatchObject(makeNumber(44));
-	expect(sendStack[1]).toMatchObject(makeText('HOLA MUNDO'));
-	expect(sendStack[2]).toMatchObject(makeText('100 ponis, 200 ponis, 300'));
-	expect(sendStack[3]).toMatchObject(makeText('a... b... c'));
-	expect(sendStack[4]).toMatchObject(makeText('3... 2... 1'));
-	expect(sendStack[5]).toMatchObject(makeText('[a: 3] - - [b: 2] - - [c: 1]'));
+	expectNumber(sendStack[0], { exactly: 44 });
+	expectText(sendStack[1], { exactly: 'HOLA MUNDO' });
+	expectText(sendStack[2], { exactly: '100 ponis, 200 ponis, 300' });
+	expectText(sendStack[3], { exactly: 'a... b... c' });
+	expectText(sendStack[4], { exactly: '3... 2... 1' });
+	expectText(sendStack[5], { exactly: '[a: 3] - - [b: 2] - - [c: 1]' });
 });
 
-test.concurrent('Secuencias y Lambdas', async () => {
-	const result = await executePS(testFiles[15]);
+test.concurrent('Expresiones de Secuencia', async () => {
+	const result = await executePS(testFiles['expresiones de secuencia.tuber']);
+	const { sendStack } = result;
+
+});
+
+test.concurrent('Expresiones Lambda', async () => {
+	const result = await executePS(testFiles['expresiones lambda.tuber']);
 	const { sendStack } = result;
 
 	expect(sendStack[0]).toMatchObject(makeText('2, 4, 6, 8, 10, 12, 14, 16, 18, 20, '));
@@ -339,7 +328,7 @@ test.concurrent('Secuencias y Lambdas', async () => {
 });
 
 test.concurrent('Creación, modificación y envío de Marco', async () => {
-	const result = await executePS(testFiles[16]);
+	const result = await executePS(testFiles['marco.tuber']);
 	const { sendStack } = result;
 
 	expect(sendStack[0].kind).toBe(ValueKinds.EMBED);
@@ -350,7 +339,7 @@ test.concurrent('Creación, modificación y envío de Marco', async () => {
 });
 
 test.concurrent('Funciones impuras', async () => {
-	const result = await executePS(testFiles[17]);
+	const result = await executePS(testFiles['funciones impuras.tuber']);
 	const { sendStack } = result;
 
 	expect(sendStack[0]).toMatchObject(
@@ -382,7 +371,7 @@ test.concurrent('Funciones impuras', async () => {
 });
 
 test.concurrent('Retorno de Funciones y Ámbito de Función', async () => {
-	const result = await executePS(testFiles[18]);
+	const result = await executePS(testFiles['ámbito de función.tuber']);
 	const { sendStack, returned } = result;
 
 	expect(sendStack).toBeArrayOfSize(0);
@@ -390,14 +379,14 @@ test.concurrent('Retorno de Funciones y Ámbito de Función', async () => {
 });
 
 test.concurrent('Recursividad', async () => {
-	const result = await executePS(testFiles[19]);
+	const result = await executePS(testFiles['recursividad.tuber']);
 	const { returned } = result;
 
 	expect(returned).toMatchObject(makeNumber(720));
 });
 
 test.concurrent('Guardar y Cargar (Primera Ejecución)', async () => {
-	const result = await executePS(testFiles[20]);
+	const result = await executePS(testFiles['guardar y cargar.tuber']);
 	const { sendStack, saveTable } = result;
 
 	expect(sendStack[0]).toMatchObject(makeNumber(0));
@@ -406,7 +395,7 @@ test.concurrent('Guardar y Cargar (Primera Ejecución)', async () => {
 });
 
 test.concurrent('Guardar y Cargar (Ejecución Ordinaria)', async () => {
-	const result = await executePS(testFiles[20], {
+	const result = await executePS(testFiles['guardar y cargar.tuber'], {
 		savedData: {
 			valor: makeNumber(3),
 		},
@@ -419,7 +408,7 @@ test.concurrent('Guardar y Cargar (Ejecución Ordinaria)', async () => {
 });
 
 test.concurrent('Daño de Risko', async () => {
-	const result = await executePS(testFiles[21]);
+	const result = await executePS(testFiles['daño de risko.tuber']);
 	const { sendStack } = result;
 
 	expect(sendStack[0].kind).toBe(ValueKinds.EMBED);
@@ -448,7 +437,7 @@ test.concurrent('Daño de Risko', async () => {
 });
 
 test.concurrent('Guardar y Cargar Listas (Primera Ejecución)', async () => {
-	const result = await executePS(testFiles[22]);
+	const result = await executePS(testFiles['guardar y cargar listas.tuber']);
 	const { sendStack, saveTable } = result;
 
 	const savedList = makeList([
@@ -468,7 +457,7 @@ test.concurrent('Guardar y Cargar Listas (Ejecución Ordinaria)', async () => {
 		makeNumber(3),
 	]);
 
-	const result = await executePS(testFiles[22], {
+	const result = await executePS(testFiles['guardar y cargar listas.tuber'], {
 		savedData: {
 			valores: makeList([ ...savedList.elements ]),
 		},
@@ -484,12 +473,12 @@ test.concurrent('Guardar y Cargar Listas (Ejecución Ordinaria)', async () => {
 
 test.concurrent('Error con Entradas Extensivas', async () => {
 	expect(
-		executePS(testFiles[23])
+		executePS(testFiles['entrada extensiva invalida.tuber'])
 	).rejects.toThrow();
 });
 
 test.concurrent('Juego de Bomba', async () => {
-	const result = await executePS(testFiles[24]);
+	const result = await executePS(testFiles['juego de bomba.tuber']);
 	const { sendStack, saveTable } = result;
 
 	expect(saveTable.has('contador')).toBeTrue();
@@ -509,12 +498,12 @@ test.concurrent('Juego de Bomba', async () => {
 
 test.concurrent('Guardado Inválido de Marco', async () => {
 	expect(
-		executePS(testFiles[25])
+		executePS(testFiles['guardar marco vacío.tuber'])
 	).rejects.toThrow();
 });
 
 test.concurrent('Formatos de Entrada (Primera Ejecución)', async () => {
-	const result = await executePS(testFiles[26]);
+	const result = await executePS(testFiles['directivas de formatos de entrada.tuber']);
 	const { sendStack } = result;
 
 	expect(sendStack[0]).toMatchObject(makeNumber(23));
@@ -529,7 +518,7 @@ test.concurrent('Formatos de Entrada (Primera Ejecución)', async () => {
 });
 
 test.concurrent('Formatos de Entrada (Ejecución Ordinaria)', async () => {
-	const result = await executePS(testFiles[26], {
+	const result = await executePS(testFiles['directivas de formatos de entrada.tuber'], {
 		args: [ '2', 'WhAT', 'yay', 'Verdadero', '3', '0.7', '0.25', 'EN EFECTO', 'Magnífico' ],
 	});
 	const { sendStack } = result;
@@ -546,7 +535,7 @@ test.concurrent('Formatos de Entrada (Ejecución Ordinaria)', async () => {
 });
 
 test.concurrent('Formatos de Entrada (Ejecución Ordinaria 2)', async () => {
-	const result = await executePS(testFiles[26], {
+	const result = await executePS(testFiles['directivas de formatos de entrada.tuber'], {
 		args: [ '12.5', '', 'nay', 'Falso', '5', '60%', '30%', 'minus', 'INCREÍBLE' ],
 	});
 	const { sendStack } = result;
@@ -563,7 +552,7 @@ test.concurrent('Formatos de Entrada (Ejecución Ordinaria 2)', async () => {
 });
 
 test.concurrent('Terraria', async () => {
-	const result = await executePS(testFiles[27]);
+	const result = await executePS(testFiles['terraria.tuber']);
 	const { sendStack } = result;
 
 	expect(sendStack[0]).toMatchObject(
@@ -572,7 +561,7 @@ test.concurrent('Terraria', async () => {
 });
 
 test.concurrent('Predicados', async () => {
-	const result = await executePS(testFiles[28]);
+	const result = await executePS(testFiles['funciones predicado.tuber']);
 	const { sendStack } = result;
 
 	expect(sendStack[1]).toMatchObject(makeText('Simple: 1, 3, 4, 2, 8, 9, 10, 5, 6, 7'));
@@ -596,7 +585,7 @@ test.concurrent('Predicados', async () => {
 });
 
 test.concurrent('Formateo de Números', async () => {
-	const result = await executePS(testFiles[29]);
+	const result = await executePS(testFiles['formatos de número.tuber']);
 	const { sendStack } = result;
 
 	expect(sendStack[0]).toMatchObject(makeText('042.00 cuatrillones'));
@@ -607,7 +596,7 @@ test.concurrent('Formateo de Números', async () => {
 });
 
 test.concurrent('Mismo identificador en Funciones', async () => {
-	const result = await executePS(testFiles[30]);
+	const result = await executePS(testFiles['mismo identificador en funciones.tuber']);
 	const { sendStack } = result;
 
 	expect(sendStack[0]).toMatchObject(makeText('chocolate'));
@@ -615,7 +604,7 @@ test.concurrent('Mismo identificador en Funciones', async () => {
 });
 
 test.concurrent('Asignación en mientras', async () => {
-	const result = await executePS(testFiles[31]);
+	const result = await executePS(testFiles['asignación en mientras.tuber']);
 	const { sendStack } = result;
 
 	expect(sendStack.length).toBe(1);
@@ -623,7 +612,7 @@ test.concurrent('Asignación en mientras', async () => {
 });
 
 test.concurrent('Elegir de Lista', async () => {
-	const result = await executePS(testFiles[32]);
+	const result = await executePS(testFiles['elegir de lista.tuber']);
 	const { sendStack } = result;
 
 	expect(sendStack.length).toBe(2);
@@ -632,7 +621,7 @@ test.concurrent('Elegir de Lista', async () => {
 });
 
 test.concurrent('Operador luego (Primera Ejecución)', async () => {
-	const result = await executePS(testFiles[33]);
+	const result = await executePS(testFiles['operador luego.tuber']);
 	const { sendStack } = result;
 
 	expect(sendStack.length).toBe(1);
@@ -640,7 +629,7 @@ test.concurrent('Operador luego (Primera Ejecución)', async () => {
 });
 
 test.concurrent('Operador luego (Ejecución Ordinaria)', async () => {
-	const result = await executePS(testFiles[33], {
+	const result = await executePS(testFiles['operador luego.tuber'], {
 		args: [ 'Una Entrada de Usuario cualquiera' ]
 	});
 	const { sendStack } = result;
@@ -650,15 +639,27 @@ test.concurrent('Operador luego (Ejecución Ordinaria)', async () => {
 });
 
 test.concurrent('Cargar Condicional', async () => {
-	const result = await executePS(testFiles[34]);
+	const result = await executePS(testFiles['cargar condicional.tuber']);
 	const { sendStack } = result;
 
 	expect(sendStack.length).toBe(1);
 	expect(sendStack[0]).toMatchObject(makeNumber(42));
 });
 
+test.concurrent('Cargar Condicional II', async () => {
+	const result = await executePS(testFiles['cargar condicional.tuber'], {
+		savedData: {
+			a: makeNumber(24),
+		}
+	});
+	const { sendStack } = result;
+
+	expect(sendStack.length).toBe(1);
+	expect(sendStack[0]).toMatchObject(makeNumber(24));
+});
+
 test.concurrent('Expresiones Condicionales', async () => {
-	const result = await executePS(testFiles[35]);
+	const result = await executePS(testFiles['expresión ternaria.tuber']);
 	const { sendStack } = result;
 
 	expect(sendStack.length).toBe(2);
@@ -667,7 +668,7 @@ test.concurrent('Expresiones Condicionales', async () => {
 });
 
 test.concurrent('tipoDe()', async () => {
-	const result = await executePS(testFiles[36]);
+	const result = await executePS(testFiles['tipoDe.tuber']);
 	const { sendStack } = result;
 
 	expect(sendStack.length).toBe(9);
@@ -683,7 +684,7 @@ test.concurrent('tipoDe()', async () => {
 });
 
 test.concurrent('Texto->acotar() Texto->normalizar()', async () => {
-	const result = await executePS(testFiles[37]);
+	const result = await executePS(testFiles['normalización de texto.tuber']);
 	const { sendStack } = result;
 
 	expect(sendStack.length).toBe(2);
@@ -692,7 +693,7 @@ test.concurrent('Texto->acotar() Texto->normalizar()', async () => {
 });
 
 test.concurrent('"este"', async () => {
-	const result = await executePS(testFiles[38]);
+	const result = await executePS(testFiles['este.tuber']);
 	const { sendStack } = result;
 
 	expect(sendStack.length).toBe(4);
@@ -703,7 +704,7 @@ test.concurrent('"este"', async () => {
 });
 
 test.concurrent('"esperar"', async () => {
-	const result = await executePS(testFiles[39]);
+	const result = await executePS(testFiles['operador esperar.tuber']);
 	const { sendStack, returned } = result;
 
 	expect(sendStack[0]).toMatchObject(makeText('holaaaaa nwn'));
@@ -711,7 +712,7 @@ test.concurrent('"esperar"', async () => {
 });
 
 test.concurrent('Obtener gatos', async () => {
-	const result = await executePS(testFiles[40]);
+	const result = await executePS(testFiles['obtener gatos.tuber']);
 	const { sendStack, returned } = result;
 
 	expect(returned.kind).toBe(ValueKinds.REGISTRY);
@@ -736,8 +737,8 @@ test.concurrent('Obtener gatos', async () => {
 	expect(sendStack[0]).toMatchObject(makeText('wah'));
 });
 
-test.concurrent('"esperar" con estructuras de control', async () => {
-	const result = await executePS(testFiles[41]);
+test.concurrent('"esperar" dentro de estructuras de control', async () => {
+	const result = await executePS(testFiles['esperar dentro de estructuras de control.tuber']);
 	const { sendStack, returned } = result;
 
 	expect(sendStack[0]).toMatchObject(makeText('valores de l: 0, 1, 2, 3, 4'));
@@ -746,7 +747,7 @@ test.concurrent('"esperar" con estructuras de control', async () => {
 });
 
 test.concurrent('Evitar operador "no es" al colocar "no" frente a "esNúmero" o similares', async () => {
-	const result = await executePS(testFiles[42]);
+	const result = await executePS(testFiles['no es.tuber']);
 	const { tokens, sendStack } = result;
 
 	expect(tokens[7].kind).toBe(TokenKinds.IF);
@@ -771,7 +772,7 @@ test.concurrent('Evitar operador "no es" al colocar "no" frente a "esNúmero" o 
 });
 
 test.concurrent('Manipulación básica de imágenes', async () => {
-	const result = await executePS(testFiles[43]);
+	const result = await executePS(testFiles['manipulación de imágenes.tuber']);
 	const { sendStack } = result;
 
 	expect(sendStack[0].kind).toBe(ValueKinds.IMAGE);
