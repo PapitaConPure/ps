@@ -25,8 +25,6 @@ export { NativeMethodsLookup } from './methods';
 export { EnvironmentProvider };
 
 export function declareNatives(scope: Scope) {
-	scope.global = true;
-
 	scope.assignVariable('PI', makeNumber(Math.PI));
 	scope.assignVariable('E', makeNumber(Math.E));
 

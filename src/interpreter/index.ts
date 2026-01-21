@@ -941,7 +941,7 @@ export class Interpreter {
 		if(node.expression === true)
 			return makeLambda(node.body, node.args);
 
-		const fnValue = makeFunction(node.body, node.args, new Scope(this).include(scope));
+		const fnValue = makeFunction(node.body, node.args, scope);
 		fnValue.name = '[Función]';
 		return fnValue;
 	}

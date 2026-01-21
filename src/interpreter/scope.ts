@@ -12,9 +12,7 @@ import { Interpreter } from '.';
 export class Scope {
 	#interpreter: Interpreter;
 	#parent: Scope | null;
-	#mirror: Scope;
 	variables: Map<string, RuntimeValue>;
-	global: boolean;
 
 	/**
 	 * @description Crea un ámbito de variables para este intérprete.
@@ -25,25 +23,18 @@ export class Scope {
 		this.#interpreter = interpreter;
 		this.#parent = parent;
 		this.variables = new Map();
-		this.global = false;
-		this.#mirror = this.resolveClosestGlobalMirror();
 	}
 
-	createFunctionScope(fnValue: FunctionValue, argValues: RuntimeValue[]) {
+	createFunctionScope(fnValue: FunctionValue, argValues: RuntimeValue[]): Scope {
 		const it = this.#interpreter;
-
-		let fnScope: Scope;
-
-		if(fnValue.lambda === false) {
-			fnValue.scope.include(this);
-			fnScope = new Scope(it, fnValue.scope);
-		} else fnScope = new Scope(it, this);
+		const fnScope = new Scope(it, (fnValue.lambda === true) ? this : fnValue.scope);
 
 		fnValue.args.forEach((arg, i) => {
-			/**@type {RuntimeValue}*/
 			let value: RuntimeValue;
-			if(i < argValues.length) value = argValues[i];
-			else if(arg.optional) value = it.evaluate(arg.fallback, this);
+			if(i < argValues.length)
+				value = argValues[i];
+			else if(arg.optional)
+				value = it.evaluate(arg.fallback, this);
 			else
 				throw it.TuberInterpreterError(
 					`Se esperaba un valor para el parámetro \`${arg.identifier}\` de la Función \`${fnValue.name}\``,
@@ -126,8 +117,6 @@ export class Scope {
 		if(variable != null) return this;
 
 		if(this.hasNoParent()) {
-			if(this.#mirror) return this.#mirror.resolve(identifier, mustBeDeclared);
-
 			if(mustBeDeclared)
 				throw this.#interpreter.TuberInterpreterError(
 					`El identificador \`${identifier}\` no representa ninguna variable ni función`,
@@ -137,30 +126,5 @@ export class Scope {
 		}
 
 		return this.#parent.resolve(identifier, mustBeDeclared);
-	}
-
-	/**@description Asigna todas las variables de otro scope al que llama el método.*/
-	include(scope: Scope) {
-		if(scope.hasParent() && scope.parent !== this && !scope.parent.global)
-			this.include(scope.parent);
-
-		scope.variables.forEach((variable, key) => {
-			if(!this.variables.has(key)) this.variables.set(key, variable);
-		});
-
-		this.#mirror = scope.resolveClosestGlobalMirror();
-
-		return this;
-	}
-
-	/**@description Encuentra el mirror global usando el Scope especificado.*/
-	resolveClosestGlobalMirror() {
-		if(this.#mirror != null) return this.#mirror;
-
-		if(!this.hasParent()) return null;
-
-		if(this.#parent.global) return this.#parent;
-
-		return this.#parent.resolveClosestGlobalMirror();
 	}
 }
