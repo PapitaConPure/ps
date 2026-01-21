@@ -55,7 +55,7 @@ test.concurrent('Randomrain', async () => {
 });
 
 test.concurrent('Expresiones matemáticas', async () => {
-	const result = await executePS(testFiles['expresiones matemáticas.tuber'], { log: true });
+	const result = await executePS(testFiles['expresiones matemáticas.tuber']);
 	const { sendStack } = result;
 
 	expect(sendStack.length).toBe(1);
@@ -387,7 +387,7 @@ test.concurrent('Métodos nativos', async () => {
 });
 
 test.concurrent('Asignar variable externa en función', async () => {
-	const result = await executePS(testFiles['asignar variable externa dentro de función.tuber'], { log: true });
+	const result = await executePS(testFiles['asignar variable externa dentro de función.tuber']);
 	const { sendStack } = result;
 
 	expectNumber(sendStack[0], { exactly: 42 });
@@ -783,6 +783,13 @@ test.concurrent('Expresiones Condicionales', async () => {
 	expect(sendStack.length).toBe(2);
 	expect(sendStack[0]).toMatchObject(makeText('wenamechaindesama'));
 	expect(sendStack[1]).toMatchObject(makeText('burundanga'));
+});
+
+test.concurrent('snake', async () => {
+	const result = await executePS(testFiles['snake.tuber']);
+	const { sendStack } = result;
+
+	expectText(sendStack[0], { startWith: '**Puntos:** 0\n', match: /[⬛🟡🍒]/u });
 });
 
 test.concurrent('tipoDe()', async () => {
