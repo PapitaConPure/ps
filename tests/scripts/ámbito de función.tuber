@@ -5,7 +5,7 @@ CARGAR b con 2
 CARGAR c con 30
 
 CARGAR sumarInterno con Función()
-	CREAR Número a, b, c
+	CREAR Número a, b, c //Declaración dentro de Función
 	CARGAR a con 5
 	CARGAR b con 50
 	CARGAR c con 500
@@ -16,17 +16,19 @@ ENVIAR sumarInterno() //Envía "555" (5 + 50 + 500)
 
 
 CARGAR sumarExternoDeclaración con Función()
-	DEVOLVER a + b
+	DEVOLVER a + b //Toma "a" y "b" del contexto léxico
 FIN
 
 ENVIAR sumarExternoDeclaración() //Envía "3" (1 + 2)
 
 
 CARGAR sumarExternoLlamado con Función()
-	CARGAR a con 10
-	CARGAR b con 20
-	DEVOLVER a + b + c + d
+	CARGAR a con 10 //Reasigna "a" del ámbito de declaración
+	CARGAR b con 20 //Reasigna "b" del ámbito de declaración
+	DEVOLVER a + b + c + d //Toma "c" del contexto léxico y "d" del contexto dinámico
 FIN
 
 CARGAR d con 400
 ENVIAR sumarExternoLlamado() //Envía "460" (10 + 20 + 30 + 400)
+ENVIAR a //Envía "10" (reasignado en sumarExternoLlamado)
+ENVIAR b //Envía "20" (reasignado en sumarExternoLlamado)

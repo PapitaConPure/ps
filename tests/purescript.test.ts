@@ -465,6 +465,23 @@ test.concurrent('Ámbito de Función', async () => {
 	expectNumber(sendStack[0], { exactly: 555 });
 	expectNumber(sendStack[1], { exactly: 3 });
 	expectNumber(sendStack[2], { exactly: 460 });
+	expectNumber(sendStack[3], { exactly: 10 });
+	expectNumber(sendStack[4], { exactly: 20 });
+});
+
+test.concurrent('Funciones anidadas', async () => {
+	const result = await executePS(testFiles['funciones anidadas.tuber']);
+	const { sendStack } = result;
+
+	expectText(sendStack[0], { exactly: 'ñOM ÑOM ÑOM ÑOM ÑOM ÑOM ÑOM ÑOM ÑOM ÑO' });
+	expectText(sendStack[1], { exactly: 'ZzZzzZzZzzZzZzZzZzZzZzZZzZzZZzzZz.............' });
+});
+
+test.concurrent('Múltiples funciones anidadas', async () => {
+	const result = await executePS(testFiles['múltiples funciones anidadas.tuber']);
+	const { sendStack } = result;
+
+	expectNumber(sendStack[0], { exactly: 6 });
 });
 
 test.concurrent('Retorno de Funciones y closures de Función', async () => {

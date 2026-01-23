@@ -1,0 +1,11 @@
+CARGAR a con Función(v)
+    CARGAR b con Función(w)
+        CARGAR c con Función(x) 
+            ENVIAR v + w + x
+        FIN
+        EJECUTAR c(3)
+    FIN
+    EJECUTAR b(2)
+FIN
+
+EJECUTAR a(1) //Envía "6" (1 + 2 + 3)

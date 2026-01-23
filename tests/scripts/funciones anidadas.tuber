@@ -1,0 +1,14 @@
+CARGAR vivir con Función()
+    CARGAR comer con Función()
+        ENVIAR "ñOM ÑOM ÑOM ÑOM ÑOM ÑOM ÑOM ÑOM ÑOM ÑO"
+    FIN
+    CARGAR dormir con Función()
+        ENVIAR "ZzZzzZzZzzZzZzZzZzZzZzZZzZzZZzzZz............."
+    FIN
+    //Aquí se puede llamar "vivir", "comer" y "dormir"
+    EJECUTAR comer()
+    EJECUTAR dormir()
+FIN
+
+//Aquí solo se puede llamar "vivir", lo cuál envía 2 mensajes
+EJECUTAR vivir()
