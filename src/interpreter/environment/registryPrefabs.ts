@@ -1,18 +1,18 @@
-import type { PSMember } from './constructs/psMember';
-import type { PSRole } from './constructs/psRole';
-import type { PSChannel } from './constructs/psChannel';
-import type { PSGuild } from './constructs/psGuild';
+import type { EmbedData } from '../../embedData';
 import {
-	makeNumber,
-	makeText,
 	makeBoolean,
 	makeList,
-	makeRegistry,
 	makeNada,
-	type RuntimeValue,
+	makeNumber,
+	makeRegistry,
+	makeText,
 	type RegistryValue,
+	type RuntimeValue,
 } from '../values';
-import type { EmbedData } from '../../embedData';
+import type { PSChannel } from './constructs/psChannel';
+import type { PSGuild } from './constructs/psGuild';
+import type { PSMember } from './constructs/psMember';
+import type { PSRole } from './constructs/psRole';
 
 export function makeDate(date: Date): RegistryValue {
 	//PENDIENTE: Implementar una forma de lidiar con husos horarios
