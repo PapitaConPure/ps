@@ -1,8 +1,8 @@
-import { PSChannel, PSChannelCreationData } from './psChannel';
-import { PSMember, PSMemberCreationData } from './psMember';
-import { PSRole, PSRoleCreationData } from './psRole';
+import type { ImageUrlOptions } from '../types';
+import { PSChannel, type PSChannelCreationData } from './psChannel';
+import { PSMember, type PSMemberCreationData } from './psMember';
+import { PSRole, type PSRoleCreationData } from './psRole';
 import { PSUser } from './psUser';
-import { ImageUrlOptions } from '../types';
 
 export interface PSGuildCreationData {
 	id: string;
@@ -10,9 +10,9 @@ export interface PSGuildCreationData {
 	ownerId: string;
 	description?: string | null;
 	systemChannelId?: string | null;
-	iconUrlHandler: (options?: ImageUrlOptions) => string | null;
-	bannerUrlHandler: (options?: ImageUrlOptions) => string | null;
-	splashUrlHandler: (options?: ImageUrlOptions) => string | null;
+	iconUrlHandler: (options?: ImageUrlOptions) => string | null | undefined;
+	bannerUrlHandler: (options?: ImageUrlOptions) => string | null | undefined;
+	splashUrlHandler: (options?: ImageUrlOptions) => string | null | undefined;
 	premiumTier?: number | null;
 	channels: Omit<PSChannelCreationData, 'guild'>[];
 	roles: Omit<PSRoleCreationData, 'guild'>[];
@@ -23,19 +23,30 @@ export class PSGuild {
 	id: string;
 	name: string;
 	owner: PSMember;
-	description: string | null;
-	#systemChannel: PSChannel | null;
-	#iconUrlHandler: (options?: ImageUrlOptions) => string | null;
-	#bannerUrlHandler: (options?: ImageUrlOptions) => string | null;
-	#splashUrlHandler: (options?: ImageUrlOptions) => string | null;
-	premiumTier: number | null;
+	description: string | null | undefined;
+	#systemChannel: PSChannel | null | undefined;
+	#iconUrlHandler: (options?: ImageUrlOptions) => string | null | undefined;
+	#bannerUrlHandler: (options?: ImageUrlOptions) => string | null | undefined;
+	#splashUrlHandler: (options?: ImageUrlOptions) => string | null | undefined;
+	premiumTier: number | null | undefined;
 	channels: Map<string, PSChannel>;
 	roles: Map<string, PSRole>;
 	members: Map<string, PSMember>;
 
 	constructor(data: PSGuildCreationData) {
 		const {
-			id, name, ownerId, description = null, systemChannelId, iconUrlHandler, bannerUrlHandler, splashUrlHandler, premiumTier = null, channels, roles, members,
+			id,
+			name,
+			ownerId,
+			description = null,
+			systemChannelId,
+			iconUrlHandler,
+			bannerUrlHandler,
+			splashUrlHandler,
+			premiumTier = null,
+			channels,
+			roles,
+			members,
 		} = data;
 
 		this.id = id;
@@ -47,27 +58,27 @@ export class PSGuild {
 		this.premiumTier = premiumTier;
 
 		this.channels = new Map();
-		for(const channelData of channels) {
+		for (const channelData of channels) {
 			const channel = new PSChannel({ ...channelData, guild: this });
 			this.channels.set(channel.id, channel);
 		}
 
 		this.roles = new Map();
-		for(const roleData of roles) {
+		for (const roleData of roles) {
 			const role = new PSRole({ ...roleData, guild: this });
 			this.roles.set(role.id, role);
 		}
 
 		this.members = new Map();
-		for(const memberData of members) {
+		for (const memberData of members) {
 			const member = new PSMember({ ...memberData, guild: this });
 			this.members.set(member.id, member);
 		}
 
 		const owner = this.members.get(ownerId);
 		this.owner =
-			owner ??
-			new PSMember({
+			owner
+			?? new PSMember({
 				user: new PSUser({
 					id: ownerId,
 					username: 'Dueño desconocido',
@@ -78,9 +89,9 @@ export class PSGuild {
 				displayAvatarUrlHandler: () => '',
 			});
 
-		if(systemChannelId) {
+		if (systemChannelId) {
 			const systemChannel = this.channels.get(systemChannelId);
-			if(!systemChannel) throw new ReferenceError('System channel not found');
+			if (!systemChannel) throw new ReferenceError('System channel not found');
 			this.#systemChannel = systemChannel;
 		}
 	}
@@ -112,7 +123,7 @@ export class PSGuild {
 	): Map<string, PSChannel> {
 		const channels = new Map();
 
-		for(const data of channelsData) channels.set(data.id, this.registerChannel(data));
+		for (const data of channelsData) channels.set(data.id, this.registerChannel(data));
 
 		return channels;
 	}
@@ -120,7 +131,7 @@ export class PSGuild {
 	registerRoles(...rolesData: Omit<PSRoleCreationData, 'guild'>[]): Map<string, PSRole> {
 		const roles = new Map();
 
-		for(const data of rolesData) roles.set(data.id, this.registerRole(data));
+		for (const data of rolesData) roles.set(data.id, this.registerRole(data));
 
 		return roles;
 	}
@@ -128,14 +139,14 @@ export class PSGuild {
 	registerMembers(...membersData: Omit<PSMemberCreationData, 'guild'>[]): Map<string, PSMember> {
 		const members = new Map();
 
-		for(const data of membersData) members.set(data.user.id, this.registerMember(data));
+		for (const data of membersData) members.set(data.user.id, this.registerMember(data));
 
 		return members;
 	}
 
 	setSystemChannel(id: string) {
 		const systemChannel = this.channels.get(id);
-		if(!systemChannel) throw new ReferenceError(`Channel for ID "${id}" not found`);
+		if (!systemChannel) throw new ReferenceError(`Channel for ID "${id}" not found`);
 		this.#systemChannel = systemChannel;
 	}
 

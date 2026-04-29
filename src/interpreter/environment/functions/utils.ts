@@ -1,70 +1,70 @@
-/* eslint-disable no-empty-pattern */
+/** biome-ignore-all lint/correctness/noEmptyPattern: Explicitly stating that all these functions take an array of args. */
 
-import {
-	RuntimeValue,
-	NativeFunction,
-	ValueKinds,
-	ValueKind,
-	NumberValue,
-	TextValue,
-	BooleanValue,
-	RegistryValue,
-	PromiseValue,
-	NadaValue,
-	makeNumber,
-	makeText,
-	makeBoolean,
-	makeRegistry,
-	makePromise,
-	makeNada,
-} from '../../values';
-import { getParamOrNada, expectParam, makeRuntimeValueFromInternalValue } from '../nativeUtils';
-import { rand, randRange } from '../../../util/utils';
-import { rgb2hex, hsl2hex, hsv2hex } from '../../../util/colorUtils';
-import { NativeFunctionEntry } from '.';
-import { sleep } from 'bun';
 import axios, { AxiosError } from 'axios';
+import { sleep } from 'bun';
+import { hsl2hex, hsv2hex, rgb2hex } from '../../../util/colorUtils';
+import { rand, randRange } from '../../../util/utils';
+import {
+	type BooleanValue,
+	makeBoolean,
+	makeNada,
+	makeNumber,
+	makePromise,
+	makeRegistry,
+	makeText,
+	type NadaValue,
+	type NativeFunction,
+	type NumberValue,
+	type PromiseValue,
+	type RegistryValue,
+	type RuntimeValue,
+	type TextValue,
+	type ValueKind,
+	ValueKinds,
+} from '../../values';
+import { expectParam, getParamOrNada, makeRuntimeValueFromInternalValue } from '../nativeUtils';
+import type { NativeFunctionEntry } from '.';
 
 const aleatorio: NativeFunction<null, [NumberValue, NumberValue], NumberValue> = (
 	_self,
-	[ n, m ],
+	[n, m],
 	scope,
 ) => {
-	const [ nExists, nResult ] = getParamOrNada('n', n, ValueKinds.NUMBER, scope);
-	if(!nExists) return makeNumber(Math.random());
+	const [nExists, nResult] = getParamOrNada('n', n, ValueKinds.NUMBER, scope);
+	if (!nExists) return makeNumber(Math.random());
 
-	const [ mExists, mResult ] = getParamOrNada('m', m, ValueKinds.NUMBER, scope);
-	if(!mExists) return makeNumber(rand(nResult.value, false));
+	const [mExists, mResult] = getParamOrNada('m', m, ValueKinds.NUMBER, scope);
+	if (!mExists) return makeNumber(rand(nResult.value, false));
 
 	return makeNumber(randRange(nResult.value, mResult.value, false));
 };
 
 const colorAleatorio: NativeFunction<null, [], TextValue> = (_self, []) => {
 	const colorNumber = ((Math.random() * 0xfffffe) << 0) + 1;
-	const colorString = '#' + colorNumber.toString(16).padStart(6, '0');
+	const colorString = `#${colorNumber.toString(16).padStart(6, '0')}`;
 	return makeText(colorString);
 };
 
 const colorRGB: NativeFunction<null, [NumberValue, NumberValue, NumberValue], TextValue> = (
 	_self,
-	[ rojo, verde, azul ],
+	[rojo, verde, azul],
 	scope,
 ) => {
 	const rojoValue = expectParam('rojo', rojo, ValueKinds.NUMBER, scope).value;
 	const verdeValue = expectParam('verde', verde, ValueKinds.NUMBER, scope).value;
 	const azulValue = expectParam('azul', azul, ValueKinds.NUMBER, scope).value;
 
-	if(rojoValue < 0 || rojoValue > 255)
+	if (rojoValue < 0 || rojoValue > 255)
 		throw scope.interpreter.TuberInterpreterError(
 			`El canal rojo del color debe ser un valor entre 0 y 255 inclusive`,
 		);
 
-	if(verdeValue < 0 || verdeValue > 255)
+	if (verdeValue < 0 || verdeValue > 255)
 		throw scope.interpreter.TuberInterpreterError(
 			`El canal verde del color debe ser un valor entre 0 y 255 inclusive`,
 		);
 
-	if(azulValue < 0 || azulValue > 255)
+	if (azulValue < 0 || azulValue > 255)
 		throw scope.interpreter.TuberInterpreterError(
 			`El canal azul del color debe ser un valor entre 0 y 255 inclusive`,
 		);
@@ -75,24 +75,24 @@ const colorRGB: NativeFunction<null, [NumberValue, NumberValue, NumberValue], Te
 
 const colorHSL: NativeFunction<null, [NumberValue, NumberValue, NumberValue], TextValue> = (
 	_self,
-	[ matiz, saturación, luminidad ],
+	[matiz, saturación, luminidad],
 	scope,
 ) => {
 	const matizValue = expectParam('matiz', matiz, ValueKinds.NUMBER, scope).value;
 	const saturaciónValue = expectParam('saturación', saturación, ValueKinds.NUMBER, scope).value;
 	const luminidadValue = expectParam('luminidad', luminidad, ValueKinds.NUMBER, scope).value;
 
-	if(matizValue < 0 || matizValue >= 360)
+	if (matizValue < 0 || matizValue >= 360)
 		throw scope.interpreter.TuberInterpreterError(
 			`La matiz del color debe ser un valor entre 0 (inclusive) y 360 (exclusive)`,
 		);
 
-	if(saturaciónValue < 0 || saturaciónValue > 1)
+	if (saturaciónValue < 0 || saturaciónValue > 1)
 		throw scope.interpreter.TuberInterpreterError(
 			`La saturación del color debe ser un valor entre 0 y 1 inclusive`,
 		);
 
-	if(luminidadValue < 0 || luminidadValue > 1)
+	if (luminidadValue < 0 || luminidadValue > 1)
 		throw scope.interpreter.TuberInterpreterError(
 			`La luminidad del color debe ser un valor entre 0 y 1 inclusive`,
 		);
@@ -103,24 +103,24 @@ const colorHSL: NativeFunction<null, [NumberValue, NumberValue, NumberValue], Te
 
 const colorHSV: NativeFunction<null, [NumberValue, NumberValue, NumberValue], TextValue> = (
 	_self,
-	[ matiz, saturación, brillo ],
+	[matiz, saturación, brillo],
 	scope,
 ) => {
 	const matizValue = expectParam('matiz', matiz, ValueKinds.NUMBER, scope).value;
 	const saturaciónValue = expectParam('saturación', saturación, ValueKinds.NUMBER, scope).value;
 	const brilloValue = expectParam('brillo', brillo, ValueKinds.NUMBER, scope).value;
 
-	if(matizValue < 0 || matizValue >= 360)
+	if (matizValue < 0 || matizValue >= 360)
 		throw scope.interpreter.TuberInterpreterError(
 			`La matiz del color debe ser un valor entre 0 (inclusive) y 360 (exclusive)`,
 		);
 
-	if(saturaciónValue < 0 || saturaciónValue > 1)
+	if (saturaciónValue < 0 || saturaciónValue > 1)
 		throw scope.interpreter.TuberInterpreterError(
 			`La saturación del color debe ser un valor entre 0 y 1 inclusive`,
 		);
 
-	if(brilloValue < 0 || brilloValue > 1)
+	if (brilloValue < 0 || brilloValue > 1)
 		throw scope.interpreter.TuberInterpreterError(
 			`El brillo del color debe ser un valor entre 0 y 1 inclusive`,
 		);
@@ -131,7 +131,7 @@ const colorHSV: NativeFunction<null, [NumberValue, NumberValue, NumberValue], Te
 
 const cos: NativeFunction<null, [NumberValue], NumberValue | NadaValue> = (
 	_self,
-	[ valor ],
+	[valor],
 	scope,
 ) => {
 	const valorValue = expectParam('valor', valor, ValueKinds.NUMBER, scope).value;
@@ -142,25 +142,25 @@ const cos: NativeFunction<null, [NumberValue], NumberValue | NadaValue> = (
 
 const dado: NativeFunction<null, [NumberValue, NumberValue], NumberValue> = (
 	_self,
-	[ n, m ],
+	[n, m],
 	scope,
 ) => {
-	const [ nExists, nResult ] = getParamOrNada('n', n, ValueKinds.NUMBER, scope);
-	if(!nExists) return makeNumber(rand(6, true) + 1);
+	const [nExists, nResult] = getParamOrNada('n', n, ValueKinds.NUMBER, scope);
+	if (!nExists) return makeNumber(rand(6, true) + 1);
 
-	const [ mExists, mResult ] = getParamOrNada('m', m, ValueKinds.NUMBER, scope);
-	if(!mExists) return makeNumber(rand(nResult.value, true));
+	const [mExists, mResult] = getParamOrNada('m', m, ValueKinds.NUMBER, scope);
+	if (!mExists) return makeNumber(rand(nResult.value, true));
 
 	return makeNumber(randRange(nResult.value, mResult.value, true));
 };
 
 const elegir: NativeFunction<null, RuntimeValue[], RuntimeValue> = (_self, valores, scope) => {
-	if(valores.length === 0)
+	if (valores.length === 0)
 		throw scope.interpreter.TuberInterpreterError(
 			`Se esperaba un valor para el parámetro requerido \`x1\` para elegir aleatoriamente`,
 		);
 
-	if(valores.length === 1) return valores[0];
+	if (valores.length === 1) return valores[0];
 
 	const idx = rand(valores.length, true);
 	return valores[idx];
@@ -171,24 +171,24 @@ const esPrueba: NativeFunction<null, [], BooleanValue> = (_self, [], scope) => {
 };
 
 const maximizar: NativeFunction<null, NumberValue[], NumberValue> = (_self, números, scope) => {
-	if(números.length === 0)
+	if (números.length === 0)
 		throw scope.interpreter.TuberInterpreterError(
 			`Se esperaba un valor para el parámetro requerido \`x1\` para obtener un máximo`,
 		);
 
-	if(números.length === 1) return números[0];
+	if (números.length === 1) return números[0];
 
 	const max = Math.max(...números.map((n) => n.value));
 	return makeNumber(max);
 };
 
 const minimizar: NativeFunction<null, NumberValue[], NumberValue> = (_self, números, scope) => {
-	if(números.length === 0)
+	if (números.length === 0)
 		throw scope.interpreter.TuberInterpreterError(
 			`Se esperaba un valor para el parámetro requerido \`x1\` para obtener un mínimo`,
 		);
 
-	if(números.length === 1) return números[0];
+	if (números.length === 1) return números[0];
 
 	const min = Math.min(...números.map((n) => n.value));
 	return makeNumber(min);
@@ -199,7 +199,7 @@ const quedanEntradas: NativeFunction<null, [], BooleanValue> = (_self, [], scope
 	return makeBoolean(test);
 };
 
-const radianes: NativeFunction<null, [NumberValue], NumberValue> = (_self, [ grados ], scope) => {
+const radianes: NativeFunction<null, [NumberValue], NumberValue> = (_self, [grados], scope) => {
 	const gradosValue = expectParam('grados', grados, ValueKinds.NUMBER, scope).value;
 
 	const radianes = (gradosValue * Math.PI) / 180;
@@ -208,7 +208,7 @@ const radianes: NativeFunction<null, [NumberValue], NumberValue> = (_self, [ gra
 
 const raíz: NativeFunction<null, [NumberValue, NumberValue], NumberValue | NadaValue> = (
 	_self,
-	[ radicando, grado ],
+	[radicando, grado],
 	scope,
 ) => {
 	const radicandoValue = expectParam('radicando', radicando, ValueKinds.NUMBER, scope);
@@ -216,44 +216,44 @@ const raíz: NativeFunction<null, [NumberValue, NumberValue], NumberValue | Nada
 
 	const root = radicandoValue.value ** (1 / gradoValue.value);
 
-	if(isNaN(root)) return makeNada();
+	if (Number.isNaN(+root)) return makeNada();
 
 	return makeNumber(root);
 };
 
-const sen: NativeFunction<null, [NumberValue], NumberValue> = (_self, [ valor ], scope) => {
+const sen: NativeFunction<null, [NumberValue], NumberValue> = (_self, [valor], scope) => {
 	const valorValue = expectParam('valor', valor, ValueKinds.NUMBER, scope).value;
 
 	const sin = Math.sin(valorValue);
 	return makeNumber(sin);
 };
 
-const tan: NativeFunction<null, [NumberValue], NumberValue> = (_self, [ valor ], scope) => {
+const tan: NativeFunction<null, [NumberValue], NumberValue> = (_self, [valor], scope) => {
 	const valorValue = expectParam('valor', valor, ValueKinds.NUMBER, scope).value;
 
 	const tan = Math.tan(valorValue);
 	return makeNumber(tan);
 };
 
-const tipoDe: NativeFunction<null, [RuntimeValue], TextValue> = (_self, [ valor ], scope) => {
-	if(valor == null)
+const tipoDe: NativeFunction<null, [RuntimeValue], TextValue> = (_self, [valor], scope) => {
+	if (valor == null)
 		throw scope.interpreter.TuberInterpreterError(
 			'Se esperaba un valor para el parámetro requerido `valor`',
 		);
 
 	const mappings = {
-		'Number': 'número',
-		'Text': 'texto',
-		'Boolean': 'lógico',
-		'List': 'lista',
-		'Registry': 'registro',
-		'Embed': 'marco',
-		'Canvas': 'marco',
-		'Image': 'marco',
-		'Function': 'función',
-		'NativeFunction': 'función',
-		'Promise': 'promesa',
-		'Nada': 'nada',
+		Number: 'número',
+		Text: 'texto',
+		Boolean: 'lógico',
+		List: 'lista',
+		Registry: 'registro',
+		Embed: 'marco',
+		Canvas: 'marco',
+		Image: 'marco',
+		Function: 'función',
+		NativeFunction: 'función',
+		Promise: 'promesa',
+		Nada: 'nada',
 	} as const satisfies Record<ValueKind, string>;
 
 	const result = mappings[valor.kind];
@@ -261,19 +261,22 @@ const tipoDe: NativeFunction<null, [RuntimeValue], TextValue> = (_self, [ valor 
 	return makeText(result);
 };
 
-const pausa: NativeFunction<null, [NumberValue], PromiseValue<NadaValue>> = (_self, [ valor ]) => {
+const pausa: NativeFunction<null, [NumberValue], PromiseValue<NadaValue>> = (_self, [valor]) => {
 	return makePromise(async () => {
 		await sleep(valor.value);
 		return makeNada();
 	});
 };
 
-const obtener: NativeFunction<null, [TextValue], PromiseValue<RegistryValue>> = (_self, [ valor ]) => {
+const obtener: NativeFunction<null, [TextValue], PromiseValue<RegistryValue>> = (
+	_self,
+	[valor],
+) => {
 	return makePromise(async () => {
 		try {
 			const result = await axios.get(valor.value);
 			const status = makeNumber(result.status);
-			if(result.status >= 200 && result.status < 400) {
+			if (result.status >= 200 && result.status < 400) {
 				const success = makeBoolean(true);
 				return makeRegistry({
 					éxito: success,
@@ -292,52 +295,55 @@ const obtener: NativeFunction<null, [TextValue], PromiseValue<RegistryValue>> = 
 					datos: makeRuntimeValueFromInternalValue(result.data, { omitFunctions: true }),
 				});
 			}
-		} catch(err) {
+		} catch (err) {
 			const success = makeBoolean(false);
-			if(err instanceof AxiosError) {
+			if (err instanceof AxiosError) {
 				return makeRegistry({
 					éxito: success,
 					exito: success,
 					código: makeNumber(err.status ?? -1),
 					codigo: makeNumber(err.status ?? -1),
-					mensaje: makeText(err?.message ?? 'Ocurrió un problema desconocido al obtener los datos pedidos.'),
+					mensaje: makeText(
+						err?.message
+							?? 'Ocurrió un problema desconocido al obtener los datos pedidos.',
+					),
 				});
 			} else {
+				const message = Error.isError(err) ? err?.message : undefined;
 				return makeRegistry({
 					éxito: success,
 					exito: success,
 					código: makeNumber(-1),
 					codigo: makeNumber(-1),
-					mensaje: makeText(err?.message ?? 'No se especificó el problema.'),
+					mensaje: makeText(message ?? 'No se especificó el problema.'),
 				});
 			}
 		}
 	});
 };
 
-
 export const utilFunctions: NativeFunctionEntry[] = [
-	{ id: 'aleatorio', fn: aleatorio },
-	{ id: 'colorAleatorio', fn: colorAleatorio },
-	{ id: 'cos', fn: cos },
-	{ id: 'dado', fn: dado },
-	{ id: 'elegir', fn: elegir },
-	{ id: 'esPrueba', fn: esPrueba },
-	{ id: 'hayEntradas', fn: quedanEntradas },
-	{ id: 'hsl', fn: colorHSL },
-	{ id: 'hsb', fn: colorHSV },
-	{ id: 'hsv', fn: colorHSV },
-	{ id: 'maximizar', fn: maximizar },
-	{ id: 'minimizar', fn: minimizar },
-	{ id: 'quedanEntradas', fn: quedanEntradas },
-	{ id: 'radianes', fn: radianes },
-	{ id: 'raiz', fn: raíz },
-	{ id: 'raíz', fn: raíz },
-	{ id: 'rgb', fn: colorRGB },
-	{ id: 'sen', fn: sen },
-	{ id: 'tan', fn: tan },
-	{ id: 'tipoDe', fn: tipoDe },
-	{ id: 'pausa', fn: pausa },
-	{ id: 'pausar', fn: pausa },
-	{ id: 'obtener', fn: obtener },
+	{ id: 'aleatorio', fn: aleatorio as NativeFunction<null> },
+	{ id: 'colorAleatorio', fn: colorAleatorio as NativeFunction<null> },
+	{ id: 'cos', fn: cos as NativeFunction<null> },
+	{ id: 'dado', fn: dado as NativeFunction<null> },
+	{ id: 'elegir', fn: elegir as NativeFunction<null> },
+	{ id: 'esPrueba', fn: esPrueba as NativeFunction<null> },
+	{ id: 'hayEntradas', fn: quedanEntradas as NativeFunction<null> },
+	{ id: 'hsl', fn: colorHSL as NativeFunction<null> },
+	{ id: 'hsb', fn: colorHSV as NativeFunction<null> },
+	{ id: 'hsv', fn: colorHSV as NativeFunction<null> },
+	{ id: 'maximizar', fn: maximizar as NativeFunction<null> },
+	{ id: 'minimizar', fn: minimizar as NativeFunction<null> },
+	{ id: 'quedanEntradas', fn: quedanEntradas as NativeFunction<null> },
+	{ id: 'radianes', fn: radianes as NativeFunction<null> },
+	{ id: 'raiz', fn: raíz as NativeFunction<null> },
+	{ id: 'raíz', fn: raíz as NativeFunction<null> },
+	{ id: 'rgb', fn: colorRGB as NativeFunction<null> },
+	{ id: 'sen', fn: sen as NativeFunction<null> },
+	{ id: 'tan', fn: tan as NativeFunction<null> },
+	{ id: 'tipoDe', fn: tipoDe as NativeFunction<null> },
+	{ id: 'pausa', fn: pausa as NativeFunction<null> },
+	{ id: 'pausar', fn: pausa as NativeFunction<null> },
+	{ id: 'obtener', fn: obtener as NativeFunction<null> },
 ];

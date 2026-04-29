@@ -1,9 +1,9 @@
-import { Token } from '../lexer/tokens';
-import { ValuesOf } from '../util/types';
-import { NodeMetadata } from '.';
-import { BlockStatement } from './statements';
+import type { Token } from '../lexer/tokens';
+import type { ValuesOf } from '../util/types';
+import type { NodeMetadata } from '.';
+import type { BlockStatement } from './statements';
 
-export const ExpressionKinds = ({
+export const ExpressionKinds = {
 	NUMBER_LITERAL: 'NumberLiteralExpression',
 	TEXT_LITERAL: 'TextLiteralExpression',
 	BOOLEAN_LITERAL: 'BooleanLiteralExpression',
@@ -24,45 +24,57 @@ export const ExpressionKinds = ({
 	FUNCTION: 'FunctionExpression',
 	SEQUENCE: 'SequenceExpression',
 	AWAIT: 'AwaitExpression',
-}) as const;
+} as const;
 export type ExpressionKind = ValuesOf<typeof ExpressionKinds>;
 
 export interface EmptyExpression<T extends ExpressionKind> {
 	readonly kind: NonNullable<T>;
 }
 
-export interface BaseExpressionData<T extends ExpressionKind = ExpressionKind> extends EmptyExpression<T>, NodeMetadata {}
+export interface BaseExpressionData<T extends ExpressionKind = ExpressionKind>
+	extends EmptyExpression<T>,
+		NodeMetadata {}
 
 //#region Literales
 export interface NumberLiteralExpressionData {
 	value: number;
 }
 
-export interface NumberLiteralExpression extends BaseExpressionData<'NumberLiteralExpression'>, NumberLiteralExpressionData {}
+export interface NumberLiteralExpression
+	extends BaseExpressionData<'NumberLiteralExpression'>,
+		NumberLiteralExpressionData {}
 
 export interface TextLiteralExpressionData {
 	value: string;
 }
 
-export interface TextLiteralExpression extends BaseExpressionData<'TextLiteralExpression'>, TextLiteralExpressionData {}
+export interface TextLiteralExpression
+	extends BaseExpressionData<'TextLiteralExpression'>,
+		TextLiteralExpressionData {}
 
 export interface BooleanLiteralExpressionData {
 	value: boolean;
 }
 
-export interface BooleanLiteralExpression extends BaseExpressionData<'BooleanLiteralExpression'>, BooleanLiteralExpressionData {}
+export interface BooleanLiteralExpression
+	extends BaseExpressionData<'BooleanLiteralExpression'>,
+		BooleanLiteralExpressionData {}
 
 export interface ListLiteralExpressionData {
 	elements: Expression[];
 }
 
-export interface ListLiteralExpression extends BaseExpressionData<'ListLiteralExpression'>, ListLiteralExpressionData {}
+export interface ListLiteralExpression
+	extends BaseExpressionData<'ListLiteralExpression'>,
+		ListLiteralExpressionData {}
 
 export interface RegistryLiteralExpressionData {
 	entries: Map<string, Expression>;
 }
 
-export interface RegistryLiteralExpression extends BaseExpressionData<'RegistryLiteralExpression'>, RegistryLiteralExpressionData {}
+export interface RegistryLiteralExpression
+	extends BaseExpressionData<'RegistryLiteralExpression'>,
+		RegistryLiteralExpressionData {}
 
 export type EmbedLiteralExpression = BaseExpressionData<'EmbedLiteralExpression'>;
 
@@ -71,13 +83,17 @@ export interface CanvasLiteralExpressionData {
 	height: Expression;
 }
 
-export interface CanvasLiteralExpression extends BaseExpressionData<'CanvasLiteralExpression'>, CanvasLiteralExpressionData {}
+export interface CanvasLiteralExpression
+	extends BaseExpressionData<'CanvasLiteralExpression'>,
+		CanvasLiteralExpressionData {}
 
 export interface NadaLiteralExpressionData {
 	value: null;
 }
 
-export interface NadaLiteralExpression extends BaseExpressionData<'NadaLiteralExpression'>, NadaLiteralExpressionData {}
+export interface NadaLiteralExpression
+	extends BaseExpressionData<'NadaLiteralExpression'>,
+		NadaLiteralExpressionData {}
 
 export interface IdentifierData {
 	name: string;
@@ -92,7 +108,9 @@ export interface UnaryExpressionData {
 	argument: Expression;
 }
 
-export interface UnaryExpression extends BaseExpressionData<'UnaryExpression'>, UnaryExpressionData {}
+export interface UnaryExpression
+	extends BaseExpressionData<'UnaryExpression'>,
+		UnaryExpressionData {}
 
 export interface CastExpressionData {
 	argument: Expression;
@@ -107,14 +125,18 @@ export interface BinaryExpressionData {
 	right: Expression;
 }
 
-export interface BinaryExpression extends BaseExpressionData<'BinaryExpression'>, BinaryExpressionData {}
+export interface BinaryExpression
+	extends BaseExpressionData<'BinaryExpression'>,
+		BinaryExpressionData {}
 
 export interface BaseArrowExpressionData {
 	holder: Expression;
 	computed: boolean;
 }
 
-export interface BaseArrowExpression extends BaseExpressionData<'ArrowExpression'>, BaseArrowExpressionData {}
+export interface BaseArrowExpression
+	extends BaseExpressionData<'ArrowExpression'>,
+		BaseArrowExpressionData {}
 
 export interface StoredArrowExpressionData {
 	computed: false;
@@ -147,7 +169,9 @@ export interface ConditionalExpressionData {
 	alternate: Expression;
 }
 
-export interface ConditionalExpression extends BaseExpressionData<'ConditionalExpression'>, ConditionalExpressionData {}
+export interface ConditionalExpression
+	extends BaseExpressionData<'ConditionalExpression'>,
+		ConditionalExpressionData {}
 
 export interface BaseArgumentExpressionData {
 	identifier: string;
@@ -162,7 +186,8 @@ export interface OptionalArgumentData {
 	fallback: Expression;
 }
 
-export type ArgumentExpressionData = BaseArgumentExpressionData & (RequiredArgumentData | OptionalArgumentData);
+export type ArgumentExpressionData = BaseArgumentExpressionData &
+	(RequiredArgumentData | OptionalArgumentData);
 
 export type ArgumentExpression = BaseExpressionData<'Argument'> & ArgumentExpressionData;
 
@@ -170,14 +195,18 @@ export interface BaseFunctionExpressionData {
 	args: ArgumentExpression[];
 }
 
-export interface BaseFunctionExpression extends BaseExpressionData<'FunctionExpression'>, BaseFunctionExpressionData {}
+export interface BaseFunctionExpression
+	extends BaseExpressionData<'FunctionExpression'>,
+		BaseFunctionExpressionData {}
 
 export interface StandardFunctionExpressionData {
 	expression: false;
 	body: BlockStatement;
 }
 
-export interface StandardFunctionExpression extends BaseFunctionExpression, StandardFunctionExpressionData {}
+export interface StandardFunctionExpression
+	extends BaseFunctionExpression,
+		StandardFunctionExpressionData {}
 
 export interface LambdaExpressionData {
 	expression: true;
@@ -192,13 +221,17 @@ export interface SequenceExpressionData {
 	expressions: Expression[];
 }
 
-export interface SequenceExpression extends BaseExpressionData<'SequenceExpression'>, SequenceExpressionData {}
+export interface SequenceExpression
+	extends BaseExpressionData<'SequenceExpression'>,
+		SequenceExpressionData {}
 
 export interface AwaitExpressionData {
 	argument: Expression;
 }
 
-export interface AwaitExpression extends BaseExpressionData<'AwaitExpression'>, AwaitExpressionData {}
+export interface AwaitExpression
+	extends BaseExpressionData<'AwaitExpression'>,
+		AwaitExpressionData {}
 
 export type PrimaryExpression =
 	| NumberLiteralExpression
@@ -223,7 +256,5 @@ export type ComplexExpression =
 	| FunctionExpression
 	| AwaitExpression;
 
-export type Expression =
-	| PrimaryExpression
-	| ComplexExpression;
+export type Expression = PrimaryExpression | ComplexExpression;
 //#endregion

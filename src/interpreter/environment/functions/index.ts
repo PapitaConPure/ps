@@ -1,11 +1,11 @@
-import { NativeFunction } from '../../values';
-import { utilFunctions } from './utils';
-import { kindFunctions } from './kinds';
+import type { NativeFunction } from '../../values';
 import { discordFunctions } from './discord';
+import { kindFunctions } from './kinds';
+import { utilFunctions } from './utils';
 
 export interface NativeFunctionEntry {
 	id: string;
-	fn: NativeFunction;
+	fn: NativeFunction<null>;
 }
 
-export const NativeFunctions = [ ...utilFunctions, ...kindFunctions, ...discordFunctions ];
+export const NativeFunctions = [...utilFunctions, ...kindFunctions, ...discordFunctions];

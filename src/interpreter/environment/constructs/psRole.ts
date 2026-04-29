@@ -1,5 +1,5 @@
-import { PSGuild } from './psGuild';
-import { ImageUrlOptions } from '../types';
+import type { ImageUrlOptions } from '../types';
+import type { PSGuild } from './psGuild';
 
 export interface PSRoleCreationData {
 	guild: PSGuild;
@@ -26,7 +26,7 @@ export class PSRole {
 	}
 
 	get hexColor() {
-		return '#' + this.color.toString(16);
+		return `#${this.color.toString(16)}`;
 	}
 
 	iconUrl(options?: ImageUrlOptions) {

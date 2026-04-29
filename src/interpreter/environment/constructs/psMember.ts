@@ -1,7 +1,7 @@
-import { PSGuild } from './psGuild';
-import { PSRole } from './psRole';
-import { PSUser } from './psUser';
-import { ImageUrlOptions } from '../types';
+import type { ImageUrlOptions } from '../types';
+import type { PSGuild } from './psGuild';
+import type { PSRole } from './psRole';
+import type { PSUser } from './psUser';
 
 export interface PSMemberCreationData {
 	guild: PSGuild;
@@ -27,7 +27,7 @@ export class PSMember {
 		this.#displayAvatarUrlHandler = displayAvatarUrlHandler;
 		roleIds.forEach((roleId) => {
 			const role = guild.roles.get(roleId);
-			if(role) this.roles.set(roleId, role);
+			if (role) this.roles.set(roleId, role);
 		});
 	}
 

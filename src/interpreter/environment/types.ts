@@ -1,4 +1,4 @@
-import { ALLOWED_SIZES, ALLOWED_EXTENSIONS } from './environmentProvider';
+import type { ALLOWED_SIZES, ALLOWED_EXTENSIONS } from './environmentProvider';
 
 export interface ImageUrlOptions {
 	size?: (typeof ALLOWED_SIZES)[number];

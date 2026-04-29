@@ -1,5 +1,5 @@
-import { ValuesOf } from '../../../util/types';
-import { ImageValue } from '../../values';
+import type { ValuesOf } from '../../../util/types';
+import type { ImageValue } from '../../values';
 
 export interface PSCanvasDrawTextOptions {
 	fontSize?: number;
@@ -10,23 +10,23 @@ export interface PSCanvasDrawTextOptions {
 	italic?: boolean;
 }
 
-export const PSCanvasTextAlignments = ({
+export const PSCanvasTextAlignments = {
 	INICIO: 'inicio',
 	IZQUIERDA: 'izquierda',
 	CENTRO: 'centro',
 	DERECHA: 'derecha',
 	FIN: 'fin',
-}) as const;
+} as const;
 export type PSCanvasTextAlignment = ValuesOf<typeof PSCanvasTextAlignments>;
 
-export const PSCanvasTextBaselines = ({
+export const PSCanvasTextBaselines = {
 	SUPERIOR: 'superior',
 	ARRIBA: 'arriba',
 	MEDIO: 'medio',
 	BASE: 'base',
 	ABAJO: 'abajo',
 	INFERIOR: 'inferior',
-}) as const;
+} as const;
 export type PSCanvasTextBaseline = ValuesOf<typeof PSCanvasTextBaselines>;
 
 export type PSImageResolvable = string | URL | Buffer | ArrayBufferLike;
@@ -38,7 +38,12 @@ export abstract class PSCanvas {
 
 	abstract drawImage(x: number, y: number, image: PSImageResolvable): Promise<void>;
 
-	abstract drawText(x: number, y: number, text: string, options?: PSCanvasDrawTextOptions): Promise<void>;
+	abstract drawText(
+		x: number,
+		y: number,
+		text: string,
+		options?: PSCanvasDrawTextOptions,
+	): Promise<void>;
 
 	abstract setTextAlignment(alignment: PSCanvasTextAlignment): void;
 

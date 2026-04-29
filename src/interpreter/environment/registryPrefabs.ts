@@ -1,9 +1,18 @@
-import { PSMember } from "./constructs/psMember";
-import { PSRole } from "./constructs/psRole";
-import { PSChannel } from "./constructs/psChannel";
-import { PSGuild } from "./constructs/psGuild";
-import { makeNumber, makeText, makeBoolean, makeList, makeRegistry, makeNada, RuntimeValue, RegistryValue } from '../values';
-import { EmbedData } from '../../embedData';
+import type { PSMember } from './constructs/psMember';
+import type { PSRole } from './constructs/psRole';
+import type { PSChannel } from './constructs/psChannel';
+import type { PSGuild } from './constructs/psGuild';
+import {
+	makeNumber,
+	makeText,
+	makeBoolean,
+	makeList,
+	makeRegistry,
+	makeNada,
+	type RuntimeValue,
+	type RegistryValue,
+} from '../values';
+import type { EmbedData } from '../../embedData';
 
 export function makeDate(date: Date): RegistryValue {
 	//PENDIENTE: Implementar una forma de lidiar con husos horarios
@@ -22,15 +31,7 @@ export function makeDate(date: Date): RegistryValue {
 		'Diciembre',
 	];
 
-	const nombresDia = [
-		'Domingo',
-		'Lunes',
-		'Martes',
-		'Miércoles',
-		'Jueves',
-		'Viernes',
-		'Sábado',
-	];
+	const nombresDia = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
 	const values = {
 		año: makeNumber(date.getFullYear()),
@@ -47,8 +48,7 @@ export function makeDate(date: Date): RegistryValue {
 	};
 
 	const miembro = new Map<string, RuntimeValue>();
-	miembro
-		.set('mes',     values.mes);
+	miembro.set('mes', values.mes);
 
 	return makeRegistry(miembro);
 }
@@ -66,17 +66,17 @@ export function makeDiscordMember(member: PSMember): RegistryValue {
 
 	const miembro = new Map<string, RuntimeValue>();
 	miembro
-		.set('id',      values.id)
+		.set('id', values.id)
 		//.set('acento',  values.color)
-		.set('avatar',  values.avatar)
+		.set('avatar', values.avatar)
 		//.set('color',   values.color)
-		.set('icono',   values.avatar)
-		.set('ícono',   values.avatar)
+		.set('icono', values.avatar)
+		.set('ícono', values.avatar)
 		//.set('imagen',  values.portada)
-		.set('perfil',  values.avatar)
-		.set('pfp',     values.avatar)
+		.set('perfil', values.avatar)
+		.set('pfp', values.avatar)
 		//.set('portada', values.portada)
-		.set('nombre',  values.nombre)
+		.set('nombre', values.nombre)
 		.set('mencion', values.mención)
 		.set('mención', values.mención);
 
@@ -87,22 +87,21 @@ export function makeDiscordRole(role: PSRole): RegistryValue {
 	const roleIcon = role.iconUrl({ size: 256 });
 
 	const values = {
-		id:      makeText(role.id),
-		nombre:  makeText(role.name),
+		id: makeText(role.id),
+		nombre: makeText(role.name),
 		mención: makeText(`${role}`),
-		color:   makeText(role.hexColor),
-		ícono:   roleIcon ? makeText(roleIcon) : makeNada(),
+		color: makeText(role.hexColor),
+		ícono: roleIcon ? makeText(roleIcon) : makeNada(),
 	};
 
 	const rol = new Map<string, RuntimeValue>();
-	rol
-		.set('id',      values.id)
-		.set('nombre',  values.nombre)
+	rol.set('id', values.id)
+		.set('nombre', values.nombre)
 		.set('mencion', values.mención)
 		.set('mención', values.mención)
-		.set('color',   values.color)
-		.set('icono',   values.ícono)
-		.set('ícono',   values.ícono);
+		.set('color', values.color)
+		.set('icono', values.ícono)
+		.set('ícono', values.ícono);
 
 	return makeRegistry(rol);
 }
@@ -111,19 +110,19 @@ export function makeDiscordChannel(channel: PSChannel): RegistryValue {
 	const isNSFW = 'nsfw' in channel && channel.nsfw;
 
 	const values = {
-		id:      makeText(channel.id),
-		nombre:  makeText(channel.name),
+		id: makeText(channel.id),
+		nombre: makeText(channel.name),
 		mención: makeText(`${channel}`),
-		nsfw:    makeBoolean(isNSFW),
+		nsfw: makeBoolean(isNSFW),
 	};
 
 	const canal = new Map<string, RuntimeValue>();
 	canal
-		.set('id',      values.id)
-		.set('nombre',  values.nombre)
+		.set('id', values.id)
+		.set('nombre', values.nombre)
 		.set('mencion', values.mención)
 		.set('mención', values.mención)
-		.set('nsfw',    values.nsfw);
+		.set('nsfw', values.nsfw);
 
 	return makeRegistry(canal);
 }
@@ -149,20 +148,20 @@ export async function makeDiscordGuild(guild: PSGuild): Promise<RegistryValue> {
 	};
 
 	const servidor = new Map<string, RuntimeValue>()
-		.set('id',               values.id)
-		.set('nombre',           values.nombre)
-		.set('icono',            values.ícono)
-		.set('ícono',            values.ícono)
-		.set('descripcion',      values.descripción)
-		.set('descripción',      values.descripción)
-		.set('canalSistema',     values.canalSistema)
-		.set('canalDeSistema',   values.canalSistema)
-		.set('cartel',           values.cartel)
-		.set('portada',          values.cartel)
-		.set('nivel',            values.nivel)
+		.set('id', values.id)
+		.set('nombre', values.nombre)
+		.set('icono', values.ícono)
+		.set('ícono', values.ícono)
+		.set('descripcion', values.descripción)
+		.set('descripción', values.descripción)
+		.set('canalSistema', values.canalSistema)
+		.set('canalDeSistema', values.canalSistema)
+		.set('cartel', values.cartel)
+		.set('portada', values.cartel)
+		.set('nivel', values.nivel)
 		.set('imagenInvitacion', values.imagenInvitación)
 		.set('imagenInvitación', values.imagenInvitación)
-		.set('dueño',            values.dueño);
+		.set('dueño', values.dueño);
 
 	return makeRegistry(servidor);
 }
@@ -175,10 +174,10 @@ export function makeEmbedRegistry(embed: EmbedData): RegistryValue {
 
 	const embedData = embed.data;
 
-	if(embedData.fields) {
+	if (embedData.fields) {
 		const fields = [];
 
-		for(const field of embedData.fields) {
+		for (const field of embedData.fields) {
 			const fieldProps = new Map<string, RuntimeValue>()
 				.set('nombre', makeText(field.name || ''))
 				.set('valor', makeText(field.value || ''))
@@ -190,29 +189,46 @@ export function makeEmbedRegistry(embed: EmbedData): RegistryValue {
 		properties.set('enlace', makeList(fields));
 	}
 
-	if(embedData.author)
-		properties.set('autor', makeRegistry(new Map()
-			.set('nombre', embedData.author.name ? makeText(embedData.author.name) : makeNada())
-			.set('ícono', embedData.author.iconUrl ? makeText(embedData.author.iconUrl) : makeNada())
-		));
+	if (embedData.author)
+		properties.set(
+			'autor',
+			makeRegistry(
+				new Map()
+					.set(
+						'nombre',
+						embedData.author.name ? makeText(embedData.author.name) : makeNada(),
+					)
+					.set(
+						'ícono',
+						embedData.author.iconUrl ? makeText(embedData.author.iconUrl) : makeNada(),
+					),
+			),
+		);
 
-	if(embedData.footer)
-		properties.set('pie', makeRegistry(new Map()
-			.set('texto', embedData.footer.text ? makeText(embedData.footer.text) : makeNada())
-			.set('ícono', embedData.footer.iconUrl ? makeText(embedData.footer.iconUrl) : makeNada())
-		));
+	if (embedData.footer)
+		properties.set(
+			'pie',
+			makeRegistry(
+				new Map()
+					.set(
+						'texto',
+						embedData.footer.text ? makeText(embedData.footer.text) : makeNada(),
+					)
+					.set(
+						'ícono',
+						embedData.footer.iconUrl ? makeText(embedData.footer.iconUrl) : makeNada(),
+					),
+			),
+		);
 
-	if(embedData.timestamp)
+	if (embedData.timestamp)
 		properties.set('tiempo', makeText(`<t:${+embedData.timestamp / 1000}:F>`));
 
-	if(embedData.imageUrl)
-		properties.set('imagen', makeText(embedData.imageUrl));
+	if (embedData.imageUrl) properties.set('imagen', makeText(embedData.imageUrl));
 
-	if(embedData.thumbUrl)
-		properties.set('miniatura', makeText(embedData.thumbUrl));
+	if (embedData.thumbUrl) properties.set('miniatura', makeText(embedData.thumbUrl));
 
-	if(embedData.url)
-		properties.set('enlace', makeText(embedData.url));
+	if (embedData.url) properties.set('enlace', makeText(embedData.url));
 
 	return makeRegistry(properties);
 }

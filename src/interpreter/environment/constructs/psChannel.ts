@@ -1,4 +1,4 @@
-import { PSGuild } from './psGuild';
+import type { PSGuild } from './psGuild';
 
 export interface PSChannelCreationData {
 	guild: PSGuild;

@@ -1,40 +1,39 @@
-import { RuntimeValue } from './interpreter/values';
-import { RequireAtLeastOne } from './util/types';
-
-export { Token } from './lexer/tokens';
-export { Lexer } from './lexer';
-export { Parser } from './parser';
+import type { RuntimeValue } from './interpreter/values';
+import type { RequireAtLeastOne } from './util/types';
 
 export { Interpreter } from './interpreter';
-export { Scope } from './interpreter/scope';
-export { Input } from './interpreter/inputReader';
 export {
-	ValueKinds,
-	coerceValue,
-	makeValue,
-	makeNumber,
-	makeText,
-	makeBoolean,
-	makeList,
-	makeRegistry,
-	makeNativeFunction,
-	makeFunction,
-	makeLambda,
-	makeEmbed,
-	makeNada,
-} from './interpreter/values';
-
-export { declareNatives, declareContext } from './interpreter/environment';
-export {
+	declareContext,
+	declareNatives,
 	EnvironmentProvider,
-	PSGuild,
 	PSChannel,
+	PSGuild,
+	PSMember,
 	PSRole,
 	PSUser,
-	PSMember,
 } from './interpreter/environment';
+export { Input } from './interpreter/inputReader';
+export { Scope } from './interpreter/scope';
+export {
+	coerceValue,
+	makeBoolean,
+	makeEmbed,
+	makeFunction,
+	makeLambda,
+	makeList,
+	makeNada,
+	makeNativeFunction,
+	makeNumber,
+	makeRegistry,
+	makeText,
+	makeValue,
+	ValueKinds,
+} from './interpreter/values';
+export { Lexer } from './lexer';
+export { Token } from './lexer/tokens';
+export { Parser } from './parser';
 
-export { stringifyPSAST, logPSAST } from './util/debug';
+export { logPSAST, stringifyPSAST } from './util/debug';
 
 export const PS_VERSION = 1.2;
 

@@ -1,17 +1,17 @@
+import type { Interpreter } from '.';
 import {
-	makeNada,
 	defaultValueOf,
+	type FunctionValue,
+	makeNada,
+	type RuntimeValue,
+	type ValueKind,
 	ValueKinds,
-	RuntimeValue,
-	ValueKind,
-	FunctionValue,
 } from './values';
-import { Interpreter } from '.';
 
 /**@description Representa un ámbito de variables en un contexto de ejecución de PuréScript.*/
 export class Scope {
 	#interpreter: Interpreter;
-	#parent: Scope | null;
+	readonly parent: Scope | null;
 	variables: Map<string, RuntimeValue>;
 
 	/**
@@ -21,20 +21,18 @@ export class Scope {
 	 */
 	constructor(interpreter: Interpreter, parent: Scope | null = null) {
 		this.#interpreter = interpreter;
-		this.#parent = parent;
+		this.parent = parent;
 		this.variables = new Map();
 	}
 
 	createFunctionScope(fnValue: FunctionValue, argValues: RuntimeValue[]): Scope {
 		const it = this.#interpreter;
-		const fnScope = new Scope(it, (fnValue.lambda === true) ? this : fnValue.scope);
+		const fnScope = new Scope(it, fnValue.lambda === true ? this : fnValue.scope);
 
 		fnValue.args.forEach((arg, i) => {
 			let value: RuntimeValue;
-			if(i < argValues.length)
-				value = argValues[i];
-			else if(arg.optional)
-				value = it.evaluate(arg.fallback, this);
+			if (i < argValues.length) value = argValues[i];
+			else if (arg.optional) value = it.evaluate(arg.fallback, this);
 			else
 				throw it.TuberInterpreterError(
 					`Se esperaba un valor para el parámetro \`${arg.identifier}\` de la Función \`${fnValue.name}\``,
@@ -45,7 +43,7 @@ export class Scope {
 			fnScope.assignVariable(arg.identifier, value);
 		});
 
-		if(fnValue.self != null && fnValue.self.kind !== ValueKinds.NADA)
+		if (fnValue.self != null && fnValue.self.kind !== ValueKinds.NADA)
 			fnScope.assignVariable('este', fnValue.self);
 
 		return fnScope;
@@ -55,16 +53,12 @@ export class Scope {
 		return this.#interpreter;
 	}
 
-	get parent() {
-		return this.#parent;
-	}
-
 	hasParent(): this is Scope & { parent: Scope } {
-		return this.#parent != null;
+		return this.parent != null;
 	}
 
 	hasNoParent(): this is Scope & { parent: null } {
-		return this.#parent == null;
+		return this.parent == null;
 	}
 
 	/**
@@ -72,7 +66,7 @@ export class Scope {
 	 * @param identifier El nombre bajo el cual se declarará la variable.
 	 */
 	declareVariable(identifier: string, kind: ValueKind): RuntimeValue {
-		if(this.variables.has(identifier))
+		if (this.variables.has(identifier))
 			throw this.#interpreter.TuberInterpreterError(
 				`El identificador \`${identifier}\` ya estaba declarado`,
 			);
@@ -86,7 +80,7 @@ export class Scope {
 	assignVariable(identifier: string, value: RuntimeValue): RuntimeValue {
 		const scope = this.resolve(identifier, false);
 
-		if(value == null)
+		if (value == null)
 			throw this.#interpreter.TuberInterpreterError('Se esperaba una asignación');
 
 		(scope ?? this).variables.set(identifier, value);
@@ -102,10 +96,10 @@ export class Scope {
 	 */
 	lookup(identifier: string, mustBeDeclared = true): RuntimeValue {
 		const scope = this.resolve(identifier, mustBeDeclared);
-		if(scope == null) return makeNada();
+		if (scope == null) return makeNada();
 
 		const variable = scope.variables.get(identifier);
-		if(variable == null) return makeNada();
+		if (variable == null) return makeNada();
 
 		return variable;
 	}
@@ -114,10 +108,10 @@ export class Scope {
 	resolve(identifier: string, mustBeDeclared: boolean = true): Scope | null {
 		const variable = this.variables.get(identifier);
 
-		if(variable != null) return this;
+		if (variable != null) return this;
 
-		if(this.hasNoParent()) {
-			if(mustBeDeclared)
+		if (this.parent == null) {
+			if (mustBeDeclared)
 				throw this.#interpreter.TuberInterpreterError(
 					`El identificador \`${identifier}\` no representa ninguna variable ni función`,
 				);
@@ -125,6 +119,6 @@ export class Scope {
 			return null;
 		}
 
-		return this.#parent.resolve(identifier, mustBeDeclared);
+		return this.parent.resolve(identifier, mustBeDeclared);
 	}
 }

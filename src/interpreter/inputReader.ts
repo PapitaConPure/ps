@@ -1,19 +1,19 @@
-import { Token, TokenKinds } from '../lexer/tokens';
-import { Scope } from './scope';
+import type { ReadStatement, ReadStatementPreModifier } from '../ast/statements';
+import { type Token, TokenKinds } from '../lexer/tokens';
+import type { Interpreter } from '.';
+import { ValueKindLookups } from './lookups';
+import type { Scope } from './scope';
 import {
-	makeText,
 	coerceValue,
 	defaultValueOf,
+	makeBoolean,
+	makeNumber,
+	makeText,
+	type RuntimeValue,
+	type ValueKind,
 	ValueKinds,
 	ValueKindTranslationLookups,
-	makeNumber,
-	makeBoolean,
-	ValueKind,
-	RuntimeValue,
 } from './values';
-import { ValueKindLookups } from './lookups';
-import { Interpreter } from '.';
-import { ReadStatement, ReadStatementPreModifier } from '../ast/statements';
 
 const boolWords = {
 	TRUE: [
@@ -149,11 +149,12 @@ export abstract class InputReader {
 		this.#spreadInput = null;
 
 		let arg: string, delim: string;
-		for(let i = 0; i < args.length; i++) {
+		for (let i = 0; i < args.length; i++) {
 			arg = args[i];
 
-			if((arg.startsWith('"') && (delim = '"')) || (arg.startsWith("'") && (delim = "'"))) {
-				while(!arg.endsWith(delim) && ++i < args.length) arg += ' ' + args[i];
+			// biome-ignore lint/suspicious/noAssignInExpressions: shortcut
+			if ((arg.startsWith('"') && (delim = '"')) || (arg.startsWith("'") && (delim = "'"))) {
+				while (!arg.endsWith(delim) && ++i < args.length) arg += ` ${args[i]}`;
 
 				arg = arg.slice(1, -1);
 			}
@@ -199,7 +200,7 @@ export abstract class InputReader {
 	}
 
 	ensureValidInputKind(name: string, dataKind: Token) {
-		if(!dataKind.isAny(TokenKinds.NUMBER, TokenKinds.TEXT, TokenKinds.BOOLEAN))
+		if (!dataKind.isAny(TokenKinds.NUMBER, TokenKinds.TEXT, TokenKinds.BOOLEAN))
 			throw this.interpreter.TuberInterpreterError(
 				`El tipo de dato de la Entrada \`${name}\` es inválido. Se recibió: ${dataKind.translated}`,
 				dataKind,
@@ -209,7 +210,7 @@ export abstract class InputReader {
 	/**@description El lector de Entradas no debe tener una entrada extensiva. De lo contrario, se alzará un error.*/
 	addInput(input: Input) {
 		//No aceptar más Entradas extensivas si ya se detectó una
-		if(this.hasSpreadInput)
+		if (this.hasSpreadInput)
 			throw this.interpreter.TuberInterpreterError(
 				[
 					'Solo puede haber una única Entrada extensiva por Tubérculo, y debe ser la última Entrada del mismo.',
@@ -218,7 +219,7 @@ export abstract class InputReader {
 				].join('\n'),
 			);
 
-		if(this.#inputLookup.has(input.name)) throw 'Entrada duplicada';
+		if (this.#inputLookup.has(input.name)) throw 'Entrada duplicada';
 
 		this.#inputStack.push(input);
 		this.#inputLookup.set(input.name, input);
@@ -226,14 +227,14 @@ export abstract class InputReader {
 
 	/**@description Marca la Entrada bajo en identificador especificado como Extensiva.*/
 	setInputAsSpread(name: string) {
-		if(this.#spreadInput != null) {
-			if(this.#spreadInput.name != name) throw 'Entrada duplicada';
+		if (this.#spreadInput != null) {
+			if (this.#spreadInput.name !== name) throw 'Entrada duplicada';
 
 			return;
 		}
 
 		const input = this.#inputLookup.get(name);
-		if(!input) throw 'Entrada inexistente';
+		if (!input) throw 'Entrada inexistente';
 
 		this.#spreadInput = input.setSpread(true);
 	}
@@ -262,20 +263,21 @@ export class TestDriveInputReader extends InputReader {
 		const fallbackValue =
 			fallback != null
 				? this.interpreter.evaluate(fallback, scope)
-				: defaultValueOf(valueKind);
+				: defaultValueOf(valueKind as ValueKind);
 
 		this.ensureValidInputKind(name, dataKind);
 
-		if(this.hasInput(name)) this.setInputAsSpread(name);
-		else this.addInput(new Input(name, valueKind, optional));
+		if (this.hasInput(name)) this.setInputAsSpread(name);
+		else this.addInput(new Input(name, valueKind as ValueKind, optional));
 
 		try {
 			const coercedValue = modifiers.length
 				? fallbackValue
-				: coerceValue(this.interpreter, fallbackValue, valueKind);
+				: coerceValue(this.interpreter, fallbackValue, valueKind as ValueKind);
 			return coercedValue;
 		} catch {
-			const fallbackString = this.interpreter.astString(fallback);
+			const fallbackString =
+				fallback != null ? this.interpreter.astString(fallback) : '[valor por defecto]';
 			throw this.interpreter.TuberInterpreterError(
 				`Se recibió una Entrada con formato inválido. Se esperaba un valor convertible a ${dataKind.translated}, pero \`${fallbackString}\` no lo era`,
 				fallback ?? dataKind,
@@ -307,18 +309,24 @@ export class ProductionInputReader extends InputReader {
 
 		this.ensureValidInputKind(name, dataKind);
 
-		if(this.hasInput(name)) this.setInputAsSpread(name);
-		else this.addInput(new Input(name, valueKind, optional));
+		if (this.hasInput(name)) this.setInputAsSpread(name);
+		else this.addInput(new Input(name, valueKind as ValueKind, optional));
 
 		let receptionValue: RuntimeValue;
-		if(arg != null)
-			receptionValue = this.#getValueFromArg(name, arg, valueKind, scope, preModifiers);
-		else if(optional) {
+		if (arg != null)
+			receptionValue = this.#getValueFromArg(
+				name,
+				arg,
+				valueKind as ValueKind,
+				scope,
+				preModifiers,
+			);
+		else if (optional) {
 			try {
 				receptionValue =
 					fallback != null
-						? this.interpreter.evaluateAs(fallback, scope, valueKind)
-						: defaultValueOf(valueKind);
+						? this.interpreter.evaluateAs(fallback, scope, valueKind as ValueKind)
+						: defaultValueOf(valueKind as ValueKind);
 			} catch {
 				throw TuberInputError(
 					`Se recibió una Entrada con formato inválido. Se esperaba un valor conversible a ${dataKind.translated}, pero se recibió: \`${arg}\``,
@@ -347,33 +355,33 @@ export class ProductionInputReader extends InputReader {
 			arg,
 		);
 
-		switch(valueKind) {
-		case ValueKinds.NUMBER: {
-			const narg = +preModifiedArg;
+		switch (valueKind) {
+			case ValueKinds.NUMBER: {
+				const narg = +preModifiedArg;
 
-			if(isNaN(narg))
-				throw TuberInputError(`Se esperaba un Número para la entrada \`${name}\``);
+				if (Number.isNaN(+narg))
+					throw TuberInputError(`Se esperaba un Número para la entrada \`${name}\``);
 
-			return makeNumber(narg);
-		}
+				return makeNumber(narg);
+			}
 
-		case ValueKinds.TEXT:
-			return makeText(preModifiedArg);
+			case ValueKinds.TEXT:
+				return makeText(preModifiedArg);
 
-		case ValueKinds.BOOLEAN: {
-			const lowerArg = preModifiedArg.toLowerCase();
+			case ValueKinds.BOOLEAN: {
+				const lowerArg = preModifiedArg.toLowerCase();
 
-			if(boolWords.TRUE.includes(lowerArg)) return makeBoolean(true);
+				if (boolWords.TRUE.includes(lowerArg)) return makeBoolean(true);
 
-			if(boolWords.FALSE.includes(lowerArg)) return makeBoolean(false);
+				if (boolWords.FALSE.includes(lowerArg)) return makeBoolean(false);
 
-			throw TuberInputError(
-				`Se esperaba un valor Lógico ("verdadero" o "falso", "si" o "no", etc...) para la entrada \`${name}\`. Sin embargo, se recibió: \`${arg}\``,
-			);
-		}
+				throw TuberInputError(
+					`Se esperaba un valor Lógico ("verdadero" o "falso", "si" o "no", etc...) para la entrada \`${name}\`. Sin embargo, se recibió: \`${arg}\``,
+				);
+			}
 
-		default:
-			throw 'Tipo de Entrada inválido detectado en lugar inesperado';
+			default:
+				throw 'Tipo de Entrada inválido detectado en lugar inesperado';
 		}
 	}
 }
