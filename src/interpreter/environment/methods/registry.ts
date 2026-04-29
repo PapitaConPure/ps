@@ -17,7 +17,8 @@ import {
 	type TextValue,
 	ValueKinds,
 } from '../../values';
-import { expectParam, makePredicateFn } from '../nativeUtils';
+import { ensureMethod, expectParam, makePredicateFn } from '../nativeUtils';
+import type { MapOfMethodCompilers } from './types';
 
 export type RegistryMethod<
 	TArg extends RuntimeValue[] = RuntimeValue[],
@@ -81,13 +82,14 @@ const registroValores: RegistryMethod<[], ListValue> = (self, []) => {
 	return makeList(valuesArray);
 };
 
-export const registryMethods = new Map<string, RegistryMethod>()
-	.set('claves', registroClaves as RegistryMethod)
-	.set('contiene', registroContiene as RegistryMethod)
-	.set('entradas', registroEntradas as RegistryMethod)
-	.set('filtrar', registroFiltrar as RegistryMethod)
-	.set('paraCada', registroParaCada as RegistryMethod)
-	.set('quitar', registroQuitar as RegistryMethod)
-	.set('vacio', registroVacío as RegistryMethod)
-	.set('vacío', registroVacío as RegistryMethod)
-	.set('valores', registroValores as RegistryMethod);
+export const registryMethods: MapOfMethodCompilers<RegistryValue> = new Map();
+registryMethods
+	.set('claves', (it) => ensureMethod(it).appliesTo(registroClaves))
+	.set('contiene', (it) => ensureMethod(it).arg('Text').appliesTo(registroContiene))
+	.set('entradas', (it) => ensureMethod(it).appliesTo(registroEntradas))
+	.set('filtrar', (it) => ensureMethod(it).arg('Function').appliesTo(registroFiltrar))
+	.set('paraCada', (it) => ensureMethod(it).arg('Function').appliesTo(registroParaCada))
+	.set('quitar', (it) => ensureMethod(it).arg('Text').appliesTo(registroQuitar))
+	.set('vacio', (it) => ensureMethod(it).appliesTo(registroVacío))
+	.set('vacío', (it) => ensureMethod(it).appliesTo(registroVacío))
+	.set('valores', (it) => ensureMethod(it).appliesTo(registroValores));

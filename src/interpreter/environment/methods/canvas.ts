@@ -26,14 +26,21 @@ import {
 	PSCanvasTextBaselines,
 	type PSImageResolvable,
 } from '../constructs/psCanvas';
-import { expectParam, getParamOrDefault, getParamOrNada } from '../nativeUtils';
+import {
+	ensureMethod,
+	expectParam,
+	getParamOrDefault,
+	getParamOrNada,
+	type OptionalArg,
+} from '../nativeUtils';
+import type { MapOfMethodCompilers } from './types';
 
 export type CanvasMethod<
 	TArg extends RuntimeValue[] = RuntimeValue[],
 	TResult extends RuntimeValue = RuntimeValue,
 > = NativeFunction<CanvasValue, TArg, TResult>;
 
-const lienzoAlinearTexto: CanvasMethod<[TextValue, TextValue | NadaValue], NadaValue> = (
+const lienzoAlinearTexto: CanvasMethod<[TextValue, OptionalArg<TextValue>], NadaValue> = (
 	self,
 	[horizontal, vertical],
 	scope,
@@ -112,7 +119,7 @@ const lienzoDibujarImagen: CanvasMethod<
 };
 
 const lienzoDibujarTexto: CanvasMethod<
-	[NumberValue, NumberValue, TextValue, RegistryValue | NadaValue],
+	[NumberValue, NumberValue, TextValue, OptionalArg<RegistryValue>],
 	PromiseValue<NadaValue>
 > = (self, [x, y, texto, propiedades], scope) => {
 	const xResult = expectParam('posX', x, ValueKinds.NUMBER, scope);
@@ -224,9 +231,21 @@ const lienzoDibujarTexto: CanvasMethod<
 	});
 };
 
-export const canvasMethods = new Map<string, CanvasMethod>()
-	.set('alinearTexto', lienzoAlinearTexto as CanvasMethod)
-	.set('aRegistro', lienzoARegistro as CanvasMethod)
-	.set('crearImagen', lienzoCrearImagen as CanvasMethod)
-	.set('dibujarImagen', lienzoDibujarImagen as CanvasMethod)
-	.set('dibujarTexto', lienzoDibujarTexto as CanvasMethod);
+export const canvasMethods: MapOfMethodCompilers<CanvasValue> = new Map();
+canvasMethods
+	.set('alinearTexto', (it) =>
+		ensureMethod(it).arg('Text').opt('Text').appliesTo(lienzoAlinearTexto),
+	)
+	.set('aRegistro', (it) => ensureMethod(it).appliesTo(lienzoARegistro))
+	.set('crearImagen', (it) => ensureMethod(it).appliesTo(lienzoCrearImagen))
+	.set('dibujarImagen', (it) =>
+		ensureMethod(it).arg('Number').arg('Number').arg().appliesTo(lienzoDibujarImagen),
+	)
+	.set('dibujarTexto', (it) =>
+		ensureMethod(it)
+			.arg('Number')
+			.arg('Number')
+			.arg('Text')
+			.opt('Registry')
+			.appliesTo(lienzoDibujarTexto),
+	);

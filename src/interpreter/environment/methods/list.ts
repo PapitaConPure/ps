@@ -5,6 +5,7 @@ import {
 	type BooleanValue,
 	coerceValue,
 	type FunctionValue,
+	isInternalNull,
 	type ListValue,
 	makeBoolean,
 	makeList,
@@ -20,7 +21,15 @@ import {
 	type TextValue,
 	ValueKinds,
 } from '../../values';
-import { expectParam, getParamOrDefault, getParamOrNada, makePredicateFn } from '../nativeUtils';
+import {
+	ensureMethod,
+	expectParam,
+	getParamOrDefault,
+	getParamOrNada,
+	makePredicateFn,
+	type OptionalArg,
+} from '../nativeUtils';
+import type { MapOfMethodCompilers } from './types';
 
 export type ListMethod<
 	TArg extends RuntimeValue[] = RuntimeValue[],
@@ -40,8 +49,13 @@ const listaAlguno: ListMethod<[FunctionValue], BooleanValue> = (self, [predicado
 	return makeBoolean(test);
 };
 
-const listaAOrdenada: ListMethod<[FunctionValue], ListValue> = (self, [criterio], scope) => {
-	if (criterio == null) return makeList(self.elements.toSorted((a, b) => a.compareTo(b).value));
+const listaAOrdenada: ListMethod<[OptionalArg<FunctionValue>], ListValue> = (
+	self,
+	[criterio],
+	scope,
+) => {
+	if (isInternalNull(criterio))
+		return makeList(self.elements.toSorted((a, b) => a.compareTo(b).value));
 
 	const fn = makePredicateFn('criterio', criterio, scope);
 	const processedElements = self.elements.toSorted(
@@ -60,7 +74,7 @@ const listaContiene: ListMethod<[RuntimeValue], BooleanValue> = (self, [x]) => {
 	return makeBoolean(test);
 };
 
-const listaCortar: ListMethod<[NumberValue, NumberValue], ListValue> = (
+const listaCortar: ListMethod<[OptionalArg<NumberValue>, OptionalArg<NumberValue>], ListValue> = (
 	self,
 	[inicio, fin],
 	scope,
@@ -74,7 +88,11 @@ const listaCortar: ListMethod<[NumberValue, NumberValue], ListValue> = (
 	return makeList(self.elements.slice(inicioResult.value, finResult.value));
 };
 
-const listaElegir: ListMethod<[NumberValue, NumberValue]> = (self, [mínimo, máximo], scope) => {
+const listaElegir: ListMethod<[OptionalArg<NumberValue>, OptionalArg<NumberValue>]> = (
+	self,
+	[mínimo, máximo],
+	scope,
+) => {
 	const mínimoResult = getParamOrDefault('mínimo', mínimo, ValueKinds.NUMBER, scope, 0);
 	const máximoResult = getParamOrDefault(
 		'máximo',
@@ -151,8 +169,12 @@ const listaMapear: ListMethod<[FunctionValue], ListValue> = (self, [mapeo], scop
 	return makeList(processedElements);
 };
 
-const listaOrdenar: ListMethod<[FunctionValue], NadaValue> = (self, [criterio], scope) => {
-	if (criterio == null) {
+const listaOrdenar: ListMethod<[OptionalArg<FunctionValue>], NadaValue> = (
+	self,
+	[criterio],
+	scope,
+) => {
+	if (isInternalNull(criterio)) {
 		self.elements.sort((a, b) => a.compareTo(b).value);
 	} else {
 		const fn = makePredicateFn('criterio', criterio, scope);
@@ -216,43 +238,56 @@ const listaVacía: ListMethod<[], BooleanValue> = (self, []) => {
 	return makeBoolean(self.elements.length === 0);
 };
 
-export const listMethods = new Map<string, ListMethod>()
-	.set('aleatorio', listaElegir as ListMethod)
-	.set('aInvertida', listaAInvertido as ListMethod)
-	.set('aInvertido', listaAInvertido as ListMethod)
-	.set('algun', listaAlguno as ListMethod)
-	.set('algún', listaAlguno as ListMethod)
-	.set('alguno', listaAlguno as ListMethod)
-	.set('aOrdenada', listaAOrdenada as ListMethod)
-	.set('aOrdenado', listaAOrdenada as ListMethod)
-	.set('aRegistro', listaARegistro as ListMethod)
-	.set('contiene', listaContiene as ListMethod)
-	.set('cortar', listaCortar as ListMethod)
-	.set('elegir', listaElegir as ListMethod)
-	.set('encontrar', listaEncontrar as ListMethod)
-	.set('encontrarId', listaEncontrarId as ListMethod)
-	.set('encontrarUltimaId', listaEncontrarÚltimoId as ListMethod)
-	.set('encontrarÚltimaId', listaEncontrarÚltimoId as ListMethod)
-	.set('encontrarUltimoId', listaEncontrarÚltimoId as ListMethod)
-	.set('encontrarÚltimoId', listaEncontrarÚltimoId as ListMethod)
-	.set('encontrarUltimo', listaEncontrarÚltimo as ListMethod)
-	.set('encontrarÚltimo', listaEncontrarÚltimo as ListMethod)
-	.set('escoger', listaElegir as ListMethod)
-	.set('filtrar', listaFiltrar as ListMethod)
-	.set('incluye', listaContiene as ListMethod)
-	.set('invertir', listaInvertir as ListMethod)
-	.set('mapear', listaMapear as ListMethod)
-	.set('ordenar', listaOrdenar as ListMethod)
-	.set('ordenada', listaAOrdenada as ListMethod)
-	.set('ordenado', listaAOrdenada as ListMethod)
-	.set('paraCada', listaParaCada as ListMethod)
-	.set('robar', listaRobar as ListMethod)
-	.set('robarPrimero', listaRobarPrimero as ListMethod)
-	.set('robarUltimo', listaRobarÚltimo as ListMethod)
-	.set('robarÚltimo', listaRobarÚltimo as ListMethod)
-	.set('todos', listaTodos as ListMethod)
-	.set('unir', listaUnir as ListMethod)
-	.set('ultimo', listaÚltimo as ListMethod)
-	.set('último', listaÚltimo as ListMethod)
-	.set('vacia', listaVacía as ListMethod)
-	.set('vacía', listaVacía as ListMethod);
+export const listMethods: MapOfMethodCompilers<ListValue> = new Map();
+listMethods
+	.set('aleatorio', (it) => ensureMethod(it).opt('Number').opt('Number').appliesTo(listaElegir))
+	.set('aInvertida', (it) => ensureMethod(it).appliesTo(listaAInvertido))
+	.set('aInvertido', (it) => ensureMethod(it).appliesTo(listaAInvertido))
+	.set('algun', (it) => ensureMethod(it).arg('Function').appliesTo(listaAlguno))
+	.set('algún', (it) => ensureMethod(it).arg('Function').appliesTo(listaAlguno))
+	.set('alguno', (it) => ensureMethod(it).arg('Function').appliesTo(listaAlguno))
+	.set('aOrdenada', (it) => ensureMethod(it).opt('Function').appliesTo(listaAOrdenada))
+	.set('aOrdenado', (it) => ensureMethod(it).opt('Function').appliesTo(listaAOrdenada))
+	.set('aRegistro', (it) => ensureMethod(it).appliesTo(listaARegistro))
+	.set('contiene', (it) => ensureMethod(it).arg().appliesTo(listaContiene))
+	.set('cortar', (it) => ensureMethod(it).opt('Number').opt('Number').appliesTo(listaCortar))
+	.set('elegir', (it) => ensureMethod(it).opt('Number').opt('Number').appliesTo(listaElegir))
+	.set('encontrar', (it) => ensureMethod(it).arg('Function').appliesTo(listaEncontrar))
+	.set('encontrarId', (it) => ensureMethod(it).arg('Function').appliesTo(listaEncontrarId))
+	.set('encontrarUltimaId', (it) =>
+		ensureMethod(it).arg('Function').appliesTo(listaEncontrarÚltimoId),
+	)
+	.set('encontrarÚltimaId', (it) =>
+		ensureMethod(it).arg('Function').appliesTo(listaEncontrarÚltimoId),
+	)
+	.set('encontrarUltimoId', (it) =>
+		ensureMethod(it).arg('Function').appliesTo(listaEncontrarÚltimoId),
+	)
+	.set('encontrarÚltimoId', (it) =>
+		ensureMethod(it).arg('Function').appliesTo(listaEncontrarÚltimoId),
+	)
+	.set('encontrarUltimo', (it) =>
+		ensureMethod(it).arg('Function').appliesTo(listaEncontrarÚltimo),
+	)
+	.set('encontrarÚltimo', (it) =>
+		ensureMethod(it).arg('Function').appliesTo(listaEncontrarÚltimo),
+	)
+	.set('escoger', (it) => ensureMethod(it).opt('Number').opt('Number').appliesTo(listaElegir))
+	.set('filtrar', (it) => ensureMethod(it).arg('Function').appliesTo(listaFiltrar))
+	.set('incluye', (it) => ensureMethod(it).arg().appliesTo(listaContiene))
+	.set('invertir', (it) => ensureMethod(it).appliesTo(listaInvertir))
+	.set('mapear', (it) => ensureMethod(it).arg('Function').appliesTo(listaMapear))
+	.set('ordenar', (it) => ensureMethod(it).opt('Function').appliesTo(listaOrdenar))
+	.set('ordenada', (it) => ensureMethod(it).opt('Function').appliesTo(listaAOrdenada))
+	.set('ordenado', (it) => ensureMethod(it).opt('Function').appliesTo(listaAOrdenada))
+	.set('paraCada', (it) => ensureMethod(it).arg('Function').appliesTo(listaParaCada))
+	.set('robar', (it) => ensureMethod(it).arg('Number').appliesTo(listaRobar))
+	.set('robarPrimero', (it) => ensureMethod(it).appliesTo(listaRobarPrimero))
+	.set('robarUltimo', (it) => ensureMethod(it).appliesTo(listaRobarÚltimo))
+	.set('robarÚltimo', (it) => ensureMethod(it).appliesTo(listaRobarÚltimo))
+	.set('todos', (it) => ensureMethod(it).arg('Function').appliesTo(listaTodos))
+	.set('unir', (it) => ensureMethod(it).arg('Text').appliesTo(listaUnir))
+	.set('ultimo', (it) => ensureMethod(it).appliesTo(listaÚltimo))
+	.set('último', (it) => ensureMethod(it).appliesTo(listaÚltimo))
+	.set('vacia', (it) => ensureMethod(it).appliesTo(listaVacía))
+	.set('vacía', (it) => ensureMethod(it).appliesTo(listaVacía));

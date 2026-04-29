@@ -14,8 +14,8 @@ import {
 	type RuntimeValue,
 	ValueKinds,
 } from '../../values';
-import { expectParam, psFileRegex, psImageRegex, psLinkRegex } from '../nativeUtils';
-import type { NativeFunctionEntry } from '.';
+import { ensureFn, expectParam, psFileRegex, psImageRegex, psLinkRegex } from '../nativeUtils';
+import type { NativeFunctionEntry } from './types';
 
 const esNúmero: NativeFunction<null, [RuntimeValue], BooleanValue> = (_self, [x]) => {
 	const test = isOperable(x);
@@ -71,15 +71,15 @@ const esImagen: NativeFunction<null, [RuntimeValue], BooleanValue> = (_self, [x]
 };
 
 export const kindFunctions: NativeFunctionEntry[] = [
-	{ id: 'esNumero', fn: esNúmero as NativeFunction },
-	{ id: 'esNúmero', fn: esNúmero as NativeFunction },
-	{ id: 'esTexto', fn: esTexto as NativeFunction },
-	{ id: 'esLogico', fn: esLogico as NativeFunction },
-	{ id: 'esLista', fn: esLista as NativeFunction },
-	{ id: 'esRegistro', fn: esRegistro as NativeFunction },
-	{ id: 'esMarco', fn: esMarco as NativeFunction },
-	{ id: 'esNada', fn: esNada as NativeFunction },
-	{ id: 'esEnlace', fn: esEnlace as NativeFunction },
-	{ id: 'esArchivo', fn: esArchivo as NativeFunction },
-	{ id: 'esImagen', fn: esImagen as NativeFunction },
+	{ id: 'esNumero', fn: (it) => ensureFn(it).opt().appliesTo(esNúmero) },
+	{ id: 'esNúmero', fn: (it) => ensureFn(it).opt().appliesTo(esNúmero) },
+	{ id: 'esTexto', fn: (it) => ensureFn(it).opt().appliesTo(esTexto) },
+	{ id: 'esLogico', fn: (it) => ensureFn(it).opt().appliesTo(esLogico) },
+	{ id: 'esLista', fn: (it) => ensureFn(it).opt().appliesTo(esLista) },
+	{ id: 'esRegistro', fn: (it) => ensureFn(it).opt().appliesTo(esRegistro) },
+	{ id: 'esMarco', fn: (it) => ensureFn(it).opt().appliesTo(esMarco) },
+	{ id: 'esNada', fn: (it) => ensureFn(it).opt().appliesTo(esNada) },
+	{ id: 'esEnlace', fn: (it) => ensureFn(it).opt().appliesTo(esEnlace) },
+	{ id: 'esArchivo', fn: (it) => ensureFn(it).opt().appliesTo(esArchivo) },
+	{ id: 'esImagen', fn: (it) => ensureFn(it).opt().appliesTo(esImagen) },
 ];

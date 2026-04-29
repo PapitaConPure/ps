@@ -8,9 +8,9 @@ import {
 	type TextValue,
 	ValueKinds,
 } from '../../values';
-import { expectParam } from '../nativeUtils';
+import { ensureFn, expectParam } from '../nativeUtils';
 import { makeDiscordChannel, makeDiscordMember, makeDiscordRole } from '../registryPrefabs';
-import type { NativeFunctionEntry } from '.';
+import type { NativeFunctionEntry } from './types';
 
 const buscarCanal: NativeFunction<null, [TextValue], RegistryValue | NadaValue> = (
 	_self,
@@ -55,7 +55,7 @@ const buscarRol: NativeFunction<null, [TextValue], RegistryValue | NadaValue> = 
 };
 
 export const discordFunctions: NativeFunctionEntry[] = [
-	{ id: 'buscarCanal', fn: buscarCanal as NativeFunction },
-	{ id: 'buscarMiembro', fn: buscarMiembro as NativeFunction },
-	{ id: 'buscarRol', fn: buscarRol as NativeFunction },
+	{ id: 'buscarCanal', fn: (it) => ensureFn(it).arg('Text').appliesTo(buscarCanal) },
+	{ id: 'buscarMiembro', fn: (it) => ensureFn(it).arg('Text').appliesTo(buscarMiembro) },
+	{ id: 'buscarRol', fn: (it) => ensureFn(it).arg('Text').appliesTo(buscarRol) },
 ];

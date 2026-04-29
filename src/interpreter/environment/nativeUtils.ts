@@ -4,6 +4,7 @@ import type { EmbedData } from '../../embedData';
 import type { Interpreter } from '..';
 import type { Scope } from '../scope';
 import {
+	type AnyNativeFunction,
 	type AssertedRuntimeValue,
 	coerceValue,
 	type FunctionValue,
@@ -74,7 +75,7 @@ export function makeKindFromValue<TKind extends ValueKind>(
 		case ValueKinds.NATIVE_FN:
 			return makeNativeFunction(
 				null,
-				values[0] as NativeFunction,
+				values[0] as AnyNativeFunction,
 			) as AssertedRuntimeValue<TKind>;
 
 		case ValueKinds.FUNCTION:
@@ -296,7 +297,7 @@ export function getParamOrNada<TKind extends ValueKind>(
 	kind: TKind,
 	scope: Scope,
 ): [false, NadaValue] | [true, AssertedRuntimeValue<TKind>] {
-	if (value == null) return [false, makeNada()];
+	if (value == null || value.kind === ValueKinds.NADA) return [false, makeNada()];
 
 	const coerced = coerceValue(scope.interpreter, value, kind);
 	verifyParam(name, coerced, kind, scope);
@@ -337,63 +338,133 @@ export function makePredicateFn(
 }
 
 interface ArgSpec<TValueKind extends ValueKind = ValueKind> {
-	kind: TValueKind;
+	kind?: TValueKind;
 	optional?: boolean;
-	coerce?: boolean;
+	rest?: boolean;
 }
 
-type ArgsFromSpecs<TArgSpec extends readonly ArgSpec[]> = {
-	[I in keyof TArgSpec]: TArgSpec[I] extends ArgSpec<infer TValueKind>
-		? TArgSpec[I]['optional'] extends true
-			? AssertedRuntimeValue<TValueKind> | NadaValue
-			: AssertedRuntimeValue<TValueKind>
-		: never;
-} & RuntimeValue[];
-
-export function ensureNativeFunction<
-	TArgSpecs extends readonly ArgSpec[],
-	TReturn extends RuntimeValue,
->(
-	interpreter: Interpreter,
-	specs: TArgSpecs,
-	fn: NativeFunction<null, ArgsFromSpecs<TArgSpecs>, TReturn>,
-): NativeFunction<null> {
-	return (self, args, scope) => {
-		const checked: RuntimeValue[] = [];
-
-		for (let i = 0; i < specs.length; i++) {
-			const spec = specs[i];
-			const value = args[i];
-
-			if (value == null) {
-				if (!spec.optional)
-					throw interpreter.TuberInterpreterError(`Falta argumento en posición ${i}`);
-
-				checked[i] = makeNada();
-				continue;
+type ArgsFromSpecs<TArgSpec extends readonly ArgSpec[]> = TArgSpec extends readonly [
+	...infer TFirstArgs,
+	infer TLastArg,
+]
+	? TLastArg extends ArgSpec<infer TArgValueKind> & { rest: true }
+		? [
+				...{
+					[TArgSpecKey in keyof TFirstArgs]: TFirstArgs[TArgSpecKey] extends ArgSpec<
+						infer TFirstArgsKey
+					>
+						? TFirstArgs[TArgSpecKey]['optional'] extends true
+							? AssertedRuntimeValue<TFirstArgsKey> | NadaValue
+							: AssertedRuntimeValue<TFirstArgsKey>
+						: never;
+				},
+				...AssertedRuntimeValue<TArgValueKind>[],
+			]
+		: {
+				[TArgSpecKey in keyof TArgSpec]: TArgSpec[TArgSpecKey] extends ArgSpec<infer K>
+					? TArgSpec[TArgSpecKey]['optional'] extends true
+						? AssertedRuntimeValue<K> | NadaValue
+						: AssertedRuntimeValue<K>
+					: never;
 			}
+	: [];
 
-			if (value.kind === ValueKinds.NADA) {
-				if (!spec.optional)
-					throw interpreter.TuberInterpreterError(`Argumento ${i} no puede ser Nada`);
+export type OptionalArg<TValue extends Exclude<RuntimeValue, NadaValue>> = TValue | NadaValue;
 
-				checked[i] = value;
-				continue;
-			}
+interface SpecChain<TSelf extends RuntimeValue | null, TSpecs extends readonly ArgSpec[]> {
+	arg<TValueKind extends ValueKind = ValueKind>(
+		kind?: TValueKind,
+	): SpecChain<TSelf, [...TSpecs, ArgSpec<TValueKind>]>;
 
-			if (value.kind !== spec.kind) {
-				if (!spec.coerce)
-					throw interpreter.TuberInterpreterError(
-						`Se esperaba ${spec.kind} en argumento ${i}, pero se recibió ${value.kind}`,
-					);
+	opt<TValueKind extends ValueKind>(
+		kind?: TValueKind,
+	): SpecChain<TSelf, [...TSpecs, ArgSpec<TValueKind> & { optional: true }]>;
 
-				checked[i] = coerceValue(interpreter, value, spec.kind);
-				continue;
-			}
+	rest<TValueKind extends ValueKind = ValueKind>(
+		kind?: TValueKind,
+	): SpecChain<TSelf, [...TSpecs, { kind: TValueKind; rest: true }]>;
 
-			checked[i] = value;
-		}
-
-		return fn(self, checked as ArgsFromSpecs<TArgSpecs>, scope);
-	};
+	appliesTo<TSelfImplied extends TSelf, TReturn extends RuntimeValue>(
+		fn: NativeFunction<TSelfImplied, ArgsFromSpecs<TSpecs>, TReturn>,
+	): AnyNativeFunction<TSelfImplied>;
 }
+
+export function ensureAnyNativeFn<TSelf extends RuntimeValue | null>(interpreter: Interpreter) {
+	function buildChain<TSpecs extends readonly ArgSpec[]>(
+		specs: TSpecs,
+	): SpecChain<TSelf, TSpecs> {
+		return {
+			arg(kind) {
+				return buildChain([...specs, { kind, optional: false }] as const);
+			},
+
+			opt(kind) {
+				return buildChain([...specs, { kind, optional: true }] as const);
+			},
+
+			rest(kind) {
+				return buildChain([...specs, { kind, rest: true }] as const);
+			},
+
+			appliesTo(fn) {
+				return (self, args, scope) => {
+					const checked: RuntimeValue[] = [];
+
+					for (let i = 0; i < specs.length; i++) {
+						const spec = specs[i];
+						const value = args[i];
+
+						if (spec.rest) {
+							const restValues = args.slice(i);
+
+							return fn(
+								self,
+								[
+									...checked,
+									...restValues.map((v) => (v == null ? makeNada() : v)),
+								] as ArgsFromSpecs<TSpecs>,
+								scope,
+							);
+						}
+
+						if (value == null) {
+							if (!spec.optional)
+								throw interpreter.TuberInterpreterError(
+									`Falta argumento en posición ${i}`,
+								);
+
+							checked[i] = makeNada();
+							continue;
+						}
+
+						if (value.kind === ValueKinds.NADA) {
+							if (!spec.optional)
+								throw interpreter.TuberInterpreterError(
+									`Argumento ${i} no puede ser Nada`,
+								);
+
+							checked[i] = value;
+							continue;
+						}
+
+						if (spec.kind) {
+							checked[i] = coerceValue(interpreter, value, spec.kind);
+							continue;
+						}
+
+						checked[i] = value;
+					}
+
+					return fn(self, checked as ArgsFromSpecs<TSpecs>, scope);
+				};
+			},
+		};
+	}
+
+	return buildChain([] as const);
+}
+
+export const ensureFn = (it: Interpreter) => ensureAnyNativeFn<null>(it);
+
+export const ensureMethod = <TSelf extends RuntimeValue>(it: Interpreter) =>
+	ensureAnyNativeFn<TSelf>(it);

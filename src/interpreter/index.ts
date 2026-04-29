@@ -59,6 +59,7 @@ import {
 import { Scope } from './scope';
 import {
 	type AnyFunctionValue,
+	type AnyNativeFunction,
 	type AssertedRuntimeValue,
 	type CanvasValue,
 	coerceValue,
@@ -78,7 +79,6 @@ import {
 	makeRegistry,
 	makeText,
 	type NadaValue,
-	type NativeFunction,
 	type NativeFunctionValue,
 	type NativeMethod,
 	type PromiseValue,
@@ -1467,11 +1467,11 @@ export class Interpreter {
 				'Tipo de valor inválido al intentar encontrar método nativo para el mismo',
 			);
 
-		const method = lookup.get(key);
-		if (method != null)
+		const methodCompiler = lookup.get(key);
+		if (methodCompiler != null)
 			return makeNativeFunction(
 				value,
-				method as NativeMethod<typeof value> as NativeFunction,
+				methodCompiler(this) as NativeMethod<typeof value> as AnyNativeFunction,
 			);
 
 		return null;

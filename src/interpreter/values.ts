@@ -78,21 +78,24 @@ export interface ImageValueData {
 
 export interface ImageValue extends BaseValueData<'Image'>, ImageValueData {}
 
-export type NativeMethod<TSelf extends RuntimeValue> = (
-	self: TSelf,
-	args: RuntimeValue[],
-	scope: Scope,
-) => RuntimeValue;
-
 export type NativeFunction<
-	TSelf extends RuntimeValue | null = RuntimeValue | null,
+	TSelf extends RuntimeValue | null,
+	TArg extends readonly RuntimeValue[],
+	TReturn extends RuntimeValue,
+> = (self: TSelf, args: TArg, scope: Scope) => TReturn;
+
+export type AnyNativeFunction<TSelf extends RuntimeValue | null = RuntimeValue | null> =
+	NativeFunction<TSelf, readonly RuntimeValue[], RuntimeValue>;
+
+export type NativeMethod<
+	TSelf extends RuntimeValue,
 	TArg extends RuntimeValue[] = RuntimeValue[],
 	TReturn extends RuntimeValue = RuntimeValue,
-> = (self: TSelf, args: TArg, scope: Scope) => TReturn;
+> = NativeFunction<TSelf, TArg, TReturn>;
 
 interface NativeFunctionValueData {
 	self?: RuntimeValue | null;
-	call: NativeFunction;
+	call: AnyNativeFunction;
 	with: (self?: RuntimeValue | null) => NativeFunctionValue;
 }
 
@@ -144,9 +147,6 @@ export interface PromiseValue<TResult extends RuntimeValue = RuntimeValue>
 
 export type RuntimeValue = TangibleValue | PromiseValue;
 
-// biome-ignore lint/suspicious/noExplicitAny: Required for an AnyRuntimeValue definition
-export type AnyRuntimeValue = BaseValueData<any>;
-
 interface RuntimeInternalValueMap {
 	Number: number;
 	Text: string;
@@ -158,7 +158,7 @@ interface RuntimeInternalValueMap {
 	Embed: EmbedData;
 	Canvas: PSCanvas;
 	Image: ImageValueData;
-	NativeFunction: NativeFunction;
+	NativeFunction: AnyNativeFunction;
 	Function: (x?: unknown) => RuntimeValue;
 	Promise: () => Promise<RuntimeValue>;
 }
@@ -373,7 +373,7 @@ export function makePromise<TResult extends RuntimeValue>(
 
 export function makeNativeFunction(
 	self: RuntimeValue | null | undefined,
-	fn: NativeFunction,
+	fn: AnyNativeFunction,
 ): NativeFunctionValue {
 	const kind = ValueKinds.NATIVE_FN;
 	return {
@@ -523,14 +523,24 @@ export function isNada(runtimeValue: RuntimeValue): runtimeValue is NadaValue {
 	return runtimeValue?.kind === ValueKinds.NADA;
 }
 
+/**@description Comprueba si un RuntimeValue es de tipo Nada.*/
+export function isInternalNull(
+	runtimeValue: RuntimeValue | null | undefined,
+): runtimeValue is NadaValue | null {
+	return runtimeValue == null || runtimeValue.kind === ValueKinds.NADA;
+}
+
 export function extendList(list: ListValue, item: RuntimeValue, position: number | null = null) {
 	list.elements.splice(position ?? list.elements.length, 0, item);
 }
 
 export type PartiallyCoercibleValue = FunctionValue | NativeFunctionValue;
 
-export type CoercibleInternalValue<TValueKind extends ValueKind = ValueKind> =
-	TValueKind extends PartiallyCoercibleValue['kind'] ? null : RuntimeInternalValue<TValueKind>;
+export type HasInternal<TValueKind extends ValueKind> =
+	TValueKind extends PartiallyCoercibleValue['kind'] ? false : true;
+
+export type CoercibleInternalValue<TValueKind extends ValueKind> =
+	HasInternal<TValueKind> extends true ? RuntimeInternalValue<TValueKind> : never;
 
 export type CoercionMap = {
 	[TSourceKind in ValueKind]: Partial<{
@@ -541,30 +551,34 @@ export type CoercionMap = {
 	}>;
 };
 
-const coercions: CoercionMap = {
-	[ValueKinds.NUMBER]: {
-		[ValueKinds.TEXT]: (x) => makeText(`${x ?? 'Nada'}`),
-		[ValueKinds.BOOLEAN]: (x) => makeBoolean(!!x),
+const coercions = {
+	Number: {
+		Number: (x) => makeNumber(+x),
+		Text: (x) => makeText(`${x ?? 'Nada'}`),
+		Boolean: (x) => makeBoolean(!!x),
 	},
-	[ValueKinds.TEXT]: {
-		[ValueKinds.NUMBER]: (x) => makeNumber(isInternalOperable(+x) ? +x : 0),
-		[ValueKinds.BOOLEAN]: (x) => makeBoolean(!!x),
+	Text: {
+		Number: (x) => makeNumber(isInternalOperable(+x) ? +x : 0),
+		Text: (x) => makeText(`${x}`),
+		Boolean: (x) => makeBoolean(!!x),
 		[ValueKinds.LIST]: (x: string) => makeList(x.split('').map(makeText)),
 	},
-	[ValueKinds.BOOLEAN]: {
-		[ValueKinds.NUMBER]: (x) => makeNumber(x ? 1 : 0),
-		[ValueKinds.TEXT]: (x) => makeText(x ? 'Verdadero' : 'Falso'),
+	Boolean: {
+		Number: (x) => makeNumber(x ? 1 : 0),
+		Text: (x) => makeText(x ? 'Verdadero' : 'Falso'),
+		Boolean: (x) => makeBoolean(!!x),
 	},
-	[ValueKinds.LIST]: {
-		[ValueKinds.TEXT]: (x: RuntimeValue[], interpreter) => {
+	List: {
+		Text: (x: RuntimeValue[], interpreter) => {
 			const coercedElementValues: string[] = x?.map(
 				(y) => coerceValue(interpreter, y, 'Text').value,
 			);
 			const listString = coercedElementValues.join('');
 			return makeText(`(${listString})`);
 		},
-		[ValueKinds.BOOLEAN]: (x: RuntimeValue[]) => makeBoolean(!!x?.length),
-		[ValueKinds.REGISTRY]: (x) => {
+		Boolean: (x) => makeBoolean(!!x?.length),
+		List: (x) => makeList(Array.isArray(x) ? [...x] : []),
+		Registry: (x) => {
 			if (!Array.isArray(x)) return null;
 
 			const properties = new Map();
@@ -572,8 +586,8 @@ const coercions: CoercionMap = {
 			return makeRegistry(properties);
 		},
 	},
-	[ValueKinds.REGISTRY]: {
-		[ValueKinds.TEXT]: (x: Map<string, RuntimeValue>, interpreter) => {
+	Registry: {
+		Text: (x: Map<string, RuntimeValue>, interpreter) => {
 			if (!x.size) return makeText('{Rg}');
 
 			const registryStrings: string[] = [];
@@ -583,21 +597,22 @@ const coercions: CoercionMap = {
 			});
 			return makeText(`{Rg ${registryStrings.join(', ')} }`);
 		},
-		[ValueKinds.BOOLEAN]: (x: Map<string, RuntimeValue>) => makeBoolean(!!x?.size),
+		Boolean: (x: Map<string, RuntimeValue>) => makeBoolean(!!x?.size),
+		Registry: (x) => makeRegistry(new Map(x)),
 	},
-	[ValueKinds.EMBED]: {
-		[ValueKinds.TEXT]: () => makeText('[Marco]'),
-		[ValueKinds.BOOLEAN]: () => makeBoolean(true),
-		[ValueKinds.REGISTRY]: (x: EmbedData) => {
+	Embed: {
+		Text: () => makeText('[Marco]'),
+		Boolean: () => makeBoolean(true),
+		Registry: (x: EmbedData) => {
 			if (x == null || x.data == null) return null;
 
 			return makeEmbedRegistry(x);
 		},
 	},
-	[ValueKinds.CANVAS]: {
-		[ValueKinds.TEXT]: () => makeText('[Lienzo]'),
-		[ValueKinds.BOOLEAN]: () => makeBoolean(true),
-		[ValueKinds.REGISTRY]: (x: PSCanvas) => {
+	Canvas: {
+		Text: () => makeText('[Lienzo]'),
+		Boolean: () => makeBoolean(true),
+		Registry: (x: PSCanvas) => {
 			if (x == null) return null;
 
 			return makeRegistry({
@@ -606,15 +621,15 @@ const coercions: CoercionMap = {
 			});
 		},
 	},
-	[ValueKinds.IMAGE]: {
-		[ValueKinds.TEXT]: () => makeText('[Imagen]'),
-		[ValueKinds.BOOLEAN]: () => makeBoolean(true),
-		[ValueKinds.LIST]: (x: ImageValueData) => {
+	Image: {
+		Text: () => makeText('[Imagen]'),
+		Boolean: () => makeBoolean(true),
+		List: (x: ImageValueData) => {
 			if (x == null || !(x instanceof Buffer)) return null;
 
 			return makeList([...x.values()].map((v) => makeRuntimeValueFromInternalValue(v)));
 		},
-		[ValueKinds.REGISTRY]: (x: ImageValueData) => {
+		Registry: (x: ImageValueData) => {
 			if (x == null || x.buffer == null) return null;
 
 			return makeRegistry({
@@ -624,23 +639,23 @@ const coercions: CoercionMap = {
 			});
 		},
 	},
-	[ValueKinds.FUNCTION]: {
-		[ValueKinds.TEXT]: () => makeText('[Función]'),
-		[ValueKinds.BOOLEAN]: () => makeBoolean(true),
+	Function: {
+		Text: () => makeText('[Función]'),
+		Boolean: () => makeBoolean(true),
 	},
-	[ValueKinds.NATIVE_FN]: {
-		[ValueKinds.TEXT]: () => makeText('[Función nativa]'),
-		[ValueKinds.BOOLEAN]: () => makeBoolean(true),
+	NativeFunction: {
+		Text: () => makeText('[Función nativa]'),
+		Boolean: () => makeBoolean(true),
 	},
-	[ValueKinds.PROMISE]: {
-		[ValueKinds.TEXT]: () => makeText('[Promesa]'),
-		[ValueKinds.BOOLEAN]: () => makeBoolean(true),
+	Promise: {
+		Text: () => makeText('[Promesa]'),
+		Boolean: () => makeBoolean(true),
 	},
-	[ValueKinds.NADA]: {
-		[ValueKinds.TEXT]: () => makeText('Nada'),
-		[ValueKinds.BOOLEAN]: () => makeBoolean(false),
+	Nada: {
+		Text: () => makeText('Nada'),
+		Boolean: () => makeBoolean(false),
 	},
-};
+} as const satisfies CoercionMap;
 
 export type InternalValueExtractorMap = {
 	[TValueKind in ValueKind]: (
@@ -654,8 +669,8 @@ export const internalValueExtractors = {
 	Boolean: (v) => v.value,
 	List: (v) => v.elements,
 	Registry: (v) => v.entries,
-	NativeFunction: () => null,
-	Function: () => null,
+	NativeFunction: () => null as never,
+	Function: () => null as never,
 	Canvas: (v) => v.canvas,
 	Image: (v) => ({ ...v }),
 	Promise: (v) => v.promised,
@@ -663,16 +678,16 @@ export const internalValueExtractors = {
 	Nada: () => null,
 } as const satisfies InternalValueExtractorMap;
 
-export function getCoercionFn<TSourceKind extends ValueKind, TTargetKind extends ValueKind>(
-	sourceKind: TSourceKind,
-	targetKind: TTargetKind,
-) {
-	return coercions[sourceKind][targetKind] as
-		| ((
-				x: RuntimeInternalValue<TSourceKind>,
-				interpreter: Interpreter,
-		  ) => AssertedRuntimeValue<TTargetKind> | null)
-		| undefined;
+export type CoercionFn<
+	TSourceKind extends ValueKind,
+	TTargetKind extends ValueKind,
+> = CoercionMap[TSourceKind][TTargetKind];
+
+export function getCoercionFn<
+	TSourceKind extends ValueKind,
+	TTargetKind extends keyof CoercionMap[TSourceKind],
+>(sourceKind: TSourceKind, targetKind: TTargetKind): CoercionMap[TSourceKind][TTargetKind] {
+	return coercions[sourceKind][targetKind];
 }
 
 export function extractInternal<TSourceKind extends ValueKind>(
@@ -682,11 +697,11 @@ export function extractInternal<TSourceKind extends ValueKind>(
 ): CoercibleInternalValue<TSourceKind> {
 	if (!(value.kind in internalValueExtractors)) throw '';
 
-	const extractor = internalValueExtractors[
-		value.kind as keyof typeof internalValueExtractors
-	] as (v: AssertedRuntimeValue<TSourceKind>) => CoercibleInternalValue;
+	const extractor = internalValueExtractors[value.kind] as (
+		v: AssertedRuntimeValue<TSourceKind>,
+	) => CoercibleInternalValue<TSourceKind>;
 
-	return extractor(value) as CoercibleInternalValue<TSourceKind>;
+	return extractor(value);
 }
 
 export function coerceValue<TTargetKind extends ValueKind>(
@@ -703,7 +718,7 @@ export function coerceValue<TTargetKind extends ValueKind>(
 
 	const fn = getCoercionFn(value.kind, as);
 
-	if (!fn) {
+	if (fn == null) {
 		throw interpreter.TuberInterpreterError(
 			`No se puede convertir un valor de tipo ${ValueKindTranslationLookups.get(
 				value.kind,
@@ -718,5 +733,5 @@ export function coerceValue<TTargetKind extends ValueKind>(
 	if (result == null)
 		throw interpreter.TuberInterpreterError('La conversión devolvió un valor nulo inesperado');
 
-	return result;
+	return result as AssertedRuntimeValue<TTargetKind>;
 }

@@ -1,12 +1,12 @@
 import type { Scope } from '../scope';
 import {
+	type AnyNativeFunction,
 	makeList,
 	makeNada,
 	makeNativeFunction,
 	makeNumber,
 	makeRegistry,
 	makeText,
-	type NativeFunction,
 	type RuntimeValue,
 	ValueKinds,
 } from '../values';
@@ -32,8 +32,10 @@ export function declareNatives(scope: Scope) {
 	for (const [traducción, original] of NativeColorsLookup)
 		scope.assignVariable(traducción, makeText(`#${original.toString(16)}`));
 
-	for (const { id, fn } of NativeFunctions)
-		scope.assignVariable(id, makeNativeFunction(null, fn as NativeFunction));
+	for (const { id, fn } of NativeFunctions) {
+		const actualFn = fn(scope.interpreter) as AnyNativeFunction;
+		scope.assignVariable(id, makeNativeFunction(null, actualFn));
+	}
 }
 
 export async function declareContext(

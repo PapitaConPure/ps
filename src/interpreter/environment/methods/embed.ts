@@ -11,24 +11,26 @@ import {
 	ValueKinds,
 } from '../../values';
 import {
+	ensureMethod,
 	expectParam,
 	getParamOrDefault,
 	getParamOrNada,
+	type OptionalArg,
 	psFileRegex,
 	psLinkRegex,
 } from '../nativeUtils';
 import { makeEmbedRegistry } from '../registryPrefabs';
+import type { MapOfMethodCompilers } from './types';
 
 export type EmbedMethod<
 	TArg extends RuntimeValue[] = RuntimeValue[],
 	TResult extends RuntimeValue = RuntimeValue,
 > = NativeFunction<EmbedValue, TArg, TResult>;
 
-const marcoAgregarCampo: EmbedMethod<[TextValue, TextValue, BooleanValue], EmbedValue> = (
-	self,
-	[nombre, valor, alineado],
-	scope,
-) => {
+const marcoAgregarCampo: EmbedMethod<
+	[TextValue, TextValue, OptionalArg<BooleanValue>],
+	EmbedValue
+> = (self, [nombre, valor, alineado], scope) => {
 	const nombreResult = expectParam('nombre', nombre, ValueKinds.TEXT, scope);
 	const valorResult = expectParam('valor', valor, ValueKinds.TEXT, scope);
 	const alineadoResult = getParamOrDefault(
@@ -62,7 +64,7 @@ const marcoARegistro: EmbedMethod<[], RegistryValue> = (self, []) => {
 	return makeEmbedRegistry(self.value);
 };
 
-const marcoAsignarAutor: EmbedMethod<[TextValue, TextValue], EmbedValue> = (
+const marcoAsignarAutor: EmbedMethod<[TextValue, OptionalArg<TextValue>], EmbedValue> = (
 	self,
 	[nombre, imagen],
 	scope,
@@ -163,7 +165,7 @@ const marcoAsignarMiniatura: EmbedMethod<[TextValue], EmbedValue> = (self, [imag
 	return self;
 };
 
-const marcoAsignarPie: EmbedMethod<[TextValue, TextValue], EmbedValue> = (
+const marcoAsignarPie: EmbedMethod<[TextValue, OptionalArg<TextValue>], EmbedValue> = (
 	self,
 	[pie, ícono],
 	scope,
@@ -206,19 +208,34 @@ const marcoAsignarTítulo: EmbedMethod<[TextValue], EmbedValue> = (self, [títul
 	return self;
 };
 
-export const embedMethods = new Map<string, EmbedMethod>()
-	.set('agregar', marcoAgregarCampo as EmbedMethod)
-	.set('agregarCampo', marcoAgregarCampo as EmbedMethod)
-	.set('añadir', marcoAgregarCampo as EmbedMethod)
-	.set('añadirCampo', marcoAgregarCampo as EmbedMethod)
-	.set('aRegistro', marcoARegistro as EmbedMethod)
-	.set('asignarAutor', marcoAsignarAutor as EmbedMethod)
-	.set('asignarColor', marcoAsignarColor as EmbedMethod)
-	.set('asignarDescripcion', marcoAsignarDescripción as EmbedMethod)
-	.set('asignarDescripción', marcoAsignarDescripción as EmbedMethod)
-	.set('asignarEnlace', marcoAsignarEnlace as EmbedMethod)
-	.set('asignarImagen', marcoAsignarImagen as EmbedMethod)
-	.set('asignarMiniatura', marcoAsignarMiniatura as EmbedMethod)
-	.set('asignarPie', marcoAsignarPie as EmbedMethod)
-	.set('asignarTitulo', marcoAsignarTítulo as EmbedMethod)
-	.set('asignarTítulo', marcoAsignarTítulo as EmbedMethod);
+export const embedMethods: MapOfMethodCompilers<EmbedValue> = new Map();
+embedMethods
+	.set('agregar', (it) =>
+		ensureMethod(it).arg('Text').arg('Text').opt('Boolean').appliesTo(marcoAgregarCampo),
+	)
+	.set('agregarCampo', (it) =>
+		ensureMethod(it).arg('Text').arg('Text').opt('Boolean').appliesTo(marcoAgregarCampo),
+	)
+	.set('añadir', (it) =>
+		ensureMethod(it).arg('Text').arg('Text').opt('Boolean').appliesTo(marcoAgregarCampo),
+	)
+	.set('añadirCampo', (it) =>
+		ensureMethod(it).arg('Text').arg('Text').opt('Boolean').appliesTo(marcoAgregarCampo),
+	)
+	.set('aRegistro', (it) => ensureMethod(it).appliesTo(marcoARegistro))
+	.set('asignarAutor', (it) =>
+		ensureMethod(it).arg('Text').opt('Text').appliesTo(marcoAsignarAutor),
+	)
+	.set('asignarColor', (it) => ensureMethod(it).arg('Text').appliesTo(marcoAsignarColor))
+	.set('asignarDescripcion', (it) =>
+		ensureMethod(it).arg('Text').appliesTo(marcoAsignarDescripción),
+	)
+	.set('asignarDescripción', (it) =>
+		ensureMethod(it).arg('Text').appliesTo(marcoAsignarDescripción),
+	)
+	.set('asignarEnlace', (it) => ensureMethod(it).arg('Text').appliesTo(marcoAsignarEnlace))
+	.set('asignarImagen', (it) => ensureMethod(it).arg('Text').appliesTo(marcoAsignarImagen))
+	.set('asignarMiniatura', (it) => ensureMethod(it).arg('Text').appliesTo(marcoAsignarMiniatura))
+	.set('asignarPie', (it) => ensureMethod(it).arg('Text').opt('Text').appliesTo(marcoAsignarPie))
+	.set('asignarTitulo', (it) => ensureMethod(it).arg('Text').appliesTo(marcoAsignarTítulo))
+	.set('asignarTítulo', (it) => ensureMethod(it).arg('Text').appliesTo(marcoAsignarTítulo));

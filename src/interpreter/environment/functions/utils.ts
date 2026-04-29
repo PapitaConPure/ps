@@ -22,14 +22,20 @@ import {
 	type ValueKind,
 	ValueKinds,
 } from '../../values';
-import { expectParam, getParamOrNada, makeRuntimeValueFromInternalValue } from '../nativeUtils';
-import type { NativeFunctionEntry } from '.';
+import {
+	ensureFn,
+	expectParam,
+	getParamOrNada,
+	makeRuntimeValueFromInternalValue,
+	type OptionalArg,
+} from '../nativeUtils';
+import type { NativeFunctionEntry } from './types';
 
-const aleatorio: NativeFunction<null, [NumberValue, NumberValue], NumberValue> = (
-	_self,
-	[n, m],
-	scope,
-) => {
+const aleatorio: NativeFunction<
+	null,
+	readonly [OptionalArg<NumberValue>, OptionalArg<NumberValue>],
+	NumberValue
+> = (_self, [n, m], scope) => {
 	const [nExists, nResult] = getParamOrNada('n', n, ValueKinds.NUMBER, scope);
 	if (!nExists) return makeNumber(Math.random());
 
@@ -39,17 +45,17 @@ const aleatorio: NativeFunction<null, [NumberValue, NumberValue], NumberValue> =
 	return makeNumber(randRange(nResult.value, mResult.value, false));
 };
 
-const colorAleatorio: NativeFunction<null, [], TextValue> = (_self, []) => {
+const colorAleatorio: NativeFunction<null, readonly [], TextValue> = (_self, []) => {
 	const colorNumber = ((Math.random() * 0xfffffe) << 0) + 1;
 	const colorString = `#${colorNumber.toString(16).padStart(6, '0')}`;
 	return makeText(colorString);
 };
 
-const colorRGB: NativeFunction<null, [NumberValue, NumberValue, NumberValue], TextValue> = (
-	_self,
-	[rojo, verde, azul],
-	scope,
-) => {
+const colorRGB: NativeFunction<
+	null,
+	readonly [NumberValue, NumberValue, NumberValue],
+	TextValue
+> = (_self, [rojo, verde, azul], scope) => {
 	const rojoValue = expectParam('rojo', rojo, ValueKinds.NUMBER, scope).value;
 	const verdeValue = expectParam('verde', verde, ValueKinds.NUMBER, scope).value;
 	const azulValue = expectParam('azul', azul, ValueKinds.NUMBER, scope).value;
@@ -73,11 +79,11 @@ const colorRGB: NativeFunction<null, [NumberValue, NumberValue, NumberValue], Te
 	return makeText(colorString);
 };
 
-const colorHSL: NativeFunction<null, [NumberValue, NumberValue, NumberValue], TextValue> = (
-	_self,
-	[matiz, saturación, luminidad],
-	scope,
-) => {
+const colorHSL: NativeFunction<
+	null,
+	readonly [NumberValue, NumberValue, NumberValue],
+	TextValue
+> = (_self, [matiz, saturación, luminidad], scope) => {
 	const matizValue = expectParam('matiz', matiz, ValueKinds.NUMBER, scope).value;
 	const saturaciónValue = expectParam('saturación', saturación, ValueKinds.NUMBER, scope).value;
 	const luminidadValue = expectParam('luminidad', luminidad, ValueKinds.NUMBER, scope).value;
@@ -101,11 +107,11 @@ const colorHSL: NativeFunction<null, [NumberValue, NumberValue, NumberValue], Te
 	return makeText(colorString);
 };
 
-const colorHSV: NativeFunction<null, [NumberValue, NumberValue, NumberValue], TextValue> = (
-	_self,
-	[matiz, saturación, brillo],
-	scope,
-) => {
+const colorHSV: NativeFunction<
+	null,
+	readonly [NumberValue, NumberValue, NumberValue],
+	TextValue
+> = (_self, [matiz, saturación, brillo], scope) => {
 	const matizValue = expectParam('matiz', matiz, ValueKinds.NUMBER, scope).value;
 	const saturaciónValue = expectParam('saturación', saturación, ValueKinds.NUMBER, scope).value;
 	const brilloValue = expectParam('brillo', brillo, ValueKinds.NUMBER, scope).value;
@@ -129,7 +135,7 @@ const colorHSV: NativeFunction<null, [NumberValue, NumberValue, NumberValue], Te
 	return makeText(colorString);
 };
 
-const cos: NativeFunction<null, [NumberValue], NumberValue | NadaValue> = (
+const cos: NativeFunction<null, readonly [NumberValue], NumberValue | NadaValue> = (
 	_self,
 	[valor],
 	scope,
@@ -140,11 +146,11 @@ const cos: NativeFunction<null, [NumberValue], NumberValue | NadaValue> = (
 	return makeNumber(cos);
 };
 
-const dado: NativeFunction<null, [NumberValue, NumberValue], NumberValue> = (
-	_self,
-	[n, m],
-	scope,
-) => {
+const dado: NativeFunction<
+	null,
+	readonly [OptionalArg<NumberValue>, OptionalArg<NumberValue>],
+	NumberValue
+> = (_self, [n, m], scope) => {
 	const [nExists, nResult] = getParamOrNada('n', n, ValueKinds.NUMBER, scope);
 	if (!nExists) return makeNumber(rand(6, true) + 1);
 
@@ -154,7 +160,11 @@ const dado: NativeFunction<null, [NumberValue, NumberValue], NumberValue> = (
 	return makeNumber(randRange(nResult.value, mResult.value, true));
 };
 
-const elegir: NativeFunction<null, RuntimeValue[], RuntimeValue> = (_self, valores, scope) => {
+const elegir: NativeFunction<null, readonly RuntimeValue[], RuntimeValue> = (
+	_self,
+	valores,
+	scope,
+) => {
 	if (valores.length === 0)
 		throw scope.interpreter.TuberInterpreterError(
 			`Se esperaba un valor para el parámetro requerido \`x1\` para elegir aleatoriamente`,
@@ -166,11 +176,15 @@ const elegir: NativeFunction<null, RuntimeValue[], RuntimeValue> = (_self, valor
 	return valores[idx];
 };
 
-const esPrueba: NativeFunction<null, [], BooleanValue> = (_self, [], scope) => {
+const esPrueba: NativeFunction<null, readonly [], BooleanValue> = (_self, [], scope) => {
 	return makeBoolean(scope.interpreter.isTestDrive());
 };
 
-const maximizar: NativeFunction<null, NumberValue[], NumberValue> = (_self, números, scope) => {
+const maximizar: NativeFunction<null, readonly NumberValue[], NumberValue> = (
+	_self,
+	números,
+	scope,
+) => {
 	if (números.length === 0)
 		throw scope.interpreter.TuberInterpreterError(
 			`Se esperaba un valor para el parámetro requerido \`x1\` para obtener un máximo`,
@@ -182,7 +196,11 @@ const maximizar: NativeFunction<null, NumberValue[], NumberValue> = (_self, núm
 	return makeNumber(max);
 };
 
-const minimizar: NativeFunction<null, NumberValue[], NumberValue> = (_self, números, scope) => {
+const minimizar: NativeFunction<null, readonly NumberValue[], NumberValue> = (
+	_self,
+	números,
+	scope,
+) => {
 	if (números.length === 0)
 		throw scope.interpreter.TuberInterpreterError(
 			`Se esperaba un valor para el parámetro requerido \`x1\` para obtener un mínimo`,
@@ -194,19 +212,23 @@ const minimizar: NativeFunction<null, NumberValue[], NumberValue> = (_self, núm
 	return makeNumber(min);
 };
 
-const quedanEntradas: NativeFunction<null, [], BooleanValue> = (_self, [], scope) => {
+const quedanEntradas: NativeFunction<null, readonly [], BooleanValue> = (_self, [], scope) => {
 	const test = scope.interpreter.hasArgs;
 	return makeBoolean(test);
 };
 
-const radianes: NativeFunction<null, [NumberValue], NumberValue> = (_self, [grados], scope) => {
+const radianes: NativeFunction<null, readonly [NumberValue], NumberValue> = (
+	_self,
+	[grados],
+	scope,
+) => {
 	const gradosValue = expectParam('grados', grados, ValueKinds.NUMBER, scope).value;
 
 	const radianes = (gradosValue * Math.PI) / 180;
 	return makeNumber(radianes);
 };
 
-const raíz: NativeFunction<null, [NumberValue, NumberValue], NumberValue | NadaValue> = (
+const raíz: NativeFunction<null, readonly [NumberValue, NumberValue], NumberValue | NadaValue> = (
 	_self,
 	[radicando, grado],
 	scope,
@@ -221,21 +243,25 @@ const raíz: NativeFunction<null, [NumberValue, NumberValue], NumberValue | Nada
 	return makeNumber(root);
 };
 
-const sen: NativeFunction<null, [NumberValue], NumberValue> = (_self, [valor], scope) => {
+const sen: NativeFunction<null, readonly [NumberValue], NumberValue> = (_self, [valor], scope) => {
 	const valorValue = expectParam('valor', valor, ValueKinds.NUMBER, scope).value;
 
 	const sin = Math.sin(valorValue);
 	return makeNumber(sin);
 };
 
-const tan: NativeFunction<null, [NumberValue], NumberValue> = (_self, [valor], scope) => {
+const tan: NativeFunction<null, readonly [NumberValue], NumberValue> = (_self, [valor], scope) => {
 	const valorValue = expectParam('valor', valor, ValueKinds.NUMBER, scope).value;
 
 	const tan = Math.tan(valorValue);
 	return makeNumber(tan);
 };
 
-const tipoDe: NativeFunction<null, [RuntimeValue], TextValue> = (_self, [valor], scope) => {
+const tipoDe: NativeFunction<null, readonly [RuntimeValue], TextValue> = (
+	_self,
+	[valor],
+	scope,
+) => {
 	if (valor == null)
 		throw scope.interpreter.TuberInterpreterError(
 			'Se esperaba un valor para el parámetro requerido `valor`',
@@ -261,14 +287,20 @@ const tipoDe: NativeFunction<null, [RuntimeValue], TextValue> = (_self, [valor],
 	return makeText(result);
 };
 
-const pausa: NativeFunction<null, [NumberValue], PromiseValue<NadaValue>> = (_self, [valor]) => {
+const pausa: NativeFunction<null, readonly [NumberValue], PromiseValue<NadaValue>> = (
+	_self,
+	[valor],
+	scope,
+) => {
+	const valorValue = expectParam('valor', valor, ValueKinds.NUMBER, scope).value;
+
 	return makePromise(async () => {
-		await sleep(valor.value);
+		await sleep(valorValue);
 		return makeNada();
 	});
 };
 
-const obtener: NativeFunction<null, [TextValue], PromiseValue<RegistryValue>> = (
+const obtener: NativeFunction<null, readonly [TextValue], PromiseValue<RegistryValue>> = (
 	_self,
 	[valor],
 ) => {
@@ -323,27 +355,39 @@ const obtener: NativeFunction<null, [TextValue], PromiseValue<RegistryValue>> = 
 };
 
 export const utilFunctions: NativeFunctionEntry[] = [
-	{ id: 'aleatorio', fn: aleatorio as NativeFunction<null> },
-	{ id: 'colorAleatorio', fn: colorAleatorio as NativeFunction<null> },
-	{ id: 'cos', fn: cos as NativeFunction<null> },
-	{ id: 'dado', fn: dado as NativeFunction<null> },
-	{ id: 'elegir', fn: elegir as NativeFunction<null> },
-	{ id: 'esPrueba', fn: esPrueba as NativeFunction<null> },
-	{ id: 'hayEntradas', fn: quedanEntradas as NativeFunction<null> },
-	{ id: 'hsl', fn: colorHSL as NativeFunction<null> },
-	{ id: 'hsb', fn: colorHSV as NativeFunction<null> },
-	{ id: 'hsv', fn: colorHSV as NativeFunction<null> },
-	{ id: 'maximizar', fn: maximizar as NativeFunction<null> },
-	{ id: 'minimizar', fn: minimizar as NativeFunction<null> },
-	{ id: 'quedanEntradas', fn: quedanEntradas as NativeFunction<null> },
-	{ id: 'radianes', fn: radianes as NativeFunction<null> },
-	{ id: 'raiz', fn: raíz as NativeFunction<null> },
-	{ id: 'raíz', fn: raíz as NativeFunction<null> },
-	{ id: 'rgb', fn: colorRGB as NativeFunction<null> },
-	{ id: 'sen', fn: sen as NativeFunction<null> },
-	{ id: 'tan', fn: tan as NativeFunction<null> },
-	{ id: 'tipoDe', fn: tipoDe as NativeFunction<null> },
-	{ id: 'pausa', fn: pausa as NativeFunction<null> },
-	{ id: 'pausar', fn: pausa as NativeFunction<null> },
-	{ id: 'obtener', fn: obtener as NativeFunction<null> },
+	{ id: 'aleatorio', fn: (it) => ensureFn(it).opt('Number').opt('Number').appliesTo(aleatorio) },
+	{ id: 'colorAleatorio', fn: (it) => ensureFn(it).appliesTo(colorAleatorio) },
+	{ id: 'cos', fn: (it) => ensureFn(it).arg('Number').appliesTo(cos) },
+	{ id: 'dado', fn: (it) => ensureFn(it).opt('Number').opt('Number').appliesTo(dado) },
+	{ id: 'elegir', fn: (it) => ensureFn(it).rest().appliesTo(elegir) },
+	{ id: 'esPrueba', fn: (it) => ensureFn(it).appliesTo(esPrueba) },
+	{ id: 'hayEntradas', fn: (it) => ensureFn(it).appliesTo(quedanEntradas) },
+	{
+		id: 'hsl',
+		fn: (it) => ensureFn(it).arg('Number').arg('Number').arg('Number').appliesTo(colorHSL),
+	},
+	{
+		id: 'hsb',
+		fn: (it) => ensureFn(it).arg('Number').arg('Number').arg('Number').appliesTo(colorHSV),
+	},
+	{
+		id: 'hsv',
+		fn: (it) => ensureFn(it).arg('Number').arg('Number').arg('Number').appliesTo(colorHSV),
+	},
+	{ id: 'maximizar', fn: (it) => ensureFn(it).appliesTo(maximizar) },
+	{ id: 'minimizar', fn: (it) => ensureFn(it).appliesTo(minimizar) },
+	{ id: 'quedanEntradas', fn: (it) => ensureFn(it).appliesTo(quedanEntradas) },
+	{ id: 'radianes', fn: (it) => ensureFn(it).arg('Number').appliesTo(radianes) },
+	{ id: 'raiz', fn: (it) => ensureFn(it).arg('Number').arg('Number').appliesTo(raíz) },
+	{ id: 'raíz', fn: (it) => ensureFn(it).arg('Number').arg('Number').appliesTo(raíz) },
+	{
+		id: 'rgb',
+		fn: (it) => ensureFn(it).arg('Number').arg('Number').arg('Number').appliesTo(colorRGB),
+	},
+	{ id: 'sen', fn: (it) => ensureFn(it).arg('Number').appliesTo(sen) },
+	{ id: 'tan', fn: (it) => ensureFn(it).arg('Number').appliesTo(tan) },
+	{ id: 'tipoDe', fn: (it) => ensureFn(it).opt().appliesTo(tipoDe) },
+	{ id: 'pausa', fn: (it) => ensureFn(it).arg('Number').appliesTo(pausa) },
+	{ id: 'pausar', fn: (it) => ensureFn(it).arg('Number').appliesTo(pausa) },
+	{ id: 'obtener', fn: (it) => ensureFn(it).arg('Text').appliesTo(obtener) },
 ];

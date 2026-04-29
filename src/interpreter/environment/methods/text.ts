@@ -17,7 +17,14 @@ import {
 	type TextValue,
 	ValueKinds,
 } from '../../values';
-import { calculatePositionOffset, expectParam, getParamOrDefault } from '../nativeUtils';
+import {
+	calculatePositionOffset,
+	ensureMethod,
+	expectParam,
+	getParamOrDefault,
+	type OptionalArg,
+} from '../nativeUtils';
+import type { MapOfMethodCompilers } from './types';
 
 export type TextMethod<
 	TArg extends RuntimeValue[] = RuntimeValue[],
@@ -71,7 +78,7 @@ const textoContiene: TextMethod<[TextValue], BooleanValue> = (self, [subCadena],
 	return makeBoolean(self.value.includes(subCadenaResult.value));
 };
 
-const textoCortar: TextMethod<[NumberValue, NumberValue], TextValue> = (
+const textoCortar: TextMethod<[OptionalArg<NumberValue>, OptionalArg<NumberValue>], TextValue> = (
 	self,
 	[inicio, fin],
 	scope,
@@ -146,32 +153,33 @@ const textoÚltimaPosiciónDe: TextMethod<[TextValue], NumberValue> = (self, [te
 	return makeNumber(self.value.lastIndexOf(texto.value));
 };
 
-export const textMethods = new Map<string, TextMethod>()
-	.set('acotar', textoAcotar as TextMethod)
-	.set('aLista', textoALista as TextMethod)
-	.set('aMinuscula', textoAMinúsculas as TextMethod)
-	.set('aMinúscula', textoAMinúsculas as TextMethod)
-	.set('aMayuscula', textoAMayúsculas as TextMethod)
-	.set('aMayúscula', textoAMayúsculas as TextMethod)
-	.set('aMinusculas', textoAMinúsculas as TextMethod)
-	.set('aMinúsculas', textoAMinúsculas as TextMethod)
-	.set('aMayusculas', textoAMayúsculas as TextMethod)
-	.set('aMayúsculas', textoAMayúsculas as TextMethod)
-	.set('aRepetida', textoRepetido as TextMethod)
-	.set('aRepetido', textoRepetido as TextMethod)
-	.set('caracterEn', textoCaracterEn as TextMethod)
-	.set('comienzaCon', textoComienzaCon as TextMethod)
-	.set('contiene', textoContiene as TextMethod)
-	.set('cortar', textoCortar as TextMethod)
-	.set('incluye', textoContiene as TextMethod)
-	.set('normalizar', textoNormalizar as TextMethod)
-	.set('normalizado', textoNormalizar as TextMethod)
-	.set('partir', textoPartir as TextMethod)
-	.set('posicionDe', textoPosiciónDe as TextMethod)
-	.set('posiciónDe', textoPosiciónDe as TextMethod)
-	.set('reemplazar', textoReemplazar as TextMethod)
-	.set('repetida', textoRepetido as TextMethod)
-	.set('repetido', textoRepetido as TextMethod)
-	.set('terminaCon', textoTerminaCon as TextMethod)
-	.set('ultimaPosicionDe', textoÚltimaPosiciónDe as TextMethod)
-	.set('últimaPosiciónDe', textoÚltimaPosiciónDe as TextMethod);
+export const textMethods: MapOfMethodCompilers<TextValue> = new Map();
+textMethods
+	.set('acotar', (it) => ensureMethod(it).appliesTo(textoAcotar))
+	.set('aLista', (it) => ensureMethod(it).appliesTo(textoALista))
+	.set('aMinuscula', (it) => ensureMethod(it).appliesTo(textoAMinúsculas))
+	.set('aMinúscula', (it) => ensureMethod(it).appliesTo(textoAMinúsculas))
+	.set('aMayuscula', (it) => ensureMethod(it).appliesTo(textoAMayúsculas))
+	.set('aMayúscula', (it) => ensureMethod(it).appliesTo(textoAMayúsculas))
+	.set('aMinusculas', (it) => ensureMethod(it).appliesTo(textoAMinúsculas))
+	.set('aMinúsculas', (it) => ensureMethod(it).appliesTo(textoAMinúsculas))
+	.set('aMayusculas', (it) => ensureMethod(it).appliesTo(textoAMayúsculas))
+	.set('aMayúsculas', (it) => ensureMethod(it).appliesTo(textoAMayúsculas))
+	.set('aRepetida', (it) => ensureMethod(it).arg('Number').appliesTo(textoRepetido))
+	.set('aRepetido', (it) => ensureMethod(it).arg('Number').appliesTo(textoRepetido))
+	.set('caracterEn', (it) => ensureMethod(it).arg('Number').appliesTo(textoCaracterEn))
+	.set('comienzaCon', (it) => ensureMethod(it).arg('Text').appliesTo(textoComienzaCon))
+	.set('contiene', (it) => ensureMethod(it).arg('Text').appliesTo(textoContiene))
+	.set('cortar', (it) => ensureMethod(it).opt('Number').opt('Number').appliesTo(textoCortar))
+	.set('incluye', (it) => ensureMethod(it).arg('Text').appliesTo(textoContiene))
+	.set('normalizar', (it) => ensureMethod(it).appliesTo(textoNormalizar))
+	.set('normalizado', (it) => ensureMethod(it).appliesTo(textoNormalizar))
+	.set('partir', (it) => ensureMethod(it).arg('Text').appliesTo(textoPartir))
+	.set('posicionDe', (it) => ensureMethod(it).arg('Text').appliesTo(textoPosiciónDe))
+	.set('posiciónDe', (it) => ensureMethod(it).arg('Text').appliesTo(textoPosiciónDe))
+	.set('reemplazar', (it) => ensureMethod(it).arg('Text').arg('Text').appliesTo(textoReemplazar))
+	.set('repetida', (it) => ensureMethod(it).arg('Number').appliesTo(textoRepetido))
+	.set('repetido', (it) => ensureMethod(it).arg('Number').appliesTo(textoRepetido))
+	.set('terminaCon', (it) => ensureMethod(it).arg('Text').appliesTo(textoTerminaCon))
+	.set('ultimaPosicionDe', (it) => ensureMethod(it).arg('Text').appliesTo(textoÚltimaPosiciónDe))
+	.set('últimaPosiciónDe', (it) => ensureMethod(it).arg('Text').appliesTo(textoÚltimaPosiciónDe));
