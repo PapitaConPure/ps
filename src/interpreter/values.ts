@@ -140,7 +140,7 @@ export type TangibleValue = PrimitiveValue | ComplexValue;
 export interface PromiseValue<TResult extends RuntimeValue = RuntimeValue>
 	extends BaseValueData<'Promise'> {
 	state: 'pending' | 'fulfilled';
-	promised: () => Promise<RuntimeValue>;
+	promised: () => Promise<TResult>;
 	value?: TResult;
 	error?: Error;
 }
@@ -451,10 +451,10 @@ export const valueMakers: Partial<{
  * Crea un valor a partir de un tipo y un valor.
  * Esta función no convierte {@link RuntimeValue}s. Para convertir un {@link RuntimeValue} de tipo X a tipo Y, usa {@linkcode coerceValue}.
  */
-export function makeValue<T extends ValueKind>(
-	valueKind: T,
-	value: RuntimeInternalValue<T>,
-): AssertedRuntimeValue<T> {
+export function makeValue<TValueKind extends keyof typeof valueMakers>(
+	valueKind: TValueKind,
+	value: RuntimeInternalValue<TValueKind>,
+): AssertedRuntimeValue<TValueKind> {
 	const makerFunction = valueMakers[valueKind];
 	if (!makerFunction) throw `No Maker Function for ${valueKind}::${value}`;
 	return makerFunction(value);
